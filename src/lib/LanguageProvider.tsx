@@ -34,13 +34,13 @@ function subscribe(callback: () => void) {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const storedLang = useSyncExternalStore(subscribe, getSnapshot, () => null);
+  const [manualLang, setManualLang] = useState<Language | null>(null);
 
-  const [lang, setLang] = useState<Language>(storedLang ?? "en");
-  const [hasChosen, setHasChosen] = useState<boolean>(() => storedLang !== null);
+  const lang = manualLang ?? storedLang ?? "en";
+  const hasChosen = manualLang !== null || storedLang !== null;
 
   const changeLang = (next: Language) => {
-    setLang(next);
-    setHasChosen(true);
+    setManualLang(next);
     localStorage.setItem(STORAGE_KEY, next);
   };
 
