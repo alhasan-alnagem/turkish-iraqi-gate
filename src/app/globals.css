@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f2b1a;
+  --surface: #ffffff;
+  --section: #f9fafb;
+  --primary: #0f5624;
+  --primary-light: #1a7a38;
+  --accent: #16a34a;
+  --accent-light: #4ade80;
+  --muted: #64748b;
+  --border: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+[lang="ar"] {
+  font-family: var(--font-arabic), sans-serif;
+  font-size: 106.25%;
+  line-height: 1.65;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

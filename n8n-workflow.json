@@ -1,0 +1,84 @@
+{
+  "name": "Order → WhatsApp + Calendar",
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": {
+        "path": "order",
+        "options": {}
+      }
+    },
+    {
+      "id": "whatsapp",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.waBusiness",
+      "typeVersion": 1,
+      "position": [550, 200],
+      "parameters": {
+        "phoneNumberId": "",
+        "recipientPhoneNumber": "",
+        "message": "New Order!\n\nName: {{ $json.body.name }}\nPhone: {{ $json.body.phone }}\nProduct: {{ $json.body.product }}\nQuantity: {{ $json.body.quantity }}\nBudget: {{ $json.body.budget }} {{ $json.body.budgetCurrency }}\nShipping by us: {{ $json.body.shipping }}\nCity: {{ $json.body.city }}\nDetails: {{ $json.body.details }}\nLanguage: {{ $json.body.lang }}\nReceived: {{ $json.body.receivedAt }}"
+      }
+    },
+    {
+      "id": "calendar",
+      "name": "Create Google Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [550, 450],
+      "parameters": {
+        "operation": "create",
+        "calendarId": "primary",
+        "summary": "Consultation: {{ $json.body.name }} - {{ $json.body.product }}",
+        "description": "New order inquiry from {{ $json.body.name }}\n\nPhone: {{ $json.body.phone }}\nProduct: {{ $json.body.product }}\nQuantity: {{ $json.body.quantity }}\nBudget: {{ $json.body.budget }} {{ $json.body.budgetCurrency }}\nShipping by us: {{ $json.body.shipping }}\nDelivery City: {{ $json.body.city }}\nDetails: {{ $json.body.details }}",
+        "start": {
+          "dateTime": "={{ $now.format('yyyy-MM-dd') + 'T10:00:00' }}",
+          "timeZone": "Europe/Istanbul"
+        },
+        "end": {
+          "dateTime": "={{ $now.format('yyyy-MM-dd') + 'T11:00:00' }}",
+          "timeZone": "Europe/Istanbul"
+        }
+      }
+    },
+    {
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true } }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          { "node": "Send WhatsApp", "type": "main", "index": 0 },
+          { "node": "Create Google Calendar Event", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Send WhatsApp": {
+      "main": [
+        [
+          { "node": "Respond to Webhook", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Google Calendar Event": {
+      "main": [
+        [
+          { "node": "Respond to Webhook", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  }
+}
