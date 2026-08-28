@@ -284,8 +284,10 @@ const en: Translations = {
     },
     info: {
       title: "Contact Information",
-      turkey: { title: "Turkey Office", lines: ["Levent Mahallesi, Büyükdere Caddesi", "Şişli, Istanbul 34330", "Phone: +90 212 555 0123"] },
-      iraq: { title: "Iraq Office", lines: ["Al-Karada, Arasat Al-Hindya", "Baghdad, Iraq", "Phone: +964 123 456 789"] },
+      people: [
+        { name: "Alhasan Alnagem", role: "Founder", phone: "+9647866417123" },
+        { name: "Ahmed Alshadod", role: "Co-founder", phone: "+9647807020498" },
+      ],
       email: "Email",
       hours: { title: "Working Hours", lines: ["Sunday - Thursday: 9:00 AM - 6:00 PM", "Friday: 9:00 AM - 1:00 PM", "Saturday: Closed"] },
     },

@@ -245,26 +245,19 @@ export default function Contact() {
                 {c.info.title}
               </h2>
               <div className="space-y-8">
-                <div>
-                  <h3 className="font-semibold text-[var(--primary)] mb-2">
-                    {c.info.turkey.title}
-                  </h3>
-                  <div className="text-[var(--muted)] text-sm space-y-1">
-                    {c.info.turkey.lines.map((line, i) => (
-                      <p key={i}>{line}</p>
-                    ))}
+                {c.info.people.map((person, i) => (
+                  <div key={i}>
+                    <h3 className="font-semibold text-[var(--primary)] mb-1">
+                      {person.name}
+                    </h3>
+                    <p className="text-[var(--muted)] text-sm mb-1">
+                      {person.role}
+                    </p>
+                    <p className="text-[var(--muted)] text-sm" dir="ltr">
+                      {person.phone}
+                    </p>
                   </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[var(--primary)] mb-2">
-                    {c.info.iraq.title}
-                  </h3>
-                  <div className="text-[var(--muted)] text-sm space-y-1">
-                    {c.info.iraq.lines.map((line, i) => (
-                      <p key={i}>{line}</p>
-                    ))}
-                  </div>
-                </div>
+                ))}
                 <div>
                   <h3 className="font-semibold text-[var(--primary)] mb-2">
                     {c.info.email}
