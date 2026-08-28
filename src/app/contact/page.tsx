@@ -253,19 +253,17 @@ export default function Contact() {
                     <p className="text-[var(--muted)] text-sm mb-1">
                       {person.role}
                     </p>
-                    <p className="text-[var(--muted)] text-sm" dir="ltr">
+                    <a
+                      className="text-[var(--muted)] text-sm hover:text-[var(--primary)]"
+                      dir="ltr"
+                      href={`https://wa.me/${person.phone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {person.phone}
-                    </p>
+                    </a>
                   </div>
                 ))}
-                <div>
-                  <h3 className="font-semibold text-[var(--primary)] mb-2">
-                    {c.info.email}
-                  </h3>
-                  <p className="text-[var(--muted)] text-sm">
-                    info@turkishiraqgate.com
-                  </p>
-                </div>
                 <div>
                   <h3 className="font-semibold text-[var(--primary)] mb-2">
                     {c.info.hours.title}

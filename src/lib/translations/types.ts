@@ -196,7 +196,6 @@ export type Translations = {
     info: {
       title: string;
       people: Array<{ name: string; role: string; phone: string }>;
-      email: string;
       hours: { title: string; lines: string[] };
     };
   };
