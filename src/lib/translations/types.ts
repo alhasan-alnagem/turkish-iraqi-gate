@@ -148,12 +148,10 @@ export type Translations = {
       title: string;
       subtitle: string;
     };
-    categories: Array<{
-      name: string;
-      image: string;
-      desc: string;
-      file: string;
-    }>;
+    comingSoon: {
+      title: string;
+      message: string;
+    };
     download: string;
     view: string;
     cta: {

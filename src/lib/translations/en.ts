@@ -237,56 +237,10 @@ const en: Translations = {
       title: "Product Catalogs",
       subtitle: "Click a catalog to view or download it. If you need something not listed here, we can source it on request.",
     },
-    categories: [
-      {
-        name: "Medical Equipment",
-        image: "🏥",
-        desc: "Hospital equipment, surgical tools, diagnostic devices and medical consumables.",
-        file: "medical-equipment.pdf",
-      },
-      {
-        name: "Construction Materials",
-        image: "🏗️",
-        desc: "Structural steel, pipes, tiles, coatings and electrical supplies.",
-        file: "construction-materials.pdf",
-      },
-      {
-        name: "Food & Beverages",
-        image: "🍎",
-        desc: "Bulk ingredients, packaged goods, olive oil and canned food.",
-        file: "food-beverages.pdf",
-      },
-      {
-        name: "Electronics & Appliances",
-        image: "⚡",
-        desc: "Home appliances, consumer and industrial electronics.",
-        file: "electronics-appliances.pdf",
-      },
-      {
-        name: "Automotive Parts",
-        image: "🚗",
-        desc: "Spare parts, tires, batteries and engine components.",
-        file: "automotive-parts.pdf",
-      },
-      {
-        name: "Furniture & Home",
-        image: "🪑",
-        desc: "Home, office and commercial furniture, mattresses and bedding.",
-        file: "furniture-home.pdf",
-      },
-      {
-        name: "Textiles & Apparel",
-        image: "👕",
-        desc: "Fabrics, ready-made garments, home textiles and carpets.",
-        file: "textiles-apparel.pdf",
-      },
-      {
-        name: "Industrial Machinery",
-        image: "⚙️",
-        desc: "Packaging, food processing, construction and agricultural machinery.",
-        file: "industrial-machinery.pdf",
-      },
-    ],
+    comingSoon: {
+      title: "Catalogs Coming Soon",
+      message: "We're organizing our product catalogs by category. They'll be available for download here very soon. In the meantime, if you're looking for a specific product, just contact us.",
+    },
     download: "Download PDF",
     view: "View Catalog",
     cta: {
