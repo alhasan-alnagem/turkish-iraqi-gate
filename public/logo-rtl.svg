@@ -6,6 +6,6 @@
   <path d="M179 25 Q195 8 211 25" stroke="#4ade80" stroke-width="3.5" fill="none" stroke-linecap="round"/>
   <circle cx="195" cy="43" r="4" fill="#22c55e" opacity="0.5"/>
   <text x="160" y="27" text-anchor="end" font-family="system-ui,sans-serif" font-weight="800" font-size="20" fill="#166534" letter-spacing="-0.5">TIG</text>
-  <text x="160" y="44" text-anchor="end" font-family="system-ui,sans-serif" font-weight="600" font-size="10" fill="#166534" letter-spacing="0.2">Turkish Iraqi Gate</text>
-  <text x="160" y="56" text-anchor="end" font-family="system-ui,sans-serif" font-weight="500" font-size="10" fill="#64748b" opacity="0.8" letter-spacing="0.2">For Importing And Procurement</text>
+  <text x="160" y="45" text-anchor="end" font-family="system-ui,sans-serif" font-weight="600" font-size="11" fill="#166534" letter-spacing="0">بوابة تركيا العراقية</text>
+  <text x="160" y="58" text-anchor="end" font-family="system-ui,sans-serif" font-weight="500" font-size="11" fill="#64748b" opacity="0.8" letter-spacing="0">للاستيراد والتجهيز</text>
 </svg>
