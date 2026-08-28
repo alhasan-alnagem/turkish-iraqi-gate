@@ -21,9 +21,13 @@ const arabicFont = Tajawal({
 });
 
 export const metadata: Metadata = {
-  title: "Turkish Iraq Gate | Import from Turkey to Iraq",
+  metadataBase: new URL("https://www.tigip.com"),
+  title: "Turkish Iraqi Gate For Importing And Procurement | Import from Turkey to Iraq",
   description:
     "We find products, check prices, negotiate discounts, and arrange shipping from Turkey to Iraq. Your trusted import partner since 2020.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({
