@@ -286,7 +286,7 @@ const en: Translations = {
       title: "Contact Information",
       people: [
         { name: "Alhasan Alnagem", role: "Founder", phone: "+9647866417123" },
-        { name: "Ahmed Alshadod", role: "Co-founder", phone: "+9647807020498" },
+        { name: "Ahmed Al Shadood", role: "Co-founder", phone: "+9647807020498" },
       ],
       hours: { title: "Working Hours", lines: ["Sunday - Thursday: 9:00 AM - 6:00 PM", "Friday: 9:00 AM - 1:00 PM", "Saturday: Closed"] },
     },

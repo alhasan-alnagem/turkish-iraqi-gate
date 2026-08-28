@@ -2,7 +2,7 @@ export default function Logo({ className, rtl }: { className?: string; rtl?: boo
   return (
     <img
       src={rtl ? "/logo-rtl.svg" : "/logo.svg"}
-      alt="Turkish Iraq Gate"
+      alt="Turkish Iraqi Gate For Importing And Procurement"
       className={className}
     />
   );
