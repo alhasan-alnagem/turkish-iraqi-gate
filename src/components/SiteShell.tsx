@@ -22,9 +22,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 bg-[var(--primary)] text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between h-24">
-          <Link href="/" className="flex items-center shrink-0 mr-4">
-            <Logo className="h-18 w-auto" rtl={dir === "rtl"} />
+        <nav className="flex items-center justify-between gap-2 h-20 md:h-24">
+          <Link href="/" className="flex items-center shrink-0 mr-2 md:mr-4">
+            <Logo className="h-12 md:h-18 w-auto" rtl={dir === "rtl"} />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -39,11 +39,11 @@ export function SiteHeader() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <LanguageSwitcher />
             <Link
               href="/contact"
-              className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              className="hidden lg:inline-flex bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
               {t.nav.getQuote}
             </Link>
@@ -51,7 +51,7 @@ export function SiteHeader() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
               aria-expanded={menuOpen}
-              className="md:hidden flex flex-col justify-center items-center gap-1.5 w-10 h-10 rounded-lg border border-white/20 hover:border-white/40 transition-colors"
+              className="md:hidden flex flex-col justify-center items-center gap-1.5 w-10 h-10 shrink-0 rounded-lg border border-white/20 hover:border-white/40 transition-colors"
             >
               <span className={`block w-5 h-0.5 bg-white transition-transform ${menuOpen ? "translate-y-2 rotate-45" : ""}`} />
               <span className={`block w-5 h-0.5 bg-white transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
@@ -74,6 +74,13 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/contact"
+              onClick={() => setMenuOpen(false)}
+              className="mt-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-3 rounded-lg text-center font-semibold transition-colors"
+            >
+              {t.nav.getQuote}
+            </Link>
           </div>
         </div>
       )}
