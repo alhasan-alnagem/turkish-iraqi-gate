@@ -6,6 +6,9 @@ Scope per decision: professional proofread of `tr.ts` using the English (and Ara
 Brand-consistent terminology is kept: the site positions itself as an importer (Arabic uses "Ø§Ø³ØªÙŠØ±Ø§Ø¯"/"Ù†Ø³ØªÙˆØ±Ø¯"), so "ithal" is retained rather than replaced with "tedarik".
 Items still in REVIEW LATER remain as their currently-kept wording for your consideration.
 
+## Language popup decision (2026-08-30)
+The new multilingual design has NO full-screen "Choose your language" popup. Language is handled by a small dropdown in the header and separate per-language URLs (/en, /ar, /tr). Confirmed: keep it this way (no popup) when merging to production.
+
 ## Status legend
 - **APPLIED** - already fixed in `src/lib/translations/tr.ts`
 - **REVIEW LATER** - currently kept as-is; your call whether to adopt the recommended wording
