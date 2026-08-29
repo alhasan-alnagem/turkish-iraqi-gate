@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getLocalizedMeta, toLang } from "@/lib/seo";
+import { getLocalizedMeta, toLang, getBreadcrumbSchema } from "@/lib/seo";
 
 type LangParams = { lang: string };
 
@@ -12,6 +12,22 @@ export async function generateMetadata({
   return getLocalizedMeta(toLang(lang), "services");
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+export default async function Layout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<LangParams>;
+}) {
+  const { lang } = await params;
+  const l = toLang(lang);
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(getBreadcrumbSchema(l, "services")) }}
+      />
+      {children}
+    </>
+  );
 }

@@ -1,5 +1,5 @@
 import { languages } from "@/lib/translations";
-import { getLocalizedMeta, toLang } from "@/lib/seo";
+import { getLocalizedMeta, toLang, getOrganizationSchema } from "@/lib/seo";
 
 export function generateStaticParams() {
   return languages.map((l) => ({ lang: l.code }));
@@ -16,6 +16,22 @@ export async function generateMetadata({
   return getLocalizedMeta(toLang(lang), "home");
 }
 
-export default function LangLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+export default async function LangLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<LangParams>;
+}) {
+  const { lang } = await params;
+  const l = toLang(lang);
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(getOrganizationSchema(l)) }}
+      />
+      {children}
+    </>
+  );
 }

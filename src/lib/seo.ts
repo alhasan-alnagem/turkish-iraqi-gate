@@ -186,6 +186,7 @@ export function getLocalizedMeta(lang: Lang, route: keyof typeof routeMeta): Met
     alternates: {
       canonical,
       languages: {
+        "x-default": `/en${route === "home" ? "" : `/${route}`}`,
         en: `/en${route === "home" ? "" : `/${route}`}`,
         ar: `/ar${route === "home" ? "" : `/${route}`}`,
         tr: `/tr${route === "home" ? "" : `/${route}`}`,
@@ -194,11 +195,12 @@ export function getLocalizedMeta(lang: Lang, route: keyof typeof routeMeta): Met
     robots: { index: true, follow: true },
     openGraph: {
       type: "website",
-      url: `${BASE}/en${route === "home" ? "" : `/${route}`}`,
+      url: `${BASE}/${lang}${route === "home" ? "" : `/${route}`}`,
       siteName: isAr ? "بوابة تركيا العراقية للاستيراد والتجهيز" : isTr ? "Türkiye Irak Kapısı İthalat ve Tedarik" : "Turkish Iraqi Gate For Importing And Procurement",
       title: meta.ogTitle,
       description: meta.ogDescription,
       locale: isAr ? "ar_IQ" : isTr ? "tr_TR" : "en_US",
+      alternateLocale: lang === "en" ? ["ar_IQ", "tr_TR"] : lang === "ar" ? ["en_US", "tr_TR"] : ["en_US", "ar_IQ"],
       images: [
         {
           url: `${BASE}/og.png`,
@@ -221,4 +223,90 @@ export function toLang(lang: string): Lang {
   if (lang === "ar") return "ar";
   if (lang === "tr") return "tr";
   return "en";
+}
+
+type OrgInfo = {
+  name: string;
+  description: string;
+};
+
+const orgInfo: Record<Lang, OrgInfo> = {
+  en: {
+    name: "Turkish Iraqi Gate For Importing And Procurement",
+    description:
+      "We find products, check prices, negotiate discounts, and arrange shipping from Turkey to Iraq.",
+  },
+  ar: {
+    name: "بوابة تركيا العراقية للاستيراد والتجهيز",
+    description:
+      "نجد المنتجات، نتحقق من الأسعار، نتفاوض على الخصومات، ونرتب الشحن من تركيا إلى العراق.",
+  },
+  tr: {
+    name: "Türkiye Irak Kapısı İthalat ve Tedarik",
+    description:
+      "Ürünleri bulur, fiyatları kontrol eder, indirimler müzakere eder ve Türkiye'den Irak'a nakliye düzenleriz.",
+  },
+};
+
+export function getOrganizationSchema(lang: Lang): Record<string, unknown> {
+  const info = orgInfo[lang];
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: info.name,
+    url: `${BASE}/`,
+    logo: `${BASE}/logo.svg`,
+    description: info.description,
+    foundingDate: "2020",
+    areaServed: ["TR", "IQ"],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: "+9647866417123",
+        contactType: "customer service",
+        areaServed: ["IQ", "TR"],
+        availableLanguage: ["en", "ar", "tr"],
+      },
+      {
+        "@type": "ContactPoint",
+        telephone: "+9647807020498",
+        contactType: "customer service",
+        areaServed: ["IQ", "TR"],
+        availableLanguage: ["en", "ar", "tr"],
+      },
+    ],
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "IQ",
+      addressLocality: "Baghdad",
+    },
+  };
+}
+
+const breadcrumbLabels: Record<Lang, { home: string }> = {
+  en: { home: "Home" },
+  ar: { home: "الرئيسية" },
+  tr: { home: "Ana Sayfa" },
+};
+
+export function getBreadcrumbSchema(
+  lang: Lang,
+  route: Exclude<keyof typeof routeMeta, "home">
+): Record<string, unknown> {
+  const homeLabel = breadcrumbLabels[lang].home;
+  const itemName = routeMeta[route][lang].title;
+  const items = [
+    { "@type": "ListItem", position: 1, name: homeLabel, item: `${BASE}/${lang}/` },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: itemName,
+      item: `${BASE}/${lang}/${route}/`,
+    },
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items,
+  };
 }
