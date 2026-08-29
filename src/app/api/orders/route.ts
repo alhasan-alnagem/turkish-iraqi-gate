@@ -1,27 +1,39 @@
 import { NextRequest } from "next/server";
 
-const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || "http://localhost:5678/webhook/order";
+const GOOGLE_SHEETS_URL = process.env.GOOGLE_SHEETS_URL || "";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
     const payload = {
-      ...body,
+      name: body.name || "",
+      phone: body.phone || "",
+      product: body.product || "",
+      quantity: body.quantity || "",
+      budget: body.budget || "",
+      shipping: body.shipping === "yes" ? "yes" : "no",
+      city: body.city || "",
+      details: body.details || "",
+      lang: body.lang || "",
       receivedAt: new Date().toISOString(),
     };
 
-    const n8nRes = await fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    if (GOOGLE_SHEETS_URL) {
+      const res = await fetch(GOOGLE_SHEETS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!n8nRes.ok) {
-      console.error("n8n webhook failed:", n8nRes.status, await n8nRes.text());
+      if (!res.ok) {
+        console.error("Google Sheets web app failed:", res.status, await res.text());
+      }
+
+      return Response.json({ success: true }, { status: 200 });
     }
 
-    return Response.json({ success: true }, { status: 200 });
+    return Response.json({ success: false, error: "No destination configured" }, { status: 500 });
   } catch (error) {
     console.error("Order API error:", error);
     return Response.json({ success: false }, { status: 500 });

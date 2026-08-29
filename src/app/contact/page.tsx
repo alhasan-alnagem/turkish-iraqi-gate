@@ -50,7 +50,7 @@ export default function Contact() {
       <section className="bg-[var(--surface)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="grid md:grid-cols-2 gap-16">
-            <div className="relative">
+            <div>
               <h2 className="text-2xl font-bold text-[var(--primary)] mb-6">
                 {c.form.title}
               </h2>
@@ -239,21 +239,6 @@ export default function Contact() {
                   </p>
                 </form>
               )}
-
-              {/* OVERLAY: Remove this block (and the "relative" on the form column div above) once the form goes live */}
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-                <div className="text-center px-6 py-8">
-                  <p className="text-xl font-bold text-[var(--primary)] mb-2">
-                    {lang === "ar" ? "قريباً" : "Coming Soon"}
-                  </p>
-                  <p className="text-sm text-[var(--muted)] max-w-xs mx-auto">
-                    {lang === "ar"
-                      ? "خدمة الطلب عبر الإنترنت قيد التطوير حالياً. يرجى التواصل معنا مباشرة عبر الواتساب."
-                      : "Online ordering is under development. Please contact us directly on WhatsApp."}
-                  </p>
-                </div>
-              </div>
-              {/* END OVERLAY */}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-[var(--primary)] mb-6">
