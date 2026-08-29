@@ -23,7 +23,7 @@ const arabicFont = Tajawal({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.tigip.com"),
   title: {
-    default: "Turkish Iraqi Gate For Importing And Procurement | Import from Turkey to Iraq",
+    default: "Turkish Iraqi Gate | Import from Turkey to Iraq",
     template: "%s | Turkish Iraqi Gate",
   },
   description:
