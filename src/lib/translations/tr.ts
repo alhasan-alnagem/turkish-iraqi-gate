@@ -59,7 +59,7 @@ const tr: Translations = {
         "İnşaat Malzemeleri",
         "Gıda ve İçecek",
         "Elektronik",
-        "Otomotiv Yedek Parça",
+        "Otomotiv Yedek Parçaları",
         "Mobilya",
         "Tekstil ve Giyim",
         "Endüstriyel Makineler",
@@ -107,7 +107,7 @@ const tr: Translations = {
     },
     team: {
       title: "Ekibimiz",
-      founder: { name: "Muhammed Yılmaz", role: "Kurucu ve CEO", exp: "Türkiye-Irak ticaretinde 15 yılı aşkın deneyim" },
+      founder: { name: "Mehmet Yılmaz", role: "Kurucu ve CEO", exp: "Türkiye-Irak ticaretinde 15 yılı aşkın deneyim" },
       director: { name: "Ali El-Ciburi", role: "Irak Operasyon Müdürü", exp: "Lojistik ve dağıtımda 10 yılı aşkın deneyim" },
     },
     cta: {
@@ -134,7 +134,7 @@ const tr: Translations = {
       title: "Fiyatlandırmamız Nasıl Çalışır",
       subtitle: "Gizli ücret olmadan basit, şeffaf fiyatlandırma.",
       flatFee: { title: "Sabit Ücret", desc: "Her sipariş için sabit ücret alırız — oransal kar marjı yok, komisyon yok. Tedarikçiyle müzakere ettiğimiz fiyatın aynısını, üzerine anlaşılan hizmet ücretiyle ödersiniz." },
-      deposit: { title: "Depozito", desc: "Tedarik ve müzakerenin başlaması için depozito gerekir. Sevkiyatta bakiyeye mahsup edilir. Bu, her iki tarafın da taahhüdünü sağlar ve süreci güvenli tutar." },
+      deposit: { title: "Depozito", desc: "Tedarik ve müzakerenin başlaması için bir depozito gerekir. Bakiye sevkiyat sırasında ödenir. Bu, her iki tarafın da taahhüdünü sağlar ve süreci güvenli tutar." },
       note: "Sürpriz yok. Başlamadan önce her maliyeti onaylarsınız. Sürecin her adımında tam şeffaflık.",
     },
     categories: {
@@ -143,9 +143,9 @@ const tr: Translations = {
       groups: [
         { title: "Tıbbi Ekipman", items: ["Hastane yatakları ve malzemeleri", "Cerrahi aletler", "Teşhis cihazları", "Laboratuvar ekipmanı", "Kişisel koruyucu ekipman"] },
         { title: "İnşaat Malzemeleri", items: ["İnşaat demiri ve yapısal çelik", "Borular ve bağlantı parçaları", "Elektrik malzemeleri", "Seramik ve fayans", "Boyalar ve kaplamalar"] },
-        { title: "Gıda Ürünleri", items: ["Toptan gıda maddeleri", "Paketlenmiş ürünler", "Zeytinyağı ve konserveler", "İçecekler", "Süt ürünleri"] },
+        { title: "Gıda ve İçecek", items: ["Toptan gıda maddeleri", "Paketlenmiş ürünler", "Zeytinyağı ve konserveler", "İçecekler", "Süt ürünleri"] },
         { title: "Elektronik", items: ["Beyaz eşya", "Tüketici elektroniği", "Endüstriyel elektronik", "Kablolar ve teller", "Aydınlatma ürünleri"] },
-        { title: "Otomotiv Yedek Parça", items: ["Yedek parçalar", "Lastikler ve aküler", "Motor bileşenleri", "Orijinal parçalar", "Aksesuarlar"] },
+        { title: "Otomotiv Yedek Parçaları", items: ["Yedek parçalar", "Lastikler ve aküler", "Motor bileşenleri", "Orijinal parçalar", "Aksesuarlar"] },
         { title: "Diğer Ürünler", items: ["Mobilya", "Tekstil ve giyim", "Endüstriyel makineler", "Tarım ürünleri", "Özel siparişler"] },
       ],
       missing: "Ürün kategorinizi bulamadınız mı? Türkiye'de bulunan her şeyi ithal ediyoruz.",
@@ -193,7 +193,7 @@ const tr: Translations = {
         inquiry: "Elektronik Hakkında Bilgi Al",
       },
       {
-        name: "Otomotiv Yedek Parça",
+        name: "Otomotiv Yedek Parçaları",
         desc: "Küresel markalara hizmet veren Türk üreticilerden orijinal ve OEM yedek parçalar tedarik ediyoruz.",
         image: "🚗",
         items: ["Motor parçaları ve bileşenleri", "Fren sistemleri ve balatalar", "Süspansiyon ve direksiyon parçaları", "Lastikler ve aküler", "Filtreler (yağ, hava, yakıt)", "Gövde parçaları ve aksesuarlar"],
