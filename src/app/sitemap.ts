@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const BASE_URL = "https://www.tigip.com";
-const LOCALES = ["en", "ar"] as const;
+const LOCALES = ["en", "ar", "tr"] as const;
 const ROUTES = ["about", "services", "products", "catalogs", "contact"] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

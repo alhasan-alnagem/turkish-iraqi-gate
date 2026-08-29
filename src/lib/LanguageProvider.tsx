@@ -33,7 +33,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const switchLanguage = (next: Language) => {
     const parts = pathname.split("/");
-    if (parts[1] === "en" || parts[1] === "ar") {
+    if (languages.some((l) => l.code === parts[1])) {
       parts[1] = next;
     } else {
       parts.unshift("", next);

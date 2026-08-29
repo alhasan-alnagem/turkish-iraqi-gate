@@ -272,6 +272,11 @@ const ar: Translations = {
       details: "تفاصيل إضافية",
       submit: "إرسال الطلب",
       required: "* حقول إلزامية. سنرد خلال 24 ساعة.",
+      successTitle: "تم إرسال طلبك!",
+      successMessage: "سنتواصل معك خلال 24 ساعة.",
+      sendAnother: "إرسال طلب آخر",
+      errorMessage: "حدث خطأ. الرجاء المحاولة مرة أخرى.",
+      sending: "جارٍ الإرسال...",
       placeholders: {
         name: "أحمد الراوي",
         phone: "+964 123 456 789",

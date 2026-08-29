@@ -58,16 +58,16 @@ export default function Contact() {
               {status === "success" ? (
                 <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-6">
                   <p className="font-semibold text-lg mb-1">
-                    {lang === "ar" ? "تم إرسال طلبك!" : "Your request has been sent!"}
+                    {c.form.successTitle}
                   </p>
                   <p className="text-sm text-green-700">
-                    {lang === "ar" ? "سنتواصل معك خلال 24 ساعة." : "We'll get back to you within 24 hours."}
+                    {c.form.successMessage}
                   </p>
                   <button
                     onClick={() => setStatus("idle")}
                     className="mt-4 text-sm text-[var(--accent)] hover:underline font-semibold"
                   >
-                    {lang === "ar" ? "إرسال طلب آخر" : "Send another request"}
+                    {c.form.sendAnother}
                   </button>
                 </div>
               ) : (
@@ -221,7 +221,7 @@ export default function Contact() {
 
                   {status === "error" && (
                     <p className="text-red-600 text-sm">
-                      {lang === "ar" ? "حدث خطأ. الرجاء المحاولة مرة أخرى." : "Something went wrong. Please try again."}
+                      {c.form.errorMessage}
                     </p>
                   )}
 
@@ -231,7 +231,7 @@ export default function Contact() {
                     className="bg-[var(--accent)] hover:bg-[var(--accent-light)] disabled:opacity-50 text-white px-8 py-3 rounded-lg font-semibold transition-colors w-full md:w-auto"
                   >
                     {status === "loading"
-                      ? (lang === "ar" ? "جارٍ الإرسال..." : "Sending...")
+                      ? c.form.sending
                       : c.form.submit}
                   </button>
                   <p className="text-xs text-[var(--muted)]">

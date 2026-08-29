@@ -272,6 +272,11 @@ const en: Translations = {
       details: "Additional Details",
       submit: "Send Request",
       required: "* Required fields. We'll respond within 24 hours.",
+      successTitle: "Your request has been sent!",
+      successMessage: "We'll get back to you within 24 hours.",
+      sendAnother: "Send another request",
+      errorMessage: "Something went wrong. Please try again.",
+      sending: "Sending...",
       placeholders: {
         name: "Ahmed Al-Rawi",
         phone: "+964 123 456 789",

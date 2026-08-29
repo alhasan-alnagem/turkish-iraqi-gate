@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-type Lang = "en" | "ar";
+type Lang = "en" | "ar" | "tr";
 
 const BASE = "https://www.tigip.com";
 
@@ -29,6 +29,14 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
       ogDescription:
         "نجد المنتجات، نتحقق من الأسعار، نتفاوض على الخصومات، ونرتب الشحن من تركيا إلى العراق.",
     },
+    tr: {
+      title: "Türkiye Irak Kapısı | Türkiye'den Irak'a İthalat",
+      description:
+        "Ürünleri bulur, fiyatları kontrol eder, indirimler müzakere eder ve Türkiye'den Irak'a nakliye düzenleriz. 2020'den beri güvenilir ithalat ortağınız.",
+      ogTitle: "Türkiye Irak Kapısı İthalat ve Tedarik",
+      ogDescription:
+        "Ürünleri bulur, fiyatları kontrol eder, indirimler müzakere eder ve Türkiye'den Irak'a nakliye düzenleriz.",
+    },
   },
   about: {
     en: {
@@ -46,6 +54,14 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
       ogTitle: "من نحن | بوابة تركيا العراقية",
       ogDescription:
         "بوابة تركيا العراقية تساعد الشركات العراقية على التوريد والاستيراد وشراء أي منتج من تركيا.",
+    },
+    tr: {
+      title: "Hakkımızda",
+      description:
+        "Türkiye Irak Kapısı, 2020'den beri Iraklı işletmelerin Türkiye'den herhangi bir ürünü tedarik etmesine, ithal etmesine ve satın almasına yardımcı olur.",
+      ogTitle: "Hakkımızda | Türkiye Irak Kapısı",
+      ogDescription:
+        "Türkiye Irak Kapısı, Iraklı işletmelerin Türkiye'den herhangi bir ürünü tedarik etmesine, ithal etmesine ve satın almasına yardımcı olur.",
     },
   },
   services: {
@@ -65,6 +81,14 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
       ogDescription:
         "استيراد شامل من تركيا: التوريد، التفاوض، الفحص، الخدمات اللوجستية، والتوصيل إلى باب المنزل في العراق.",
     },
+    tr: {
+      title: "Hizmetler",
+      description:
+        "Türkiye'den uçtan uca ithalat: ürün tedariki, fiyat müzakeresi, kalite kontrolü, lojistik, gümrük işlemleri ve Irak'a kapıdan kapıya teslimat.",
+      ogTitle: "Türkiye'den Irak'a İthalat Hizmetleri",
+      ogDescription:
+        "Türkiye'den uçtan uca ithalat: tedarik, müzakere, kontrol, lojistik ve Irak'a kapıdan kapıya teslimat.",
+    },
   },
   products: {
     en: {
@@ -82,6 +106,14 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
       ogTitle: "المنتجات التي نوفرها من تركيا",
       ogDescription:
         "المعدات الطبية، مواد البناء، المواد الغذائية، الإلكترونيات، وغيرها من تركيا وتوصيلها إلى العراق.",
+    },
+    tr: {
+      title: "Ürünler",
+      description:
+        "Türkiye'de bulunan her şeyi tedarik ediyoruz: tıbbi ekipman, inşaat malzemeleri, gıda, elektronik, otomotiv yedek parça, mobilya, tekstil ve endüstriyel makineler.",
+      ogTitle: "Türkiye'den Tedarik Ettiğimiz Ürünler",
+      ogDescription:
+        "Tıbbi ekipman, inşaat malzemeleri, gıda, elektronik ve daha fazlası Türkiye'den tedarik edilir ve Irak'a teslim edilir.",
     },
   },
   catalogs: {
@@ -101,6 +133,14 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
       ogDescription:
         "تصفح كتالوجات المنتجات مرتبة حسب الفئة. اسأل عن أي منتج يتم توفيره من تركيا.",
     },
+    tr: {
+      title: "Kataloglar",
+      description:
+        "Türkiye Irak Kapısı ürün kataloglarına kategoriye göre göz atın veya sipariş üzerine tedarik edebileceğimiz bir ürün hakkında soru sorun.",
+      ogTitle: "Ürün Katalogları | Türkiye Irak Kapısı",
+      ogDescription:
+        "Kategoriye göre düzenlenmiş ürün kataloglarına göz atın. Türkiye'den tedarik edilen herhangi bir ürün hakkında soru sorun.",
+    },
   },
   contact: {
     en: {
@@ -119,6 +159,14 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
       ogDescription:
         "اطلب عرض سعر أو قم بتوريد منتجات من تركيا. اتصل ببوابة تركيا العراقية للحصول على استشارة مجانية والشحن إلى العراق.",
     },
+    tr: {
+      title: "İletişim",
+      description:
+        "Türkiye Irak Kapısı ile iletişime geçerek fiyat teklifi isteyin, Türkiye'den ürün tedarik edin veya Irak'a nakliye için ücretsiz danışmanlık alın.",
+      ogTitle: "İletişim | Türkiye Irak Kapısı",
+      ogDescription:
+        "Fiyat teklifi isteyin veya Türkiye'den ürün tedarik edin. Ücretsiz danışmanlık ve Irak'a nakliye için Türkiye Irak Kapısı ile iletişime geçin.",
+    },
   },
 };
 
@@ -126,12 +174,13 @@ export function getLocalizedMeta(lang: Lang, route: keyof typeof routeMeta): Met
   const meta = routeMeta[route][lang];
   const canonical = route === "home" ? `/${lang}` : `/${lang}/${route}`;
   const isAr = lang === "ar";
+  const isTr = lang === "tr";
 
   return {
     metadataBase: new URL(BASE),
     title: {
       default: meta.title,
-      template: `%s | ${isAr ? "بوابة تركيا العراقية" : "Turkish Iraqi Gate"}`,
+      template: `%s | ${isAr ? "بوابة تركيا العراقية" : isTr ? "Türkiye Irak Kapısı" : "Turkish Iraqi Gate"}`,
     },
     description: meta.description,
     alternates: {
@@ -139,22 +188,23 @@ export function getLocalizedMeta(lang: Lang, route: keyof typeof routeMeta): Met
       languages: {
         en: `/en${route === "home" ? "" : `/${route}`}`,
         ar: `/ar${route === "home" ? "" : `/${route}`}`,
+        tr: `/tr${route === "home" ? "" : `/${route}`}`,
       },
     },
     robots: { index: true, follow: true },
     openGraph: {
       type: "website",
       url: `${BASE}/en${route === "home" ? "" : `/${route}`}`,
-      siteName: isAr ? "بوابة تركيا العراقية للاستيراد والتجهيز" : "Turkish Iraqi Gate For Importing And Procurement",
+      siteName: isAr ? "بوابة تركيا العراقية للاستيراد والتجهيز" : isTr ? "Türkiye Irak Kapısı İthalat ve Tedarik" : "Turkish Iraqi Gate For Importing And Procurement",
       title: meta.ogTitle,
       description: meta.ogDescription,
-      locale: isAr ? "ar_IQ" : "en_US",
+      locale: isAr ? "ar_IQ" : isTr ? "tr_TR" : "en_US",
       images: [
         {
           url: `${BASE}/og.png`,
           width: 1200,
           height: 630,
-          alt: isAr ? "بوابة تركيا العراقية للاستيراد والتجهيز" : "Turkish Iraqi Gate For Importing And Procurement",
+          alt: isAr ? "بوابة تركيا العراقية للاستيراد والتجهيز" : isTr ? "Türkiye Irak Kapısı İthalat ve Tedarik" : "Turkish Iraqi Gate For Importing And Procurement",
         },
       ],
     },
@@ -168,5 +218,7 @@ export function getLocalizedMeta(lang: Lang, route: keyof typeof routeMeta): Met
 }
 
 export function toLang(lang: string): Lang {
-  return lang === "ar" ? "ar" : "en";
+  if (lang === "ar") return "ar";
+  if (lang === "tr") return "tr";
+  return "en";
 }

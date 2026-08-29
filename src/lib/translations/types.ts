@@ -183,6 +183,11 @@ export type Translations = {
       details: string;
       submit: string;
       required: string;
+      successTitle: string;
+      successMessage: string;
+      sendAnother: string;
+      errorMessage: string;
+      sending: string;
       placeholders: {
         name: string;
         phone: string;
