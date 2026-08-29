@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Import Services from Turkey to Iraq",
     description:
       "Full-service import from Turkey: sourcing, negotiation, inspection, logistics, and door-to-door delivery to Iraq.",
+    images: [
+      {
+        url: "https://www.tigip.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Turkish Iraqi Gate For Importing And Procurement",
+      },
+    ],
   },
 };
 

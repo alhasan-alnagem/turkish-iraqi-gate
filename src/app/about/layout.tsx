@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "About Us | Turkish Iraqi Gate",
     description:
       "Turkish Iraqi Gate For Importing And Procurement helps Iraqi businesses source, import, and buy any product from Turkey.",
+    images: [
+      {
+        url: "https://www.tigip.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Turkish Iraqi Gate For Importing And Procurement",
+      },
+    ],
   },
 };
 

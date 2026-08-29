@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Products We Source from Turkey",
     description:
       "Medical equipment, construction materials, food, electronics, and more sourced from Turkey and delivered to Iraq.",
+    images: [
+      {
+        url: "https://www.tigip.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Turkish Iraqi Gate For Importing And Procurement",
+      },
+    ],
   },
 };
 

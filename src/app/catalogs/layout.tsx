@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Product Catalogs | Turkish Iraqi Gate",
     description:
       "Browse product catalogs organized by category. Catalogs coming soon — ask about any product sourced from Turkey.",
+    images: [
+      {
+        url: "https://www.tigip.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Turkish Iraqi Gate For Importing And Procurement",
+      },
+    ],
   },
 };
 

@@ -51,12 +51,21 @@ export const metadata: Metadata = {
     description:
       "We find products, check prices, negotiate discounts, and arrange shipping from Turkey to Iraq. Your trusted import partner since 2020.",
     locale: "en_US",
+    images: [
+      {
+        url: "https://www.tigip.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Turkish Iraqi Gate For Importing And Procurement",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Turkish Iraqi Gate For Importing And Procurement",
     description:
       "We find products, check prices, negotiate discounts, and arrange shipping from Turkey to Iraq.",
+    images: ["https://www.tigip.com/og.png"],
   },
 };
 

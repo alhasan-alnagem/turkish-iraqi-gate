@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Contact Us | Turkish Iraqi Gate",
     description:
       "Request a quote or source products from Turkey. Contact Turkish Iraqi Gate for free consultation and shipping to Iraq.",
+    images: [
+      {
+        url: "https://www.tigip.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Turkish Iraqi Gate For Importing And Procurement",
+      },
+    ],
   },
 };
 
