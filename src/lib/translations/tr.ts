@@ -11,7 +11,7 @@ const tr: Translations = {
     getQuote: "Teklif Al",
   },
   footer: {
-    tagline: "Türkiye ile Irak arasındaki ticaret için güvenilir köprünüz. 2020'den beri güvenilir ithalat hizmetleri.",
+    tagline: "Türkiye ile Irak arasındaki ticarette güvenilir köprünüz. 2020'den bu yana güvenilir ithalat hizmetleri sunuyoruz.",
     quickLinks: "Hızlı Bağlantılar",
     services: "Hizmetler",
     contact: "İletişim",
@@ -23,8 +23,8 @@ const tr: Translations = {
       title: "Her Şeyi İthal Ediyoruz",
       titleAccent: "Türkiye'den Irak'a",
       subtitle:
-        "Bize neye ihtiyacınız olduğunu söyleyin — buluruz, fiyatları inceleriz, en iyi anlaşmaları müzakere ederiz ve Irak'ta kapınıza teslim ederiz. Tıbbi ekipman, inşaat malzemeleri, gıda, elektronik ve daha fazlası.",
-      cta: "Bize Ne İhtiyacınız Olduğunu Söyleyin",
+        "Bize neye ihtiyacınız olduğunu söyleyin; bulur, fiyatları inceler, en iyi anlaşmayı müzakere eder ve Irak'ta kapınıza teslim ederiz. Tıbbi ekipman, inşaat malzemeleri, gıda, elektronik ve daha fazlası.",
+      cta: "İhtiyacınızı Bize İletin",
       ctaSecondary: "Nasıl Çalışıyoruz",
     },
     stats: [
@@ -40,14 +40,14 @@ const tr: Translations = {
         { title: "Bize Ne İhtiyacınız Olduğunu Söyleyin", desc: "Ürün detaylarını, miktarı ve özellikleri paylaşın." },
         { title: "Araştırır ve Müzakere Ederiz", desc: "En iyi Türk tedarikçileri bulur ve en iyi fiyat için müzakere ederiz." },
         { title: "Nakliyeyi Düzenleriz", desc: "Lojistik, gümrük işlemleri ve kapıdan kapıya teslimatı üstleniriz." },
-        { title: "Siz Alır ve Satarsınız", desc: "Ürünler Irak'taki deponuza dağıtıma hazır şekilde ulaşır." },
+        { title: "Teslim Alıp Satarsınız", desc: "Ürünler Irak'taki deponuza dağıtıma hazır şekilde ulaşır." },
       ],
     },
     whyUs: {
       title: "Neden Türkiye Irak Kapısı?",
       items: [
-        { title: "Her Ürün, Her Sektör", desc: "Türkiye'den bir şeye mi ihtiyacınız var? Onu bulur, ithal eder ve teslim ederiz. İstek çok spesifik değil.", icon: "🔍" },
-        { title: "Sabit Ücret ve Depozito", desc: "Gizli ücret veya komisyon yok. Sabit ücret ve depozito ile çalışıyoruz — basit, şeffaf ve güvenilir.", icon: "💰" },
+        { title: "Her Ürün, Her Sektör", desc: "Türkiye'den bir şeye mi ihtiyacınız var? Onu bulur, ithal eder ve teslim ederiz. Hiçbir talep fazla spesifik değildir.", icon: "🔍" },
+        { title: "Sabit Ücret ve Avans", desc: "Gizli ücret veya komisyon yok. Sabit ücret ve avans esasıyla çalışıyoruz — basit, şeffaf ve güvenilir.", icon: "💰" },
         { title: "Uçtan Uca Hizmet", desc: "Ürün bulmaktan Irak'a teslimata kadar — her adımı kendimiz yönetiriz, size zahmet bırakmayız.", icon: "📦" },
       ],
     },
@@ -83,7 +83,7 @@ const tr: Translations = {
       title: "Hikayemiz",
       paragraphs: [
         "Türkiye Irak Kapısı 2020'de basit bir misyonla kuruldu: Iraklı işletmelerin Türkiye'den adil fiyatlarla yüksek kaliteli tıbbi ekipman temin etmesine yardımcı olmak.",
-        "Talep arttıkça hizmetlerimiz de genişledi. Bugün her şeyi ithal ediyoruz — inşaat malzemelerinden gıda ürünlerine, elektronikten mobilyaya. Türkiye'de üretilen ve Irak'ta talep edilen bir şey varsa, onu mümkün kılıyoruz.",
+        "Talep arttıkça hizmetlerimiz de genişledi. Bugün her şeyi ithal ediyoruz — inşaat malzemelerinden gıda ürünlerine, elektronikten mobilyaya. Türkiye'de üretilen ve Irak'ta talep edilen bir şey varsa, bunu gerçekleştiriyoruz.",
         "Bizi farklı kılan, her müşteri için en iyi anlaşmayı bulma taahhüdümüzdür. Sadece sipariş almıyoruz — pazarı araştırıyor, indirimler müzakere ediyor ve paranızın en iyi karşılığını almanızı sağlıyoruz.",
       ],
       years: "5+",
@@ -95,14 +95,14 @@ const tr: Translations = {
         { title: "Güven", desc: "Dürüst iletişim ve sözlerimizi tutarak ilişkiler kurarız." },
         { title: "Değer", desc: "En iyi fiyatları almanız için sıkı müzakere ederiz. Gizli ücret yok, onayınız olmadan kar marjı yok." },
         { title: "Güvenilirlik", desc: "Teslimat tarihi sözü verdiğimizde tutarız. Lojistik ağımız tutarlılığı garanti eder." },
-        { title: "Esneklik", desc: "Alışılmadık bir şeye mi ihtiyacınız var? Onu araştırırız. İstek çok büyük veya çok küçük değildir." },
+        { title: "Esneklik", desc: "Alışılmadık bir şeye mi ihtiyacınız var? Onu araştırırız. Hiçbir istek çok büyük veya çok küçük değildir." },
         { title: "Şeffaflık", desc: "Teklifleri görürsünüz, maliyetleri onaylarsınız, gerisini biz hallederiz. Her adımda tam görünürlük." },
         { title: "Ortaklık", desc: "Müşterilerimizle birlikte büyürüz. Sizin başarınız bizim başarımızdır ve bu uzun vadeli bir ilişkidir." },
       ],
     },
     offices: {
       title: "Ofislerimiz",
-      istanbul: { title: "İstanbul, Türkiye", desc: "İstanbul'daki ekibimiz ürünleri araştırır, tedarikçileri ziyaret eder ve sevkiyattan önce kaliteyi kontrol eder." },
+      istanbul: { title: "İstanbul, Türkiye", desc: "İstanbul'daki ekibimiz ürünleri araştırır, tedarikçileri ziyaret eder ve sevkiyattan önce kalite kontrolünü gerçekleştirir." },
       baghdad: { title: "Bağdat, Irak", desc: "Irak ofisimiz gümrük işlemleri, yerel dağıtım ve müşteri ilişkilerini yönetir." },
     },
     team: {
@@ -120,11 +120,11 @@ const tr: Translations = {
     hero: {
       tag: "Hizmetlerimiz",
       title: "Türkiye'den Uçtan Uca İthalat",
-      subtitle: "Her şeyi hallediyoruz — doğru ürünü bulmaktan Irak'ta kapınıza teslimata kadar.",
+      subtitle: "Doğru ürünü bulmaktan Irak'ta kapınıza teslimata kadar her şeyi yönetiyoruz.",
     },
     list: [
       { title: "Ürün Tedariki", desc: "Bize neye ihtiyacınız olduğunu söyleyin, en iyi Türk üreticileri ve tedarikçileri bulalım. Pazarı araştırır, tedarikçi güvenilirliğini doğrular ve size en iyi seçenekleri sunarız.", icon: "🔍" },
-      { title: "Fiyat Müzakeresi", desc: "En iyi fiyatlar ve toplu indirimler için doğrudan tedarikçilerle müzakere ederiz. İstanbul'daki yerel varlığımız, kendi başınıza alabileceğinizden daha iyi fiyatlar anlamına gelir.", icon: "💰" },
+      { title: "Fiyat Müzakeresi", desc: "En iyi fiyatlar ve toplu indirimler için doğrudan tedarikçilerle müzakere ederiz. İstanbul'daki konumumuz sayesinde kendi başınıza elde edebileceğinizden daha iyi fiyatlar sunuyoruz.", icon: "💰" },
       { title: "Kalite Kontrolü", desc: "Herhangi bir sevkiyat ayrılmadan önce ürünleri spesifikasyonlarınıza ve kalite standartlarınıza uyduğundan emin olmak için inceleriz. Fabrikaları ve depoları şahsen ziyaret ederiz.", icon: "✅" },
       { title: "Lojistik ve Nakliye", desc: "Fabrikadan Irak'taki deponuza tüm taşımayı düzenleriz. Kamyon, gemi veya uçak — en verimli ve uygun maliyetli rotayı seçeriz.", icon: "🚚" },
       { title: "Gümrük İşlemleri", desc: "Ekibimiz sınırın her iki tarafındaki tüm gümrük belgelerini yönetir. Düzenlemeleri bilir ve mallarınızın sorunsuz geçişini sağlarız.", icon: "📋" },
@@ -134,8 +134,8 @@ const tr: Translations = {
       title: "Fiyatlandırmamız Nasıl Çalışır",
       subtitle: "Gizli ücret olmadan basit, şeffaf fiyatlandırma.",
       flatFee: { title: "Sabit Ücret", desc: "Her sipariş için sabit ücret alırız — oransal kar marjı yok, komisyon yok. Tedarikçiyle müzakere ettiğimiz fiyatın aynısını, üzerine anlaşılan hizmet ücretiyle ödersiniz." },
-      deposit: { title: "Depozito", desc: "Tedarik ve müzakerenin başlaması için bir depozito gerekir. Bakiye sevkiyat sırasında ödenir. Bu, her iki tarafın da taahhüdünü sağlar ve süreci güvenli tutar." },
-      note: "Sürpriz yok. Başlamadan önce her maliyeti onaylarsınız. Sürecin her adımında tam şeffaflık.",
+      deposit: { title: "Avans", desc: "Tedarik ve müzakerenin başlaması için bir avans ödemesi gerekir. Bakiye sevkiyat sırasında ödenir. Bu, her iki tarafın da taahhüdünü sağlar ve süreci güvenli tutar." },
+      note: "Sürpriz maliyet yok. Başlamadan önce her maliyeti onaylarsınız. Sürecin her adımında tam şeffaflık.",
     },
     categories: {
       title: "Ne İthal Ediyoruz",
@@ -153,7 +153,7 @@ const tr: Translations = {
     },
     cta: {
       title: "Başlamaya Hazır mısınız?",
-      subtitle: "Bize neye ihtiyacınız olduğunu söyleyin, 24 saat içinde bir fiyat teklifiyle dönelim.",
+      subtitle: "İhtiyacınızı bize iletin; 24 saat içinde fiyat teklifi ve tedarik seçenekleriyle size dönüş yapalım.",
       button: "Ücretsiz Teklif Alın",
     },
   },
@@ -175,7 +175,7 @@ const tr: Translations = {
         name: "İnşaat Malzemeleri",
         desc: "Konut binalarından büyük altyapı projelerine kadar, rekabetçi fiyatlarla yüksek kaliteli Türk inşaat malzemeleri tedarik ediyoruz.",
         image: "🏗️",
-        items: ["İnşaat demiri ve yapısal çelik", "PVC, PPR borular ve bağlantı parçaları", "Seramik ve mermer fayanslar", "Boyalar, kaplamalar ve yalıtım", "Kablolar ve elektrik panoları", "Sıhhi tesisat ve banyo armatürleri"],
+        items: ["İnşaat demiri ve yapısal çelik", "PVC, PPR borular ve bağlantı parçaları", "Seramik ve mermer kaplamalar", "Boyalar, kaplamalar ve yalıtım", "Kablolar ve elektrik panoları", "Sıhhi tesisat ve banyo armatürleri"],
         inquiry: "İnşaat Malzemeleri Hakkında Bilgi Al",
       },
       {
@@ -223,7 +223,7 @@ const tr: Translations = {
     ],
     cta: {
       title: "Aradığınızı Bulamadınız mı?",
-      subtitle: "Burada listelenenlerden binlerce daha fazla ürün ithal ediyoruz. Aradığınızı söyleyin, Türkiye'deki en iyi tedarikçiyi bulalım.",
+      subtitle: "Burada listelenenlerin yanı sıra binlerce farklı ürünü de ithal ediyoruz. Aradığınız ürünü bize iletin; Türkiye'deki en iyi tedarikçiyi bulalım.",
       button: "Ürün Talep Et",
     },
   },
@@ -231,11 +231,11 @@ const tr: Translations = {
     hero: {
       tag: "Kataloglar",
       title: "Ürün Kataloglarımıza Göz Atın",
-      subtitle: "Türkiye'den ithal ettiğimiz tüm ürün yelpazesini görmek için PDF kataloglarımızı indirin, kategoriye göre düzenlenmiş.",
+      subtitle: "Türkiye'den ithal ettiğimiz ürün yelpazesini kategoriye göre görüntülemek için PDF kataloglarımızı indirin.",
     },
     grid: {
       title: "Ürün Katalogları",
-      subtitle: "Görüntülemek veya indirmek için herhangi bir kataloğa tıklayın. Burada listelenmeyen bir şeye ihtiyacınız varsa, sipariş üzerine ithal edebiliriz.",
+      subtitle: "Görüntülemek veya indirmek için herhangi bir kataloğa tıklayın. Burada listelenmeyen bir ürüne ihtiyacınız varsa, talep üzerine ithal edebiliriz.",
     },
     comingSoon: {
       title: "Kataloglar Çok Yakında",
@@ -245,15 +245,15 @@ const tr: Translations = {
     view: "Kataloğu Görüntüle",
     cta: {
       title: "Özel Bir Ürüne mi İhtiyacınız Var?",
-      subtitle: "Kataloglarda aradığınızı bulamadınız mı? Sipariş üzerine binlerce ürün ithal ediyoruz. Bize neye ihtiyacınız olduğunu söyleyin, gerisini biz halledelim.",
+      subtitle: "Kataloglarda aradığınız ürünü bulamadınız mı? Talep üzerine binlerce farklı ürünü ithal ediyoruz. İhtiyacınızı bize iletin; geri kalan süreci biz yönetelim.",
       button: "Ürün Talep Et",
     },
   },
   contact: {
     hero: {
       tag: "İletişim",
-      title: "Bize Ne İhtiyacınız Olduğunu Söyleyin",
-      subtitle: "Aşağıdaki formu doldurun, 24 saat içinde bir fiyat teklifi ve tedarik seçenekleriyle dönelim.",
+      title: "İhtiyacınızı Bize İletin",
+      subtitle: "Aşağıdaki formu doldurun; 24 saat içinde fiyat teklifi ve tedarik seçenekleriyle size dönüş yapalım.",
     },
     form: {
       title: "Bize Mesaj Gönderin",
@@ -266,16 +266,16 @@ const tr: Translations = {
       budgetUsd: "USD",
       budgetIqd: "Irak Dinarı",
       budgetShipping: "Nakliye Dahil Olsun mu?",
-      budgetShippingYes: "Evet, nakliyeyi siz halledin",
-      budgetShippingNo: "Hayır, nakliyeyi ben halledeceğim",
+      budgetShippingYes: "Evet, nakliyeyi siz organize edin",
+      budgetShippingNo: "Hayır, nakliyeyi ben organize edeceğim",
       city: "Irak'taki Teslimat Şehri",
       details: "Ek Detaylar",
       submit: "Talep Gönder",
       required: "* Zorunlu alanlar. 24 saat içinde dönüş yapacağız.",
-      successTitle: "İsteğiniz gönderildi!",
+      successTitle: "Talebiniz Gönderildi!",
       successMessage: "24 saat içinde sizinle iletişime geçeceğiz.",
-      sendAnother: "Başka bir istek gönder",
-      errorMessage: "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      sendAnother: "Yeni Bir Talep Gönder",
+      errorMessage: "Bir hata oluştu. Lütfen tekrar deneyin.",
       sending: "Gönderiliyor...",
       placeholders: {
         name: "Ahmet Er",
