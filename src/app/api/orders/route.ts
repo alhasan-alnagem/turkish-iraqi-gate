@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       product: body.product || "",
       quantity: body.quantity || "",
       budget: body.budget || "",
+      budgetCurrency: (body.budgetCurrency || "usd").toUpperCase(),
       shipping: body.shipping === "yes" ? "yes" : "no",
       city: body.city || "",
       details: body.details || "",
