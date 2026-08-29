@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/LanguageProvider";
 import { languages } from "@/lib/translations";
 
 export default function LanguageSwitcher() {
-  const { lang, setLang } = useLanguage();
+  const { lang, switchLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
 
   const current = languages.find((l) => l.code === lang);
@@ -27,7 +27,7 @@ export default function LanguageSwitcher() {
               <button
                 key={l.code}
                 onClick={() => {
-                  setLang(l.code);
+                  switchLanguage(l.code);
                   setOpen(false);
                 }}
                 className="block w-full text-start px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--accent)]/10 transition-colors"

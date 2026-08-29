@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageProvider";
 
 export default function Products() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const l = (path: string) => `/${lang}${path}`;
   const p = t.products;
 
   return (
@@ -44,7 +45,7 @@ export default function Products() {
                     {category.desc}
                   </p>
                   <Link
-                    href="/contact"
+                    href={l("/contact")}
                     className="text-[var(--accent)] font-semibold hover:underline"
                   >
                     {category.inquiry} &rarr;
@@ -85,7 +86,7 @@ export default function Products() {
             {p.cta.subtitle}
           </p>
           <Link
-            href="/contact"
+            href={l("/contact")}
             className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             {p.cta.button}

@@ -7,23 +7,24 @@ import Logo from "@/components/Logo";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export function SiteHeader() {
-  const { t, dir } = useLanguage();
+  const { t, dir, lang } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const l = (path: string) => `/${lang}${path}`;
 
   const navLinks = [
-    { href: "/", label: t.nav.home },
-    { href: "/about", label: t.nav.about },
-    { href: "/services", label: t.nav.services },
-    { href: "/products", label: t.nav.products },
-    { href: "/catalogs", label: t.nav.catalogs },
-    { href: "/contact", label: t.nav.contact },
+    { href: l("/"), label: t.nav.home },
+    { href: l("/about"), label: t.nav.about },
+    { href: l("/services"), label: t.nav.services },
+    { href: l("/products"), label: t.nav.products },
+    { href: l("/catalogs"), label: t.nav.catalogs },
+    { href: l("/contact"), label: t.nav.contact },
   ];
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--primary)] text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center justify-between gap-2 h-20 md:h-24">
-          <Link href="/" className="flex items-center shrink-0 mr-2 md:mr-4">
+          <Link href={l("/")} className="flex items-center shrink-0 mr-2 md:mr-4">
             <Logo className="h-12 md:h-18 w-auto" rtl={dir === "rtl"} />
           </Link>
 
@@ -42,7 +43,7 @@ export function SiteHeader() {
           <div className="flex items-center gap-2 md:gap-3">
             <LanguageSwitcher />
             <Link
-              href="/contact"
+              href={l("/contact")}
               className="hidden lg:inline-flex bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
               {t.nav.getQuote}
@@ -75,7 +76,7 @@ export function SiteHeader() {
               </Link>
             ))}
             <Link
-              href="/contact"
+              href={l("/contact")}
               onClick={() => setMenuOpen(false)}
               className="mt-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-3 rounded-lg text-center font-semibold transition-colors"
             >
@@ -89,7 +90,8 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
-  const { t, dir } = useLanguage();
+  const { t, dir, lang } = useLanguage();
+  const l = (path: string) => `/${lang}${path}`;
 
   return (
     <footer className="bg-[var(--primary)] text-white/70">
@@ -102,12 +104,12 @@ export function SiteFooter() {
           <div>
             <h4 className="text-white font-semibold mb-4">{t.footer.quickLinks}</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-[var(--accent-light)] transition-colors">{t.nav.home}</Link></li>
-              <li><Link href="/about" className="hover:text-[var(--accent-light)] transition-colors">{t.nav.about}</Link></li>
-              <li><Link href="/services" className="hover:text-[var(--accent-light)] transition-colors">{t.nav.services}</Link></li>
-              <li><Link href="/products" className="hover:text-[var(--accent-light)] transition-colors">{t.nav.products}</Link></li>
-              <li><Link href="/catalogs" className="hover:text-[var(--accent-light)] transition-colors">{t.nav.catalogs}</Link></li>
-              <li><Link href="/contact" className="hover:text-[var(--accent-light)] transition-colors">{t.nav.contact}</Link></li>
+              <li><Link href={l("/")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.home}</Link></li>
+              <li><Link href={l("/about")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.about}</Link></li>
+              <li><Link href={l("/services")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.services}</Link></li>
+              <li><Link href={l("/products")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.products}</Link></li>
+              <li><Link href={l("/catalogs")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.catalogs}</Link></li>
+              <li><Link href={l("/contact")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.contact}</Link></li>
             </ul>
           </div>
           <div>

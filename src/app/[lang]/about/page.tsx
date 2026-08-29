@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageProvider";
 
 export default function About() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const l = (path: string) => `/${lang}${path}`;
   const a = t.about;
 
   return (
@@ -129,7 +130,7 @@ export default function About() {
             {a.cta.subtitle}
           </p>
           <Link
-            href="/contact"
+            href={l("/contact")}
             className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             {a.cta.button}

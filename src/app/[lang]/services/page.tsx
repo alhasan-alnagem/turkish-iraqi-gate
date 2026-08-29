@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageProvider";
 
 export default function Services() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const l = (path: string) => `/${lang}${path}`;
   const s = t.services;
 
   return (
@@ -122,7 +123,7 @@ export default function Services() {
               {s.categories.missing}
             </p>
             <Link
-              href="/contact"
+              href={l("/contact")}
               className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
             >
               {s.categories.button}
@@ -140,7 +141,7 @@ export default function Services() {
             {s.cta.subtitle}
           </p>
           <Link
-            href="/contact"
+            href={l("/contact")}
             className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             {s.cta.button}

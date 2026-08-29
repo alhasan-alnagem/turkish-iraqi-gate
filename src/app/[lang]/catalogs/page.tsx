@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageProvider";
 
 export default function Catalogs() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const l = (path: string) => `/${lang}${path}`;
   const c = t.catalogs;
 
   return (
@@ -46,7 +47,7 @@ export default function Catalogs() {
             {c.cta.subtitle}
           </p>
           <Link
-            href="/contact"
+            href={l("/contact")}
             className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             {c.cta.button}

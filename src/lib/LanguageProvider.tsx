@@ -1,49 +1,29 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useSyncExternalStore,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { getTranslations, languages, type Language } from "@/lib/translations";
 import type { Translations } from "@/lib/translations/types";
 
 type LangContext = {
   lang: Language;
   t: Translations;
-  setLang: (lang: Language) => void;
   dir: "ltr" | "rtl";
-  hasChosen: boolean;
+  switchLanguage: (next: Language) => void;
 };
 
 const Context = createContext<LangContext | null>(null);
 
-const STORAGE_KEY = "lang";
-
-function getSnapshot(): Language | null {
-  const stored = localStorage.getItem(STORAGE_KEY) as Language | null;
-  return stored && languages.some((l) => l.code === stored) ? stored : null;
-}
-
-function subscribe(callback: () => void) {
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
+function getLangFromPath(pathname: string): Language {
+  const seg = pathname.split("/")[1] as Language | undefined;
+  return seg && languages.some((l) => l.code === seg) ? seg : "en";
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const storedLang = useSyncExternalStore(subscribe, getSnapshot, () => null);
-  const [manualLang, setManualLang] = useState<Language | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const lang = manualLang ?? storedLang ?? "en";
-  const hasChosen = manualLang !== null || storedLang !== null;
-
-  const changeLang = (next: Language) => {
-    setManualLang(next);
-    localStorage.setItem(STORAGE_KEY, next);
-  };
-
+  const lang = getLangFromPath(pathname);
   const dir = languages.find((l) => l.code === lang)?.dir || "ltr";
 
   useEffect(() => {
@@ -51,10 +31,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = lang;
   }, [dir, lang]);
 
+  const switchLanguage = (next: Language) => {
+    const parts = pathname.split("/");
+    if (parts[1] === "en" || parts[1] === "ar") {
+      parts[1] = next;
+    } else {
+      parts.unshift("", next);
+    }
+    router.push(parts.join("/") || "/");
+  };
+
   const t = getTranslations(lang);
 
   return (
-    <Context value={{ lang, t, setLang: changeLang, dir, hasChosen }}>
+    <Context value={{ lang, t, dir, switchLanguage }}>
       {children}
     </Context>
   );
