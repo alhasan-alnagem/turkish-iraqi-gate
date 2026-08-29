@@ -10,10 +10,10 @@ export default function Contact() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formEl = e.currentTarget;
     setStatus("loading");
 
-    const form = new FormData(e.currentTarget);
-    const data = Object.fromEntries(form);
+    const data = Object.fromEntries(new FormData(formEl));
 
     try {
       const res = await fetch("/api/orders", {
@@ -23,7 +23,7 @@ export default function Contact() {
       });
       if (!res.ok) throw new Error("Failed");
       setStatus("success");
-      e.currentTarget.reset();
+      formEl.reset();
     } catch {
       setStatus("error");
     }
