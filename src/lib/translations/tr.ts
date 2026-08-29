@@ -108,7 +108,7 @@ const tr: Translations = {
     team: {
       title: "Ekibimiz",
       founder: { name: "Mehmet Yılmaz", role: "Kurucu ve CEO", exp: "Türkiye-Irak ticaretinde 15 yılı aşkın deneyim" },
-      director: { name: "Ali El-Ciburi", role: "Irak Operasyon Müdürü", exp: "Lojistik ve dağıtımda 10 yılı aşkın deneyim" },
+      director: { name: "Ali Al-Jubouri", role: "Irak Operasyon Müdürü", exp: "Lojistik ve dağıtımda 10 yılı aşkın deneyim" },
     },
     cta: {
       title: "Birlikte Çalışalım",
@@ -290,8 +290,8 @@ const tr: Translations = {
     info: {
       title: "İletişim Bilgileri",
       people: [
-        { name: "El-Hasan Nejm", role: "Kurucu", phone: "+9647866417123" },
-        { name: "Ahmed El-Şuddud", role: "Kurucu Ortak", phone: "+9647807020498" },
+        { name: "Alhasan Alnagem", role: "Kurucu", phone: "+9647866417123" },
+        { name: "Ahmed Al Shadood", role: "Kurucu Ortak", phone: "+9647807020498" },
       ],
       hours: { title: "Çalışma Saatleri", lines: ["Pazar - Perşembe: 09:00 - 18:00", "Cuma: 09:00 - 13:00", "Cumartesi: Kapalı"] },
     },
