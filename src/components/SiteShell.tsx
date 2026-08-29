@@ -7,7 +7,7 @@ import Logo from "@/components/Logo";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export function SiteHeader() {
-  const { t, dir, lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const l = (path: string) => `/${lang}${path}`;
 
@@ -25,7 +25,7 @@ export function SiteHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center justify-between gap-2 h-20 md:h-24">
           <Link href={l("/")} className="flex items-center shrink-0 mr-2 md:mr-4">
-            <Logo className="h-12 md:h-18 w-auto" rtl={dir === "rtl"} />
+            <Logo className="h-12 md:h-18 w-auto" />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -90,7 +90,7 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
-  const { t, dir, lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const l = (path: string) => `/${lang}${path}`;
 
   return (
@@ -98,7 +98,7 @@ export function SiteFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <Logo className="h-18 w-auto mb-3" rtl={dir === "rtl"} />
+            <Logo className="h-18 w-auto mb-3" />
             <p className="text-sm leading-relaxed">{t.footer.tagline}</p>
           </div>
           <div>
