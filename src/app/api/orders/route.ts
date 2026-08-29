@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { after } from "next/server";
 
 const GOOGLE_SHEETS_URL = process.env.GOOGLE_SHEETS_URL || "";
 
@@ -20,16 +21,20 @@ export async function POST(request: NextRequest) {
     };
 
     if (GOOGLE_SHEETS_URL) {
-      try {
+      // Respond to the user instantly, then write to Google Sheets after the
+      // response is sent. `after` keeps the task alive so the write completes
+      // without making the user wait on Google's slow redirect handshake.
+      const bodyText = JSON.stringify(payload);
+      after(async () => {
         await fetch(GOOGLE_SHEETS_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json;charset=utf-8" },
-          body: JSON.stringify(payload),
+          body: bodyText,
           redirect: "follow",
+        }).catch((err) => {
+          console.error("Google Sheets write error:", err);
         });
-      } catch (err) {
-        console.error("Google Sheets write error:", err);
-      }
+      });
     }
 
     return Response.json({ success: true }, { status: 200 });
@@ -38,3 +43,4 @@ export async function POST(request: NextRequest) {
     return Response.json({ success: true }, { status: 200 });
   }
 }
+
