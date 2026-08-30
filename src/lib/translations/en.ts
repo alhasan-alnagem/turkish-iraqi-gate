@@ -23,7 +23,7 @@ const en: Translations = {
       title: "We Source Anything from",
       titleAccent: "Turkey to Iraq",
       subtitle:
-        "Tell us what you need — we find it, check prices, negotiate the best deals, and deliver it to your door in Iraq. Medical equipment, construction materials, food, electronics, and more.",
+        "Tell us what you need — we find it, check prices, negotiate the best deals, and deliver it to your door in Iraq. Medical equipment, construction materials, specialized equipment, electronics, and more.",
       cta: "Tell Us What You Need",
       ctaSecondary: "How It Works",
     },
@@ -57,7 +57,7 @@ const en: Translations = {
       categories: [
         "Medical Equipment",
         "Construction Materials",
-        "Food & Beverages",
+        "Specialized Equipment",
         "Electronics",
         "Automotive Parts",
         "Furniture",
@@ -83,7 +83,7 @@ const en: Translations = {
       title: "Our Story",
       paragraphs: [
         "Founded in 2020, Turkish Iraq Gate started with a simple mission: help Iraqi businesses access quality medical equipment from Turkey at fair prices.",
-        "As demand grew, so did our service. Today we source everything — from construction materials to food products, electronics to furniture. If it's made in Turkey and needed in Iraq, we make it happen.",
+        "As demand grew, so did our service. Today we source everything — from construction materials to specialized equipment, electronics to furniture. If it's made in Turkey and needed in Iraq, we make it happen.",
         "What sets us apart is our commitment to finding the best deal for every customer. We don't just take orders — we research the market, negotiate discounts, and ensure you get the best value for your money.",
       ],
       years: "5+",
@@ -143,7 +143,7 @@ const en: Translations = {
       groups: [
         { title: "Medical Equipment", items: ["Hospital beds & furniture", "Surgical instruments", "Diagnostic devices", "Lab equipment", "PPE & consumables"] },
         { title: "Construction", items: ["Steel & building materials", "Pipes & fittings", "Electrical supplies", "Ceramics & tiles", "Paint & coatings"] },
-        { title: "Food & Beverages", items: ["Bulk food ingredients", "Packaged goods", "Olive oil & canned food", "Beverages", "Dairy products"] },
+        { title: "Specialized Equipment", items: ["Industrial & workshop equipment", "Power & hand tools", "Agricultural equipment", "Safety & personal protective equipment", "Maintenance & technical supplies"] },
         { title: "Electronics", items: ["Home appliances", "Consumer electronics", "Industrial electronics", "Cables & wiring", "Lighting products"] },
         { title: "Automotive", items: ["Spare parts", "Tires & batteries", "Engine components", "OEM parts", "Accessories"] },
         { title: "Other Products", items: ["Furniture", "Textiles & apparel", "Industrial machinery", "Agricultural products", "Custom requests"] },
@@ -179,11 +179,11 @@ const en: Translations = {
         inquiry: "Inquire about Construction Materials",
       },
       {
-        name: "Food & Beverages",
-        desc: "We connect Iraqi food importers with Turkey's finest food producers, from bulk ingredients to packaged consumer goods.",
-        image: "🍎",
-        items: ["Bulk cooking oil & margarine", "Canned vegetables & fruits", "Olive oil & olives", "Pasta, rice & pulses", "Beverages & juices", "Dairy products & cheese"],
-        inquiry: "Inquire about Food & Beverages",
+        name: "Specialized Equipment",
+        desc: "A broad range of specialized equipment — we source industrial, workshop, agricultural, safety, and technical equipment from verified Turkish manufacturers and deliver it to your door in Iraq.",
+        image: "🛠️",
+        items: ["Industrial & workshop equipment", "Power & hand tools", "Agricultural equipment", "Safety & personal protective equipment", "Maintenance & technical supplies", "Generators & power equipment"],
+        inquiry: "Inquire about Specialized Equipment",
       },
       {
         name: "Electronics & Home Appliances",

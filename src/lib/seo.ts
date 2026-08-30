@@ -94,26 +94,26 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
     en: {
       title: "Products",
       description:
-        "We source anything available in Turkey: medical equipment, construction materials, food, electronics, automotive parts, furniture, textiles, and industrial machinery.",
+        "We source anything available in Turkey: medical equipment, construction materials, specialized equipment, electronics, automotive parts, furniture, textiles, and industrial machinery.",
       ogTitle: "Products We Source from Turkey",
       ogDescription:
-        "Medical equipment, construction materials, food, electronics, and more sourced from Turkey and delivered to Iraq.",
+        "Medical equipment, construction materials, specialized equipment, electronics, and more sourced from Turkey and delivered to Iraq.",
     },
     ar: {
       title: "المنتجات",
       description:
-        "نوفر أي منتج متوفر في تركيا: المعدات الطبية، مواد البناء، المواد الغذائية، الإلكترونيات، قطع غيار السيارات، الأثاث، المنسوجات، والآلات الصناعية.",
+        "نوفر أي منتج متوفر في تركيا: المعدات الطبية، مواد البناء، المعدات المتخصصة، الإلكترونيات، قطع غيار السيارات، الأثاث، المنسوجات، والآلات الصناعية.",
       ogTitle: "المنتجات التي نوفرها من تركيا",
       ogDescription:
-        "المعدات الطبية، مواد البناء، المواد الغذائية، الإلكترونيات، وغيرها من تركيا وتوصيلها إلى العراق.",
+        "المعدات الطبية، مواد البناء، المعدات المتخصصة، الإلكترونيات، وغيرها من تركيا وتوصيلها إلى العراق.",
     },
     tr: {
       title: "Ürünler",
       description:
-        "Türkiye'de bulunan her şeyi tedarik ediyoruz: tıbbi ekipman, inşaat malzemeleri, gıda, elektronik, otomotiv yedek parça, mobilya, tekstil ve endüstriyel makineler.",
+        "Türkiye'de bulunan her şeyi tedarik ediyoruz: tıbbi ekipman, inşaat malzemeleri, özel ekipman, elektronik, otomotiv yedek parça, mobilya, tekstil ve endüstriyel makineler.",
       ogTitle: "Türkiye'den Tedarik Ettiğimiz Ürünler",
       ogDescription:
-        "Tıbbi ekipman, inşaat malzemeleri, gıda, elektronik ve daha fazlası Türkiye'den tedarik edilir ve Irak'a teslim edilir.",
+        "Tıbbi ekipman, inşaat malzemeleri, özel ekipman, elektronik ve daha fazlası Türkiye'den tedarik edilir ve Irak'a teslim edilir.",
     },
   },
   catalogs: {

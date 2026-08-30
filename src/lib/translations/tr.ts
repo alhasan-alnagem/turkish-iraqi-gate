@@ -23,7 +23,7 @@ const tr: Translations = {
       title: "Her Şeyi İthal Ediyoruz",
       titleAccent: "Türkiye'den Irak'a",
       subtitle:
-        "Bize neye ihtiyacınız olduğunu söyleyin; bulur, fiyatları inceler, en iyi anlaşmayı müzakere eder ve Irak'ta kapınıza teslim ederiz. Tıbbi ekipman, inşaat malzemeleri, gıda, elektronik ve daha fazlası.",
+        "Bize neye ihtiyacınız olduğunu söyleyin; bulur, fiyatları inceler, en iyi anlaşmayı müzakere eder ve Irak'ta kapınıza teslim ederiz. Tıbbi ekipman, inşaat malzemeleri, özel ekipman, elektronik ve daha fazlası.",
       cta: "İhtiyacınızı Bize İletin",
       ctaSecondary: "Nasıl Çalışıyoruz",
     },
@@ -57,7 +57,7 @@ const tr: Translations = {
       categories: [
         "Tıbbi Ekipman",
         "İnşaat Malzemeleri",
-        "Gıda ve İçecek",
+        "Özel Ekipman",
         "Elektronik",
         "Otomotiv Yedek Parçaları",
         "Mobilya",
@@ -83,7 +83,7 @@ const tr: Translations = {
       title: "Hikayemiz",
       paragraphs: [
         "Türkiye Irak Kapısı 2020'de basit bir misyonla kuruldu: Iraklı işletmelerin Türkiye'den adil fiyatlarla yüksek kaliteli tıbbi ekipman temin etmesine yardımcı olmak.",
-        "Talep arttıkça hizmetlerimiz de genişledi. Bugün her şeyi ithal ediyoruz — inşaat malzemelerinden gıda ürünlerine, elektronikten mobilyaya. Türkiye'de üretilen ve Irak'ta talep edilen bir şey varsa, bunu gerçekleştiriyoruz.",
+        "Talep arttıkça hizmetlerimiz de genişledi. Bugün her şeyi ithal ediyoruz — inşaat malzemelerinden özel ekipmana, elektronikten mobilyaya. Türkiye'de üretilen ve Irak'ta talep edilen bir şey varsa, bunu gerçekleştiriyoruz.",
         "Bizi farklı kılan, her müşteri için en iyi anlaşmayı bulma taahhüdümüzdür. Sadece sipariş almıyoruz — pazarı araştırıyor, indirimler müzakere ediyor ve paranızın en iyi karşılığını almanızı sağlıyoruz.",
       ],
       years: "5+",
@@ -143,7 +143,7 @@ const tr: Translations = {
       groups: [
         { title: "Tıbbi Ekipman", items: ["Hastane yatakları ve malzemeleri", "Cerrahi aletler", "Teşhis cihazları", "Laboratuvar ekipmanı", "Kişisel koruyucu ekipman"] },
         { title: "İnşaat Malzemeleri", items: ["İnşaat demiri ve yapısal çelik", "Borular ve bağlantı parçaları", "Elektrik malzemeleri", "Seramik ve fayans", "Boyalar ve kaplamalar"] },
-        { title: "Gıda ve İçecek", items: ["Toptan gıda maddeleri", "Paketlenmiş ürünler", "Zeytinyağı ve konserveler", "İçecekler", "Süt ürünleri"] },
+        { title: "Özel Ekipman", items: ["Endüstriyel ve atölye ekipmanı", "Elektrikli ve el aletleri", "Tarım ekipmanı", "Güvenlik ve kişisel koruyucu ekipman", "Bakım ve teknik sarf malzemeleri"] },
         { title: "Elektronik", items: ["Beyaz eşya", "Tüketici elektroniği", "Endüstriyel elektronik", "Kablolar ve teller", "Aydınlatma ürünleri"] },
         { title: "Otomotiv Yedek Parçaları", items: ["Yedek parçalar", "Lastikler ve aküler", "Motor bileşenleri", "Orijinal parçalar", "Aksesuarlar"] },
         { title: "Diğer Ürünler", items: ["Mobilya", "Tekstil ve giyim", "Endüstriyel makineler", "Tarım ürünleri", "Özel siparişler"] },
@@ -179,11 +179,11 @@ const tr: Translations = {
         inquiry: "İnşaat Malzemeleri Hakkında Bilgi Al",
       },
       {
-        name: "Gıda ve İçecek",
-        desc: "Iraklı gıda ithalatçılarını Türkiye'nin en iyi gıda üreticileriyle buluşturuyoruz — toptan hammaddelerden paketlenmiş tüketici ürünlerine.",
-        image: "🍎",
-        items: ["Toptan yemeklik yağlar ve margarin", "Konserve sebze ve meyveler", "Zeytinyağı ve zeytinler", "Makarna, pirinç ve baklagiller", "İçecekler ve meyve suları", "Süt ürünleri ve peynirler"],
-        inquiry: "Gıda Ürünleri Hakkında Bilgi Al",
+        name: "Özel Ekipman",
+        desc: "Geniş bir özel ekipman yelpazesi — endüstriyel, atölye, tarım, güvenlik ve teknik ekipmanı güvenilir Türk üreticilerden temin edip Irak'ta kapınıza teslim ediyoruz.",
+        image: "🛠️",
+        items: ["Endüstriyel ve atölye ekipmanı", "Elektrikli ve el aletleri", "Tarım ekipmanı", "Güvenlik ve kişisel koruyucu ekipman", "Bakım ve teknik sarf malzemeleri", "Jeneratörler ve enerji ekipmanı"],
+        inquiry: "Özel Ekipman Hakkında Bilgi Al",
       },
       {
         name: "Elektronik ve Beyaz Eşya",
