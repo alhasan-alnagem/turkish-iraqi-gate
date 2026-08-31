@@ -241,6 +241,17 @@ const tr: Translations = {
       title: "Kataloglar Çok Yakında",
       message: "Ürün kataloglarımızı kategoriye göre düzenlemek üzerinde çalışıyoruz. Çok yakında buradan indirilebilir olacaklar. Bu arada belirli bir ürün arıyorsanız, bize ulaşmanız yeterli.",
     },
+    categories: {
+      "medical-equipment": "Tıbbi Ekipman",
+      "construction-materials": "İnşaat Malzemeleri",
+      "specialized-equipment": "Özel Ekipman",
+      electronics: "Elektronik",
+      "automotive-parts": "Otomotiv Yedek Parçaları",
+      furniture: "Mobilya",
+      "textiles-apparel": "Tekstil ve Giyim",
+      "industrial-machinery": "Endüstriyel Makineler",
+    },
+    comingSoonLabel: "Yakında",
     download: "PDF İndir",
     view: "Kataloğu Görüntüle",
     cta: {

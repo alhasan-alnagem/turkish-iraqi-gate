@@ -241,6 +241,17 @@ const en: Translations = {
       title: "Catalogs Coming Soon",
       message: "We're organizing our product catalogs by category. They'll be available for download here very soon. In the meantime, if you're looking for a specific product, just contact us.",
     },
+    categories: {
+      "medical-equipment": "Medical Equipment",
+      "construction-materials": "Construction Materials",
+      "specialized-equipment": "Specialized Equipment",
+      electronics: "Electronics",
+      "automotive-parts": "Automotive Parts",
+      furniture: "Furniture",
+      "textiles-apparel": "Textiles & Apparel",
+      "industrial-machinery": "Industrial Machinery",
+    },
+    comingSoonLabel: "Coming Soon",
     download: "Download PDF",
     view: "View Catalog",
     cta: {

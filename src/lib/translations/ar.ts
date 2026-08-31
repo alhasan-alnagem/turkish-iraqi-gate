@@ -241,6 +241,17 @@ const ar: Translations = {
       title: "الكتالوجات قريباً",
       message: "نعمل حالياً على تنظيم كتالوجات منتجاتنا حسب الفئة. ستكون متاحة للتحميل هنا قريباً جداً. في هذه الأثناء، إذا كنت تبحث عن منتج معين، فقط تواصل معنا.",
     },
+    categories: {
+      "medical-equipment": "معدات طبية",
+      "construction-materials": "مواد بناء",
+      "specialized-equipment": "معدات متخصصة",
+      electronics: "إلكترونيات",
+      "automotive-parts": "قطع غيار سيارات",
+      furniture: "أثاث",
+      "textiles-apparel": "منسوجات وملابس",
+      "industrial-machinery": "آلات صناعية",
+    },
+    comingSoonLabel: "قريباً",
     download: "تحميل PDF",
     view: "عرض الكتالوج",
     cta: {

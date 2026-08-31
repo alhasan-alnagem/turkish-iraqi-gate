@@ -152,6 +152,8 @@ export type Translations = {
       title: string;
       message: string;
     };
+    categories: Record<string, string>;
+    comingSoonLabel: string;
     download: string;
     view: string;
     cta: {
