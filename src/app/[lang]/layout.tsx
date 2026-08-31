@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono, Tajawal } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "../globals.css";
 import { LanguageProvider } from "@/lib/LanguageProvider";
 import { SiteHeader, SiteFooter } from "@/components/SiteShell";
@@ -71,6 +72,7 @@ export default async function LangLayout({
           </main>
           <SiteFooter />
         </LanguageProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
