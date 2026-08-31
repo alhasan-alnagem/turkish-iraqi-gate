@@ -24,10 +24,6 @@ function listPdfs(folder: string): string[] {
     .sort();
 }
 
-function prettyName(fileName: string): string {
-  return fileName.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim();
-}
-
 type Params = { lang: string };
 
 export default async function Catalogs({ params }: { params: Promise<Params> }) {
@@ -77,7 +73,7 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
                   </h3>
                   {pdfs.length > 0 ? (
                     <ul className="space-y-3">
-                      {pdfs.map((pdf) => (
+                      {pdfs.map((pdf, i) => (
                         <li key={pdf}>
                           <a
                             href={`/catalogs/${key}/${pdf}`}
@@ -86,7 +82,7 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
                             className="block py-3 px-4 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--section)] transition-colors"
                           >
                             <span className="block font-medium text-[var(--primary)]">
-                              {prettyName(pdf)}
+                              {c.categories[key] ?? key} {i + 1}
                             </span>
                             <span className="text-sm text-[var(--muted)]">{c.view}</span>
                           </a>
