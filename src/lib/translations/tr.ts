@@ -301,8 +301,8 @@ const tr: Translations = {
     info: {
       title: "İletişim Bilgileri",
       people: [
-        { name: "Alhasan Alnagem", role: "Kurucu", phone: "+9647866417123" },
-        { name: "Ahmed Al Shadood", role: "Kurucu Ortak", phone: "+9647807020498" },
+        { name: "Alhasan Alnagem", role: "Kurucu", phones: ["+9647866417123", "+905015424248"] },
+        { name: "Ahmed Al Shadood", role: "Kurucu Ortak", phones: ["+9647807020498"] },
       ],
       hours: { title: "Çalışma Saatleri", lines: ["Pazar - Perşembe: 09:00 - 18:00", "Cuma: 09:00 - 13:00", "Cumartesi: Kapalı"] },
     },

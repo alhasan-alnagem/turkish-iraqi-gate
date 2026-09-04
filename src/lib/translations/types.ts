@@ -202,7 +202,7 @@ export type Translations = {
     };
     info: {
       title: string;
-      people: Array<{ name: string; role: string; phone: string }>;
+      people: Array<{ name: string; role: string; phones: string[] }>;
       hours: { title: string; lines: string[] };
     };
   };

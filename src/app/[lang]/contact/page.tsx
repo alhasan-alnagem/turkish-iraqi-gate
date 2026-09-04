@@ -253,15 +253,20 @@ export default function Contact() {
                     <p className="text-[var(--muted)] text-sm mb-1">
                       {person.role}
                     </p>
-                    <a
-                      className="text-[var(--muted)] text-sm hover:text-[var(--primary)]"
-                      dir="ltr"
-                      href={`https://wa.me/${person.phone.replace(/\D/g, "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {person.phone}
-                    </a>
+                    <div className="flex flex-col gap-1">
+                      {person.phones.map((phone, j) => (
+                        <a
+                          key={j}
+                          className="text-[var(--muted)] text-sm hover:text-[var(--primary)]"
+                          dir="ltr"
+                          href={`https://wa.me/${phone.replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {phone}
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 ))}
                 <div>
