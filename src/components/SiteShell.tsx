@@ -104,7 +104,7 @@ export function SiteFooter() {
           </div>
           <div>
             <h4 className="text-white font-semibold mb-4">{t.footer.quickLinks}</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <li><Link href={l("/")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.home}</Link></li>
               <li><Link href={l("/about")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.about}</Link></li>
               <li><Link href={l("/services")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.services}</Link></li>
@@ -126,18 +126,30 @@ export function SiteFooter() {
           </div>
           <div>
             <h4 className="text-white font-semibold mb-4">{t.footer.contact}</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1 text-sm">
               <li>Istanbul, Turkey</li>
               <li>Baghdad, Iraq</li>
-              <li>
-                <a
-                  href="mailto:info@tigip.com"
-                  className="hover:text-[var(--accent-light)] transition-colors"
-                >
-                  info@tigip.com
-                </a>
-              </li>
             </ul>
+            <a
+              href="mailto:info@tigip.com"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[var(--primary-light)]"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              info@tigip.com
+            </a>
           </div>
         </div>
         <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm">
