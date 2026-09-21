@@ -9,6 +9,7 @@ export default function Career() {
   const { t, lang } = useLanguage();
   const c = t.career;
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorDetail, setErrorDetail] = useState("");
   const [cvFileName, setCvFileName] = useState("");
   const [cvError, setCvError] = useState<string | null>(null);
   const [selectedPosition, setSelectedPosition] = useState("");
@@ -63,6 +64,7 @@ export default function Career() {
 
     setStatus("loading");
     setCvError(null);
+    setErrorDetail("");
     fd.set("lang", lang);
 
     try {
@@ -70,12 +72,22 @@ export default function Career() {
         method: "POST",
         body: fd,
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        let detail = "";
+        try {
+          const data = await res.json();
+          detail = typeof data.message === "string" ? data.message : "";
+        } catch {
+          // non-JSON error response
+        }
+        throw new Error(detail);
+      }
       setStatus("success");
       formEl.reset();
       setCvFileName("");
       setSelectedPosition("");
-    } catch {
+    } catch (err) {
+      setErrorDetail(err instanceof Error ? err.message : "");
       setStatus("error");
     }
   }
@@ -289,7 +301,14 @@ export default function Career() {
                   </div>
 
                   {status === "error" && (
-                    <p className="text-red-600 text-sm">{c.form.errorMessage}</p>
+                    <>
+                      <p className="text-red-600 text-sm">{c.form.errorMessage}</p>
+                      {errorDetail && (
+                        <p className="text-xs text-red-500 mt-1 break-all" dir="ltr">
+                          {errorDetail}
+                        </p>
+                      )}
+                    </>
                   )}
 
                   <button
