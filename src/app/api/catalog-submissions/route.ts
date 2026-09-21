@@ -5,8 +5,10 @@ const TO_EMAIL =
   process.env.CATALOG_TO_EMAIL || process.env.CAREER_TO_EMAIL || "alhasony1@gmail.com";
 // Until the tigip.com domain is verified on resend.com/domains, Resend only
 // allows sending from onboarding@resend.dev (to the account owner's email).
-// Once verified, set CAREER_FROM_EMAIL="Careers at Turkish Iraqi Gate <careers@tigip.com>".
+// Once verified, set CATALOG_FROM_EMAIL="Turkish Iraqi Gate <catalogs@tigip.com>"
+// (and CAREER_FROM_EMAIL for the careers route) on Vercel.
 const FROM_EMAIL =
+  process.env.CATALOG_FROM_EMAIL ||
   process.env.CAREER_FROM_EMAIL ||
   "Turkish Iraqi Gate <onboarding@resend.dev>";
 const MAX_CATALOG_BYTES = 4 * 1024 * 1024; // 4 MB
