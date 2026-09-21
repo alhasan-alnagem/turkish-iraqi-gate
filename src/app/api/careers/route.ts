@@ -18,6 +18,54 @@ function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+type LangKey = "en" | "ar" | "tr";
+
+// Localized confirmation email sent to the applicant after a successful submission.
+const ackTemplates: Record<
+  LangKey,
+  { subject: string; html: (name: string, position: string) => string }
+> = {
+  en: {
+    subject: "We received your application — Turkish Iraqi Gate",
+    html: (name, position) => `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;line-height:1.6">
+        <h2 style="color:#14532d;margin-bottom:4px">Thank you for applying</h2>
+        <p>Hi ${esc(name)},<br/><br/>
+        We've received your application for the <strong>${esc(position)}</strong> position, along with your CV.</p>
+        <p>Our team reviews every application personally. We'll get back to you soon.</p>
+        <p style="color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;padding-top:12px">
+          Turkish Iraqi Gate For Importing And Procurement</p>
+      </div>
+    `,
+  },
+  ar: {
+    subject: "استلمنا طلبك — بوابة تركيا العراقية",
+    html: (name, position) => `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;line-height:1.8;direction:rtl">
+        <h2 style="color:#14532d;margin-bottom:4px">شكراً لتقديمك</h2>
+        <p>مرحباً ${esc(name)}،<br/><br/>
+        استلمنا طلبك لوظيفة <strong>${esc(position)}</strong> مع سيرتك الذاتية.</p>
+        <p>يراجع فريقنا كل طلب بشكل شخصي، وسنعاود التواصل معك قريباً.</p>
+        <p style="color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;padding-top:12px">
+          بوابة تركيا العراقية للاستيراد والتجهيز</p>
+      </div>
+    `,
+  },
+  tr: {
+    subject: "Başvurunuzu aldık — Türkiye Irak Kapısı",
+    html: (name, position) => `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;line-height:1.6">
+        <h2 style="color:#14532d;margin-bottom:4px">Başvurunuz için teşekkürler</h2>
+        <p>Merhaba ${esc(name)},<br/><br/>
+        <strong>${esc(position)}</strong> pozisyonu için başvurunuzu özgeçmişinizle birlikte aldık.</p>
+        <p>Ekibimiz her başvuruyu bizzat inceler. En kısa sürede size dönüş yapacağız.</p>
+        <p style="color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;padding-top:12px">
+          Türkiye Irak Kapısı İthalat ve Tedarik</p>
+      </div>
+    `,
+  },
+};
+
 export async function POST(request: NextRequest) {
   try {
     const form = await request.formData();
@@ -112,6 +160,34 @@ export async function POST(request: NextRequest) {
         { success: false, message: "email_failed" },
         { status: 502 }
       );
+    }
+
+    // Best-effort confirmation to the applicant. If this fails (e.g. while
+    // still on the onboarding@resend.dev fallback sender, which can only reach
+    // the account owner's inbox), log it but keep the application successful —
+    // the application email was already delivered to the company inbox.
+    const langKey: LangKey = lang === "ar" || lang === "tr" ? lang : "en";
+    const ack = ackTemplates[langKey];
+    try {
+      const ackRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [email],
+          subject: ack.subject,
+          html: ack.html(name, position),
+        }),
+      });
+      if (!ackRes.ok) {
+        const text = await ackRes.text().catch(() => "");
+        console.error("Career API warning: applicant ack failed", ackRes.status, text);
+      }
+    } catch (err) {
+      console.error("Career API warning: applicant ack failed", err);
     }
 
     return Response.json({ success: true }, { status: 200 });

@@ -356,7 +356,7 @@ const en: Translations = {
       submit: "Send Application",
       required: "* Required. We reply to every application.",
       successTitle: "Application sent!",
-      successMessage: "Thank you for applying. We'll get back to you soon.",
+      successMessage: "Thank you for applying — we've sent you a confirmation email. We'll get back to you soon.",
       sendAnother: "Send another application",
       errorMessage: "Something went wrong. Please try again.",
       cvError: "Please upload a PDF file.",

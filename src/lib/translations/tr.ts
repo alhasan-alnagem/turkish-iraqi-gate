@@ -356,7 +356,7 @@ const tr: Translations = {
       submit: "Başvuruyu Gönder",
       required: "* Zorunlu. Her başvuruya yanıt veriyoruz.",
       successTitle: "Başvurunuz Gönderildi!",
-      successMessage: "Başvurduğunuz için teşekkürler. En kısa sürede size dönüş yapacağız.",
+      successMessage: "Başvurunuz için teşekkürler — size bir onay e-postası gönderdik. En kısa sürede size dönüş yapacağız.",
       sendAnother: "Yeni Bir Başvuru Gönder",
       errorMessage: "Bir hata oluştu. Lütfen tekrar deneyin.",
       cvError: "Lütfen bir PDF dosyası yükleyin.",
