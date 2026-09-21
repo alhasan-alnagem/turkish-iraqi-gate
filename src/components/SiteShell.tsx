@@ -129,6 +129,14 @@ export function SiteFooter() {
             <ul className="space-y-2 text-sm">
               <li>Istanbul, Turkey</li>
               <li>Baghdad, Iraq</li>
+              <li>
+                <a
+                  href="mailto:info@tigip.com"
+                  className="hover:text-[var(--accent-light)] transition-colors"
+                >
+                  info@tigip.com
+                </a>
+              </li>
             </ul>
           </div>
         </div>
