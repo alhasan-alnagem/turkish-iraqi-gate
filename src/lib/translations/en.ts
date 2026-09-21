@@ -260,6 +260,11 @@ const en: Translations = {
       subtitle: "Can't find what you're looking for in the catalogs? We source thousands of products on request. Tell us what you need and we'll handle it.",
       button: "Request a Product",
     },
+    supplier: {
+      title: "Are You a Manufacturer or Supplier?",
+      subtitle: "Get your product catalog in front of buyers across Iraq. Submit your catalog and we'll review it for listing on our website.",
+      button: "Submit Your Catalog",
+    },
   },
   contact: {
     hero: {
@@ -324,19 +329,19 @@ const en: Translations = {
       items: [
         {
           title: "Import & Procurement Specialist",
-          type: "Full-time",
+          type: "Commission-based",
           location: "Istanbul, Turkey",
           desc: "Join our sourcing team in Istanbul. You'll research Turkish suppliers, negotiate prices, inspect product quality, and build long-term relationships with manufacturers across industries.",
         },
         {
           title: "Customer Relations Coordinator",
-          type: "Full-time",
+          type: "Commission-based",
           location: "Baghdad, Iraq",
           desc: "Be the voice of Turkish Iraq Gate for our Iraqi clients. You'll manage inquiries, follow up on orders and deliveries, and make sure every customer gets a smooth experience.",
         },
         {
           title: "Logistics & Customs Assistant",
-          type: "Full-time",
+          type: "Commission-based",
           location: "Remote (Iraq)",
           desc: "Support our logistics and customs clearance operations between Turkey and Iraq — coordinating shipments, preparing documentation, and tracking deliveries end to end.",
         },
@@ -350,6 +355,10 @@ const en: Translations = {
       phone: "Phone Number (optional)",
       position: "Position",
       selectPosition: "Choose a position",
+      commissionNote: "All positions are commission-based.",
+      otherOption: "Other Job",
+      otherPlaceholder: "e.g. Sales Representative",
+      otherError: "Please write the job title you're applying for.",
       cv: "Upload Your CV (PDF)",
       cvHint: "PDF file, max 4 MB",
       message: "Cover Letter / Message (optional)",
@@ -367,6 +376,67 @@ const en: Translations = {
         email: "you@example.com",
         phone: "+964 123 456 789",
         message: "Tell us briefly why you'd be a good fit for this role...",
+      },
+    },
+  },
+  catalogSubmit: {
+    label: "Submit Your Catalog",
+    hero: {
+      tag: "For Manufacturers & Suppliers",
+      title: "Put Your Catalog on Our Website",
+      subtitle:
+        "We help Turkish manufacturers and suppliers reach buyers across Iraq. Submit your product catalog and our team will review it for listing on our website.",
+    },
+    how: {
+      title: "How It Works",
+      steps: [
+        "Send us your catalog and company details.",
+        "Our team reviews your products and pricing.",
+        "Once approved, your catalog is listed and promoted to our buyers in Iraq.",
+      ],
+    },
+    categories: [
+      "Medical Equipment",
+      "Construction Materials",
+      "Specialized Equipment",
+      "Electronics",
+      "Automotive Parts",
+      "Furniture",
+      "Textiles & Apparel",
+      "Industrial Machinery",
+    ],
+    form: {
+      title: "Submit Your Catalog",
+      subtitle:
+        "Fill in your details and upload your catalog (PDF). Our team will review it and get back to you.",
+      company: "Company Name",
+      contactName: "Contact Person",
+      email: "Email Address",
+      phone: "Phone Number (optional)",
+      category: "Product Category",
+      selectCategory: "Choose a category",
+      catalog: "Upload Your Catalog (PDF)",
+      catalogHint: "PDF file, max 4 MB",
+      website: "Company Website (optional)",
+      message: "Products & Details (optional)",
+      submit: "Send Catalog",
+      required: "* Required. We reply to every submission.",
+      successTitle: "Catalog submitted!",
+      successMessage:
+        "Thank you — we've sent you a confirmation email. Our team will review your catalog and get back to you.",
+      sendAnother: "Submit another catalog",
+      errorMessage: "Something went wrong. Please try again.",
+      pdfError: "Please upload a PDF file.",
+      sizeError: "The PDF must be smaller than 4 MB.",
+      sending: "Sending...",
+      placeholders: {
+        company: "e.g. ABC Machinery Ltd.",
+        contactName: "e.g. Mehmet Kaya",
+        email: "you@company.com",
+        phone: "+90 123 456 789",
+        website: "www.yourcompany.com",
+        message:
+          "Tell us about your main products, minimum order quantities, and average lead times...",
       },
     },
   },

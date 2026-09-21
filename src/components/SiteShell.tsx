@@ -110,6 +110,7 @@ export function SiteFooter() {
               <li><Link href={l("/services")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.services}</Link></li>
               <li><Link href={l("/products")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.products}</Link></li>
               <li><Link href={l("/catalogs")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.catalogs}</Link></li>
+              <li><Link href={l("/submit-catalog")} className="hover:text-[var(--accent-light)] transition-colors">{t.catalogSubmit.label}</Link></li>
               <li><Link href={l("/career")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.career}</Link></li>
               <li><Link href={l("/contact")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.contact}</Link></li>
             </ul>

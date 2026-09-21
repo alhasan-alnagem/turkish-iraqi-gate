@@ -168,6 +168,32 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
         "Türkiye Irak Kapısı'ndaki açık pozisyonları keşfedin — ithalat ve tedarik, müşteri ilişkileri ve lojistik.",
     },
   },
+  "submit-catalog": {
+    en: {
+      title: "Submit Your Catalog",
+      description:
+        "Are you a manufacturer or supplier? Submit your product catalog to Turkish Iraqi Gate and get it in front of buyers across Iraq.",
+      ogTitle: "Submit Your Catalog | Turkish Iraqi Gate",
+      ogDescription:
+        "Manufacturers and suppliers: get your product catalog listed on Turkish Iraqi Gate and seen by buyers across Iraq.",
+    },
+    ar: {
+      title: "أضف كتالوجك",
+      description:
+        "هل أنت مصنّع أو مورّد؟ أرسل كتالوج منتجاتك إلى بوابة تركيا العراقية ليعرض أمام المشترين في العراق.",
+      ogTitle: "أضف كتالوجك | بوابة تركيا العراقية",
+      ogDescription:
+        "المصنّعون والمورّدون: أرسلوا كتالوج منتجاتكم لإدراجه على بوابة تركيا العراقية وعرضه أمام المشترين في العراق.",
+    },
+    tr: {
+      title: "Kataloğunuzu Ekleyin",
+      description:
+        "Üretici veya tedarikçi misiniz? Ürün kataloğunuzu Türkiye Irak Kapısı'na gönderin ve Irak'taki alıcıların önüne çıkarın.",
+      ogTitle: "Kataloğunuzu Ekleyin | Türkiye Irak Kapısı",
+      ogDescription:
+        "Üreticiler ve tedarikçiler: ürün kataloğunuzu Türkiye Irak Kapısı'nda listeleyin ve Irak'taki alıcılara ulaştırın.",
+    },
+  },
   contact: {
     en: {
       title: "Contact Us",

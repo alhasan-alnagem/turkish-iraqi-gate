@@ -13,6 +13,8 @@ export default function Career() {
   const [cvFileName, setCvFileName] = useState("");
   const [cvError, setCvError] = useState<string | null>(null);
   const [selectedPosition, setSelectedPosition] = useState("");
+  const [otherPosition, setOtherPosition] = useState("");
+  const [otherError, setOtherError] = useState("");
   const formRef = useRef<HTMLDivElement>(null);
 
   function choosePosition(title: string) {
@@ -62,6 +64,15 @@ export default function Career() {
       return;
     }
 
+    if (selectedPosition === "__other__") {
+      const otherPos = otherPosition.trim();
+      if (!otherPos) {
+        setOtherError(c.form.otherError);
+        return;
+      }
+      fd.set("position", otherPos);
+    }
+
     setStatus("loading");
     setCvError(null);
     setErrorDetail("");
@@ -86,6 +97,7 @@ export default function Career() {
       formEl.reset();
       setCvFileName("");
       setSelectedPosition("");
+      setOtherPosition("");
     } catch (err) {
       setErrorDetail(err instanceof Error ? err.message : "");
       setStatus("error");
@@ -251,8 +263,39 @@ export default function Career() {
                           {item.title}
                         </option>
                       ))}
+                      <option value="__other__">{c.form.otherOption}</option>
                     </select>
+                    <p className="mt-2 text-xs font-medium text-[var(--accent)]">
+                      💼 {c.form.commissionNote}
+                    </p>
                   </div>
+
+                  {selectedPosition === "__other__" && (
+                    <div>
+                      <label
+                        htmlFor="otherPosition"
+                        className="block text-sm font-medium text-[var(--foreground)] mb-1"
+                      >
+                        {c.form.position} *
+                      </label>
+                      <input
+                        type="text"
+                        id="otherPosition"
+                        name="otherPosition"
+                        value={otherPosition}
+                        onChange={(e) => {
+                          setOtherPosition(e.target.value);
+                          setOtherError("");
+                        }}
+                        required
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+                        placeholder={c.form.otherPlaceholder}
+                      />
+                      {otherError && (
+                        <p className="mt-1 text-xs text-red-600">{otherError}</p>
+                      )}
+                    </div>
+                  )}
 
                   <div>
                     <label

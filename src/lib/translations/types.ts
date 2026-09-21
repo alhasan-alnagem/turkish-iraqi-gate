@@ -162,6 +162,11 @@ export type Translations = {
       subtitle: string;
       button: string;
     };
+    supplier: {
+      title: string;
+      subtitle: string;
+      button: string;
+    };
   };
   contact: {
     hero: {
@@ -234,6 +239,10 @@ export type Translations = {
       phone: string;
       position: string;
       selectPosition: string;
+      commissionNote: string;
+      otherOption: string;
+      otherPlaceholder: string;
+      otherError: string;
       cv: string;
       cvHint: string;
       message: string;
@@ -250,6 +259,50 @@ export type Translations = {
         name: string;
         email: string;
         phone: string;
+        message: string;
+      };
+    };
+  };
+  catalogSubmit: {
+    label: string;
+    hero: {
+      tag: string;
+      title: string;
+      subtitle: string;
+    };
+    how: {
+      title: string;
+      steps: string[];
+    };
+    categories: string[];
+    form: {
+      title: string;
+      subtitle: string;
+      company: string;
+      contactName: string;
+      email: string;
+      phone: string;
+      category: string;
+      selectCategory: string;
+      catalog: string;
+      catalogHint: string;
+      website: string;
+      message: string;
+      submit: string;
+      required: string;
+      successTitle: string;
+      successMessage: string;
+      sendAnother: string;
+      errorMessage: string;
+      pdfError: string;
+      sizeError: string;
+      sending: string;
+      placeholders: {
+        company: string;
+        contactName: string;
+        email: string;
+        phone: string;
+        website: string;
         message: string;
       };
     };

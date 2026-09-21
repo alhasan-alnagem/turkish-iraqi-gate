@@ -119,6 +119,23 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
           </Link>
         </div>
       </section>
+
+      <section className="bg-white border-t border-[var(--border)]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-4">
+            {c.supplier.title}
+          </h2>
+          <p className="text-[var(--muted)] mb-8 max-w-xl mx-auto">
+            {c.supplier.subtitle}
+          </p>
+          <Link
+            href={`/${toLang(langParam)}/submit-catalog`}
+            className="bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
+          >
+            {c.supplier.button}
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

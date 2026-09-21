@@ -39,7 +39,7 @@ const ackTemplates: Record<
     `,
   },
   ar: {
-    subject: "استلمنا طلبك — بوابة تركيا العراقية",
+    subject: "استلمنا طلبك — Turkish Iraqi Gate",
     html: (name, position) => `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;line-height:1.8;direction:rtl">
         <h2 style="color:#14532d;margin-bottom:4px">شكراً لتقديمك</h2>
@@ -47,12 +47,12 @@ const ackTemplates: Record<
         استلمنا طلبك لوظيفة <strong>${esc(position)}</strong> مع سيرتك الذاتية.</p>
         <p>يراجع فريقنا كل طلب بشكل شخصي، وسنعاود التواصل معك قريباً.</p>
         <p style="color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;padding-top:12px">
-          بوابة تركيا العراقية للاستيراد والتجهيز</p>
+          Turkish Iraqi Gate For Importing And Procurement</p>
       </div>
     `,
   },
   tr: {
-    subject: "Başvurunuzu aldık — Türkiye Irak Kapısı",
+    subject: "Başvurunuzu aldık — Turkish Iraqi Gate",
     html: (name, position) => `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#1f2937;line-height:1.6">
         <h2 style="color:#14532d;margin-bottom:4px">Başvurunuz için teşekkürler</h2>
@@ -60,7 +60,7 @@ const ackTemplates: Record<
         <strong>${esc(position)}</strong> pozisyonu için başvurunuzu özgeçmişinizle birlikte aldık.</p>
         <p>Ekibimiz her başvuruyu bizzat inceler. En kısa sürede size dönüş yapacağız.</p>
         <p style="color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;padding-top:12px">
-          Türkiye Irak Kapısı İthalat ve Tedarik</p>
+          Turkish Iraqi Gate For Importing And Procurement</p>
       </div>
     `,
   },
