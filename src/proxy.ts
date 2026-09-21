@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const LEGACY_ROUTES = ["about", "services", "products", "catalogs", "contact"];
+const LEGACY_ROUTES = ["about", "services", "products", "catalogs", "career", "contact"];
 
 const SUPPORTED = ["ar", "tr", "en"] as const;
 
@@ -48,5 +48,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/about", "/services", "/products", "/catalogs", "/contact"],
+  matcher: ["/", "/about", "/services", "/products", "/catalogs", "/career", "/contact"],
 };

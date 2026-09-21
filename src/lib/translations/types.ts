@@ -5,6 +5,7 @@ export type Translations = {
     services: string;
     products: string;
     catalogs: string;
+    career: string;
     contact: string;
     getQuote: string;
   };
@@ -204,6 +205,53 @@ export type Translations = {
       title: string;
       people: Array<{ name: string; role: string; phones: string[] }>;
       hours: { title: string; lines: string[] };
+    };
+  };
+  career: {
+    hero: {
+      tag: string;
+      title: string;
+      subtitle: string;
+    };
+    positions: {
+      title: string;
+      subtitle: string;
+      type: string;
+      location: string;
+      apply: string;
+      items: Array<{
+        title: string;
+        type: string;
+        location: string;
+        desc: string;
+      }>;
+    };
+    form: {
+      title: string;
+      subtitle: string;
+      name: string;
+      email: string;
+      phone: string;
+      position: string;
+      selectPosition: string;
+      cv: string;
+      cvHint: string;
+      message: string;
+      submit: string;
+      required: string;
+      successTitle: string;
+      successMessage: string;
+      sendAnother: string;
+      errorMessage: string;
+      cvError: string;
+      sizeError: string;
+      sending: string;
+      placeholders: {
+        name: string;
+        email: string;
+        phone: string;
+        message: string;
+      };
     };
   };
 };

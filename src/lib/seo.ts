@@ -142,6 +142,32 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
         "Kategoriye göre düzenlenmiş ürün kataloglarına göz atın. Türkiye'den tedarik edilen herhangi bir ürün hakkında soru sorun.",
     },
   },
+  career: {
+    en: {
+      title: "Careers",
+      description:
+        "Join Turkish Iraqi Gate — we're hiring in Istanbul, Baghdad, and remotely. Explore open positions in import & procurement, customer relations, and logistics.",
+      ogTitle: "Careers at Turkish Iraqi Gate",
+      ogDescription:
+        "Explore open positions at Turkish Iraqi Gate — import & procurement, customer relations, and logistics.",
+    },
+    ar: {
+      title: "الوظائف",
+      description:
+        "انضم إلى بوابة تركيا العراقية — نبحث عن موظفين في إسطنبول وبغداد وعن بُعد. استكشف الوظائف الشاغرة في الاستيراد والتوريد وعلاقات العملاء والخدمات اللوجستية.",
+      ogTitle: "الوظائف في بوابة تركيا العراقية",
+      ogDescription:
+        "استكشف الوظائف الشاغرة في بوابة تركيا العراقية — الاستيراد والتوريد وعلاقات العملاء والخدمات اللوجستية.",
+    },
+    tr: {
+      title: "Kariyer",
+      description:
+        "Türkiye Irak Kapısı'na katılın — İstanbul, Bağdat ve uzaktan çalışacak kişiler arıyoruz. İthalat ve tedarik, müşteri ilişkileri ve lojistik alanlarındaki açık pozisyonları keşfedin.",
+      ogTitle: "Türkiye Irak Kapısı'nda Kariyer",
+      ogDescription:
+        "Türkiye Irak Kapısı'ndaki açık pozisyonları keşfedin — ithalat ve tedarik, müşteri ilişkileri ve lojistik.",
+    },
+  },
   contact: {
     en: {
       title: "Contact Us",

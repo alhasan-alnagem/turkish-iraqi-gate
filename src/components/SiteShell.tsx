@@ -17,6 +17,7 @@ export function SiteHeader() {
     { href: l("/services"), label: t.nav.services },
     { href: l("/products"), label: t.nav.products },
     { href: l("/catalogs"), label: t.nav.catalogs },
+    { href: l("/career"), label: t.nav.career },
     { href: l("/contact"), label: t.nav.contact },
   ];
 
@@ -109,6 +110,7 @@ export function SiteFooter() {
               <li><Link href={l("/services")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.services}</Link></li>
               <li><Link href={l("/products")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.products}</Link></li>
               <li><Link href={l("/catalogs")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.catalogs}</Link></li>
+              <li><Link href={l("/career")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.career}</Link></li>
               <li><Link href={l("/contact")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.contact}</Link></li>
             </ul>
           </div>
@@ -126,8 +128,6 @@ export function SiteFooter() {
             <ul className="space-y-2 text-sm">
               <li>Istanbul, Turkey</li>
               <li>Baghdad, Iraq</li>
-              <li>info@turkishiraqgate.com</li>
-              <li>+90 212 555 0123</li>
             </ul>
           </div>
         </div>
