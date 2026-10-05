@@ -328,22 +328,22 @@ const tr: Translations = {
       apply: "Bu pozisyona başvur",
       items: [
         {
-          title: "İthalat ve Tedarik Uzmanı",
-          type: "Komisyon esaslı",
-          location: "İstanbul, Türkiye",
-          desc: "İstanbul'daki tedarik ekibimize katılın. Türk tedarikçileri araştıracak, fiyat görüşmeleri yapacak, ürün kalitesini denetleyecek ve sektördeki üreticilerle uzun vadeli ilişkiler kuracaksınız.",
-        },
-        {
-          title: "Müşteri İlişkileri Koordinatörü",
+          title: "Müşteri Kazanma Uzmanı",
           type: "Komisyon esaslı",
           location: "Bağdat, Irak",
-          desc: "Iraklı müşterilerimiz için Türkiye Irak Kapısı'nın sesi olun. Talepleri yönetecek, sipariş ve teslimatları takip edecek ve her müşterinin sorunsuz bir deneyim yaşamasını sağlayacaksınız.",
+          desc: "Irak'taki müşteri tabanımızı büyütün. Yeni alıcıları tespit edip onlara ulaşacak, tedarik ve ithalat hizmetlerimizi tanıtacak, talepleri takip edecek ve yeni müşterileri uzun vadeli müşterilere dönüştüreceksiniz.",
         },
         {
-          title: "Lojistik ve Gümrük Asistanı",
+          title: "Fabrika İletişim Aracısı",
           type: "Komisyon esaslı",
-          location: "Uzaktan (Irak)",
-          desc: "Türkiye ile Irak arasındaki lojistik ve gümrük işlemlerini destekleyin — sevkiyatları koordine edin, belgeleri hazırlayın ve teslimatları baştan sona takip edin.",
+          location: "İstanbul, Türkiye",
+          desc: "Türk üreticilerle bizim köprümüz olun. Fabrikalarla bizim adımıza iletişim kuracak, fiyat ve ürün detaylarını toplayacak, koşulları görüşecek ve her adımda iki tarafı da bilgilendireceksiniz.",
+        },
+        {
+          title: "Nakliye Şirketleri Ortaklıkları",
+          type: "Komisyon esaslı",
+          location: "İstanbul, Türkiye",
+          desc: "Türkiye'deki nakliye ve yük taşıma şirketleriyle uzun vadeli ortaklıklar kurmamıza yardım edin. Taşıyıcılarla iletişime geçecek, Irak hatlarımız için fiyatları karşılaştıracak ve müşterilerimizin sevkiyat rezervasyonlarını koordine edeceksiniz.",
         },
       ],
     },

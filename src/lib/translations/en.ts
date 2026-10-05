@@ -328,22 +328,22 @@ const en: Translations = {
       apply: "Apply for this position",
       items: [
         {
-          title: "Import & Procurement Specialist",
-          type: "Commission-based",
-          location: "Istanbul, Turkey",
-          desc: "Join our sourcing team in Istanbul. You'll research Turkish suppliers, negotiate prices, inspect product quality, and build long-term relationships with manufacturers across industries.",
-        },
-        {
-          title: "Customer Relations Coordinator",
+          title: "Customer Acquisition Specialist",
           type: "Commission-based",
           location: "Baghdad, Iraq",
-          desc: "Be the voice of Turkish Iraq Gate for our Iraqi clients. You'll manage inquiries, follow up on orders and deliveries, and make sure every customer gets a smooth experience.",
+          desc: "Grow our client base across Iraq. You'll identify and reach new buyers, present our sourcing and import services, follow up on inquiries, and turn first-time customers into long-term ones.",
         },
         {
-          title: "Logistics & Customs Assistant",
+          title: "Factory Communication Intermediary",
           type: "Commission-based",
-          location: "Remote (Iraq)",
-          desc: "Support our logistics and customs clearance operations between Turkey and Iraq — coordinating shipments, preparing documentation, and tracking deliveries end to end.",
+          location: "Istanbul, Turkey",
+          desc: "Be our bridge with Turkish manufacturers. You'll communicate with factories on our behalf, collect prices and product details, negotiate terms, and keep both sides informed at every step.",
+        },
+        {
+          title: "Shipping Company Partnerships",
+          type: "Commission-based",
+          location: "Istanbul, Turkey",
+          desc: "Help us build long-term partnerships with shipping and freight companies in Turkey. You'll approach carriers, compare rates on our Iraq routes, and coordinate booking for our customers' shipments.",
         },
       ],
     },
