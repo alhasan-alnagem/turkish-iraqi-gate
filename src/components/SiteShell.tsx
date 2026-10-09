@@ -131,11 +131,11 @@ export function SiteFooter() {
               <li>Baghdad, Iraq</li>
             </ul>
             <a
-              href="mailto:info@tigip.com"
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[var(--primary-light)]"
+              href="mailto:alhasan.alnagem@tigip.com"
+              className="mt-5 inline-flex max-w-full items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[var(--primary-light)]"
             >
               <svg
-                className="h-4 w-4"
+                className="h-4 w-4 shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -148,7 +148,7 @@ export function SiteFooter() {
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              info@tigip.com
+              <span className="break-all">alhasan.alnagem@tigip.com</span>
             </a>
           </div>
         </div>

@@ -3,6 +3,12 @@ import { NextRequest } from "next/server";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL =
   process.env.CATALOG_TO_EMAIL || process.env.CAREER_TO_EMAIL || "alhasony1@gmail.com";
+// Deliver notifications to both the primary inbox and the tigip.com mailbox.
+const TO_EMAIL_2 =
+  process.env.CATALOG_TO_EMAIL_2 || "alhasan.alnagem@tigip.com";
+const TO_EMAILS = Array.from(
+  new Set([TO_EMAIL, TO_EMAIL_2].map((e) => e.trim()).filter(Boolean))
+);
 // Until the tigip.com domain is verified on resend.com/domains, Resend only
 // allows sending from onboarding@resend.dev (to the account owner's email).
 // Once verified, set CATALOG_FROM_EMAIL="Turkish Iraqi Gate <catalogs@tigip.com>"
@@ -166,7 +172,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
-        to: [TO_EMAIL],
+        to: TO_EMAILS,
         reply_to: email,
         subject: `New catalog submission: ${category} — ${company}`,
         html,
