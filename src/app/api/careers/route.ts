@@ -8,6 +8,10 @@ const TO_EMAIL = process.env.CAREER_TO_EMAIL || "alhasony1@gmail.com";
 const FROM_EMAIL =
   process.env.CAREER_FROM_EMAIL ||
   "Careers at Turkish Iraqi Gate <onboarding@resend.dev>";
+// Applicant confirmations are sent from the careers subdomain (send-only, no MX).
+// Replies must be directed to the real mailbox, otherwise they bounce.
+const REPLY_TO_EMAIL =
+  process.env.CAREER_REPLY_TO || "alhasan.alnagem@tigip.com";
 const MAX_CV_BYTES = 4 * 1024 * 1024; // 4 MB
 
 function esc(value: string): string {
@@ -178,6 +182,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
+          reply_to: REPLY_TO_EMAIL,
           subject: ack.subject,
           html: ack.html(name, position),
         }),

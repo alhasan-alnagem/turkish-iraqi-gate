@@ -11,6 +11,10 @@ const FROM_EMAIL =
   process.env.CATALOG_FROM_EMAIL ||
   process.env.CAREER_FROM_EMAIL ||
   "Turkish Iraqi Gate <onboarding@resend.dev>";
+// Submitter confirmations are sent from a send-only subdomain (no MX), so
+// replies must be directed to the real mailbox, otherwise they bounce.
+const REPLY_TO_EMAIL =
+  process.env.CATALOG_REPLY_TO || "alhasan.alnagem@tigip.com";
 const MAX_CATALOG_BYTES = 4 * 1024 * 1024; // 4 MB
 
 function esc(value: string): string {
@@ -200,6 +204,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
+          reply_to: REPLY_TO_EMAIL,
           subject: ack.subject,
           html: ack.html(company),
         }),
