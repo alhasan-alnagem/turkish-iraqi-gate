@@ -69,16 +69,63 @@ create table if not exists order_events (
 create index if not exists order_events_order_idx on order_events (order_id, created_at desc);
 `;
 
+/**
+ * The connection string can arrive under several names depending on how the
+ * database was attached to the Vercel project (Vercel Postgres, the Neon
+ * integration, or a manual Neon string).
+ */
+const URL_VARS = [
+  "DATABASE_URL",
+  "POSTGRES_URL",
+  "POSTGRES_PRISMA_URL",
+  "DATABASE_URL_UNPOOLED",
+  "NEON_DATABASE_URL",
+] as const;
+
+export const DATABASE_VARS = URL_VARS;
+
+export class DatabaseConfigError extends Error {}
+
+function connectionString(): string | null {
+  for (const name of URL_VARS) {
+    const value = process.env[name]?.trim();
+    if (value && /^postgres(ql)?:\/\//i.test(value)) return value;
+  }
+  return null;
+}
+
+/** Env-var names present in this deployment. Names only — never values. */
+export function databaseEnvPresence(): { name: string; present: boolean }[] {
+  return URL_VARS.map((name) => ({ name, present: Boolean(process.env[name]?.trim()) }));
+}
+
+/** Removes anything that looks like a credential or a host before showing it. */
+export function safeErrorMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error ?? "unknown error");
+  return raw
+    .replace(/postgres(ql)?:\/\/\S+/gi, "postgres://…")
+    .replace(/(password|pass|pwd)=[^\s&]+/gi, "$1=…")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 240);
+}
+
 async function init(): Promise<Queryable> {
-  const url = process.env.DATABASE_URL;
+  const url = connectionString();
 
   if (url) {
     const { default: postgres } = await import("postgres");
+    const isLocal = /@(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(url);
+    const sslSpecified = /[?&]ssl(mode)?=/i.test(url);
     const conn = postgres(url, {
       max: 5,
       idle_timeout: 20,
+      connect_timeout: 10,
       // Required when the database sits behind a transaction pooler.
       prepare: false,
+      // Managed Postgres (Neon, Vercel Postgres, Supabase) refuses plaintext
+      // connections; the driver does not infer that from the host.
+      ...(sslSpecified ? {} : { ssl: isLocal ? false : ("require" as const) }),
     });
     await conn.unsafe(SCHEMA);
     return {
@@ -87,6 +134,14 @@ async function init(): Promise<Queryable> {
         return rows as unknown as T[];
       },
     };
+  }
+
+  // Vercel's filesystem is read-only, so the embedded fallback would fail with
+  // an unrelated-looking error. Say what is actually wrong instead.
+  if (process.env.VERCEL) {
+    throw new DatabaseConfigError(
+      "No database connection string is set for this deployment. Add DATABASE_URL (or attach a Postgres/Neon store) in Vercel for both Preview and Production.",
+    );
   }
 
   const { PGlite } = await import("@electric-sql/pglite");
@@ -120,6 +175,34 @@ export async function query<T = Row>(text: string, params: unknown[] = []): Prom
   return db.query<T>(text, params);
 }
 
+/** Name of the env var this deployment is actually using, or null. */
+export function databaseVariableName(): string | null {
+  return URL_VARS.find((name) => {
+    const value = process.env[name]?.trim();
+    return Boolean(value && /^postgres(ql)?:\/\//i.test(value));
+  }) ?? null;
+}
+
+/** Cheap probe used by the sign-in page to explain a broken setup. */
+export async function databaseHealth(): Promise<{ ok: boolean; reason: string | null }> {
+  if (!connectionString() && process.env.VERCEL) {
+    return { ok: false, reason: "No Postgres connection string is set for this deployment." };
+  }
+
+  try {
+    // Also creates the schema on first use, so a bad permission shows up here
+    // rather than halfway through the first order.
+    await query("select 1");
+    return { ok: true, reason: null };
+  } catch (error) {
+    return {
+      ok: false,
+      reason:
+        error instanceof DatabaseConfigError ? error.message : safeErrorMessage(error),
+    };
+  }
+}
+
 export function databaseConfigured(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+  return connectionString() !== null;
 }

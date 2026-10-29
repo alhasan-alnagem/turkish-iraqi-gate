@@ -8,6 +8,7 @@ import {
   recordFailure,
   tooManyAttempts,
 } from "@/lib/auth";
+import { DatabaseConfigError, safeErrorMessage } from "@/lib/db";
 import { ensureBootstrapAdmin, findStaffByEmail, verifyPassword } from "@/lib/staff";
 
 export const runtime = "nodejs";
@@ -49,7 +50,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("database unavailable during login", error);
     return Response.json(
-      { error: "The database is not reachable. Check DATABASE_URL." },
+      {
+        error:
+          error instanceof DatabaseConfigError
+            ? error.message
+            : `The database refused the connection: ${safeErrorMessage(error)}`,
+      },
       { status: 503 },
     );
   }
