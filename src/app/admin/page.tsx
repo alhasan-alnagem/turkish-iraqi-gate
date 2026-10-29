@@ -7,7 +7,7 @@ import { blobConfigured, listCatalogsByCategory } from "@/lib/catalogs";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "TIGIP â€” Catalog Manager",
+  title: "TIGIP — Catalog Manager",
 };
 
 const WEBMAIL_URL = "https://privateemail.com/";
@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
               rel="noopener noreferrer"
               className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
             >
-              âœ‰ Open PrivateEmail
+              Open PrivateEmail
             </a>
             <form action="/api/auth/logout" method="post">
               <button
@@ -63,7 +63,7 @@ export default async function AdminDashboard() {
         <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
           <h1 className="text-lg font-bold text-[var(--primary)]">Booking the mailbox</h1>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Email stays on Namecheap Private Email â€” the site never sees or stores your mailbox
+            Email stays on Namecheap Private Email — the site never sees or stores your mailbox
             password. Use the button above to open PrivateEmail in a new tab and sign in there as
             usual; your browser can remember it.
           </p>
@@ -72,7 +72,7 @@ export default async function AdminDashboard() {
         <CatalogManager catalogs={catalogs} blobReady={blobReady} />
 
         <p className="pb-6 text-center text-xs text-[var(--muted)]">
-          Signed in as administrator Â· changes go live immediately Â· session expires after 8 hours
+          Signed in as administrator · changes go live immediately · session expires after 8 hours
         </p>
       </main>
     </div>
