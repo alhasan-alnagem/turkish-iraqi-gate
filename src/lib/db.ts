@@ -86,11 +86,43 @@ export const DATABASE_VARS = URL_VARS;
 
 export class DatabaseConfigError extends Error {}
 
-function connectionString(): string | null {
+function rawConnectionVar(): { name: string; value: string } | null {
   for (const name of URL_VARS) {
     const value = process.env[name]?.trim();
-    if (value && /^postgres(ql)?:\/\//i.test(value)) return value;
+    if (value) return { name, value };
   }
+  return null;
+}
+
+/** A pasted docs example ("postgres://user:pass@host/db…") is not a URL. */
+function looksMasked(value: string): boolean {
+  return /…|%E2%80%A6|\.\.\./.test(value) || /[<>]/.test(value);
+}
+
+function connectionString(): string | null {
+  const raw = rawConnectionVar();
+  if (!raw || looksMasked(raw.value)) return null;
+  return /^postgres(ql)?:\/\//i.test(raw.value) ? raw.value : null;
+}
+
+/** Plain-language explanation of why the connection string is unusable. */
+export function databaseVariableProblem(): string | null {
+  const raw = rawConnectionVar();
+
+  if (!raw) {
+    return process.env.VERCEL
+      ? "No Postgres connection string is set for this deployment."
+      : null;
+  }
+
+  if (looksMasked(raw.value)) {
+    return `${raw.name} is a shortened example — it still contains "…". Paste the full connection string copied from the database dashboard.`;
+  }
+
+  if (!/^postgres(ql)?:\/\//i.test(raw.value)) {
+    return `${raw.name} does not start with postgresql:// — it should be the whole connection string, not one part of it.`;
+  }
+
   return null;
 }
 
@@ -140,7 +172,8 @@ async function init(): Promise<Queryable> {
   // an unrelated-looking error. Say what is actually wrong instead.
   if (process.env.VERCEL) {
     throw new DatabaseConfigError(
-      "No database connection string is set for this deployment. Add DATABASE_URL (or attach a Postgres/Neon store) in Vercel for both Preview and Production.",
+      databaseVariableProblem() ??
+        "No database connection string is set for this deployment. Add DATABASE_URL (or attach a Postgres/Neon store) in Vercel for both Preview and Production.",
     );
   }
 
@@ -175,19 +208,15 @@ export async function query<T = Row>(text: string, params: unknown[] = []): Prom
   return db.query<T>(text, params);
 }
 
-/** Name of the env var this deployment is actually using, or null. */
+/** Name of the env var this deployment is attempting to use, or null. */
 export function databaseVariableName(): string | null {
-  return URL_VARS.find((name) => {
-    const value = process.env[name]?.trim();
-    return Boolean(value && /^postgres(ql)?:\/\//i.test(value));
-  }) ?? null;
+  return rawConnectionVar()?.name ?? null;
 }
 
 /** Cheap probe used by the sign-in page to explain a broken setup. */
 export async function databaseHealth(): Promise<{ ok: boolean; reason: string | null }> {
-  if (!connectionString() && process.env.VERCEL) {
-    return { ok: false, reason: "No Postgres connection string is set for this deployment." };
-  }
+  const problem = databaseVariableProblem();
+  if (problem) return { ok: false, reason: problem };
 
   try {
     // Also creates the schema on first use, so a bad permission shows up here

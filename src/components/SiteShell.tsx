@@ -45,6 +45,15 @@ export function SiteHeader() {
           <div className="flex items-center gap-2 md:gap-3">
             <LanguageSwitcher />
             <Link
+              href="/login"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-white/70 hover:text-white transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+              </svg>
+              {t.footer.staffLogin}
+            </Link>
+            <Link
               href={l("/contact")}
               className="hidden lg:inline-flex bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
             >
@@ -83,6 +92,16 @@ export function SiteHeader() {
               className="mt-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white px-4 py-3 rounded-lg text-center font-semibold transition-colors"
             >
               {t.nav.getQuote}
+            </Link>
+            <Link
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-white/20 px-4 py-3 text-center text-sm font-medium text-white/80 transition-colors hover:border-white/40 hover:text-white"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+              </svg>
+              {t.footer.staffLogin}
             </Link>
           </div>
         </div>
