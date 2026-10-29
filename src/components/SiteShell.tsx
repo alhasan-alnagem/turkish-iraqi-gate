@@ -18,6 +18,7 @@ export function SiteHeader() {
     { href: l("/products"), label: t.nav.products },
     { href: l("/catalogs"), label: t.nav.catalogs },
     { href: l("/career"), label: t.nav.career },
+    { href: l("/track"), label: t.nav.track },
     { href: l("/contact"), label: t.nav.contact },
   ];
 
@@ -112,6 +113,7 @@ export function SiteFooter() {
               <li><Link href={l("/catalogs")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.catalogs}</Link></li>
               <li><Link href={l("/submit-catalog")} className="hover:text-[var(--accent-light)] transition-colors">{t.catalogSubmit.label}</Link></li>
               <li><Link href={l("/career")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.career}</Link></li>
+              <li><Link href={l("/track")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.track}</Link></li>
               <li><Link href={l("/contact")} className="hover:text-[var(--accent-light)] transition-colors">{t.nav.contact}</Link></li>
             </ul>
           </div>
@@ -158,15 +160,15 @@ export function SiteFooter() {
               &copy; {new Date().getFullYear()} Turkish Iraq Gate. {t.footer.rights}
             </span>
             <span className="hidden sm:inline text-white/25" aria-hidden="true">|</span>
-            <a
-              href="/admin/login"
+            <Link
+              href="/login"
               className="inline-flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 12H4m0 0l4-4m-4 4l4 4m4-9V6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2h-6a2 2 0 01-2-2v-1" />
               </svg>
               {t.footer.staffLogin}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

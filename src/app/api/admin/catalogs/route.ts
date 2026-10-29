@@ -1,5 +1,5 @@
-import { del } from "@vercel/blob";
-import { isAdmin } from "@/lib/admin-auth";
+﻿import { del } from "@vercel/blob";
+import { isAdmin } from "@/lib/auth";
 import { listCatalogsByCategory } from "@/lib/catalogs";
 
 export const runtime = "nodejs";

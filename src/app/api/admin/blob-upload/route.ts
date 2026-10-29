@@ -1,5 +1,5 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { isAdmin } from "@/lib/admin-auth";
+﻿import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { isAdmin } from "@/lib/auth";
 import { BLOB_PREFIX, isCategoryKey } from "@/lib/catalogs";
 
 export const runtime = "nodejs";

@@ -9,6 +9,7 @@ const tr: Translations = {
     catalogs: "Kataloglar",
     career: "Kariyer",
     contact: "İletişim",
+    track: "Takip",
     getQuote: "Teklif Al",
   },
   footer: {

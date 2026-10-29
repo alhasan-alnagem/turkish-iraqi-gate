@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/lib/LanguageProvider";
 
 export default function Contact() {
   const { t, lang } = useLanguage();
   const c = t.contact;
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [ref, setRef] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,6 +24,8 @@ export default function Contact() {
         body: JSON.stringify({ ...data, lang }),
       });
       if (!res.ok) throw new Error("Failed");
+      const payload = (await res.json().catch(() => ({}))) as { ref?: string };
+      setRef(payload.ref ?? "");
       setStatus("success");
       formEl.reset();
     } catch {
@@ -63,6 +67,14 @@ export default function Contact() {
                   <p className="text-sm text-green-700">
                     {c.form.successMessage}
                   </p>
+                  {ref ? (
+                    <p className="mt-3 text-sm text-green-800">
+                      <span className="font-semibold">{t.nav.track}: </span>
+                      <Link href={`/${lang}/track`} className="font-mono underline">
+                        {ref}
+                      </Link>
+                    </p>
+                  ) : null}
                   <button
                     onClick={() => setStatus("idle")}
                     className="mt-4 text-sm text-[var(--accent)] hover:underline font-semibold"

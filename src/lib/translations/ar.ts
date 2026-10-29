@@ -9,6 +9,7 @@ const ar: Translations = {
     catalogs: "الكتالوجات",
     career: "الوظائف",
     contact: "اتصل بنا",
+    track: "تتبّع الشحنة",
     getQuote: "طلب عرض سعر",
   },
   footer: {

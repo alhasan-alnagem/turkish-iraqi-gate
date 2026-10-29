@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# local Postgres fallback (PGlite)
+/.pglite/
+
 # production
 /build
 

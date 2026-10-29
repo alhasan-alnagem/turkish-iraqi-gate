@@ -194,6 +194,31 @@ const routeMeta: Record<string, Record<Lang, MetaDef>> = {
         "Üreticiler ve tedarikçiler: ürün kataloğunuzu Türkiye Irak Kapısı'nda listeleyin ve Irak'taki alıcılara ulaştırın.",
     },
   },
+  track: {
+    en: {
+      title: "Track Your Shipment",
+      description:
+        "Enter your TIGIP order number and the phone you ordered with to see every stage of your shipment from Turkey to your door in Iraq.",
+      ogTitle: "Track Your Shipment | Turkish Iraqi Gate",
+      ogDescription:
+        "Follow your order from factory to your door in Iraq with your order number and phone.",
+    },
+    ar: {
+      title: "تتبّع شحنتك",
+      description:
+        "أدخل رقم طلبك ورقم الهاتف الذي طلبت به لمعرفة كل مرحلة من شحنتك من تركيا حتى بابك في العراق.",
+      ogTitle: "تتبّع شحنتك | بوابة تركيا العراقية",
+      ogDescription: "تابع طلبك من المصنع إلى بابك في العراق برقم الطلب ورقم الهاتف.",
+    },
+    tr: {
+      title: "Gönderinizi Takip Edin",
+      description:
+        "TIGIP sipariş numaranızı ve sipariş verirken kullandığınız telefonu girerek gönderinizin Türkiye'den Irak'taki kapınıza kadar her aşamasını görün.",
+      ogTitle: "Gönderinizi Takip Edin | Türkiye Irak Kapısı",
+      ogDescription:
+        "Sipariş numaranız ve telefon numaranızla siparişinizi fabrikadan kapınıza kadar takip edin.",
+    },
+  },
   contact: {
     en: {
       title: "Contact Us",

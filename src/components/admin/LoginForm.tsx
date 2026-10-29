@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function LoginForm() {
+export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: string }) {
   const router = useRouter();
+  const [email, setEmail] = useState(suggestedEmail);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -16,10 +17,10 @@ export default function LoginForm() {
     setError(null);
 
     try {
-      const response = await fetch("/api/admin/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
 
@@ -29,7 +30,7 @@ export default function LoginForm() {
         return;
       }
 
-      router.replace("/admin");
+      router.replace("/portal");
       router.refresh();
     } catch {
       setError("Network error. Check your connection and try again.");
@@ -40,18 +41,30 @@ export default function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-[var(--foreground)] mb-2"
-        >
-          Admin password
+        <label htmlFor="email" className="mb-2 block text-sm font-medium">
+          Work email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="username"
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          className="w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/25"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password" className="mb-2 block text-sm font-medium">
+          Password
         </label>
         <input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
-          autoFocus
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}

@@ -9,6 +9,7 @@ const en: Translations = {
     catalogs: "Catalogs",
     career: "Careers",
     contact: "Contact",
+    track: "Track",
     getQuote: "Get a Quote",
   },
   footer: {

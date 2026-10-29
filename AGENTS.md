@@ -117,21 +117,38 @@ in `types.ts` — all three must stay structurally identical.
 - Prefers free/cheap infrastructure (Vercel free tier, Namecheap domain, Google Sheets instead of a DB).
 - Careful about data exposure and AI scraping (private originals, no public brand assets).
 
-## 10. Admin panel (`/admin`) — added Oct 2026
-- Purpose: let the user add/remove catalog PDFs without a code change or redeploy.
-- **Login is the site's own password, not the mailbox.** Password lives in
-  `ADMIN_PASSWORD`, session cookie is HMAC-signed with `ADMIN_SESSION_SECRET`
-  (8 h, httpOnly, `sameSite=lax`, `secure` in production). Code: `src/lib/admin-auth.ts`,
-  routes `/api/admin/login|logout`, page `/admin/login`. Session tokens are verified in
-  every admin page and every `/api/admin/*` route — keep it that way when adding routes.
+## 10. Staff portal (`/login`, `/portal`) and catalog manager (`/admin`) — Oct 2026
+- Two audiences, one sign-in page (`/login`, linked from the footer as
+  "Staff login / دخول الموظفين / Personel girişi"). After signing in:
+  - **staff** → `/portal` (orders only: queue, detail, status, assignment, notes)
+  - **admin** → everything staff has, plus `/portal/staff` (team) and `/admin` (catalogues)
+- **Login is a real account, not one shared password.** Accounts live in Postgres
+  (`staff` table); passwords are scrypt-hashed (`src/lib/staff.ts`). The very first
+  admin is created from `ADMIN_PASSWORD` + `ADMIN_EMAIL` on first login when the table
+  is empty (`ensureBootstrapAdmin`); everyone else is added from `/portal/staff`.
+  Code: `src/lib/auth.ts` (HMAC session + login throttle), `/api/auth/login|logout`.
+  The role is re-read from the database on every request, so revoking access is instant.
 - **The mailbox is deliberately NOT integrated.** PrivateEmail offers webmail + IMAP
-  only (no OAuth/SSO/login API), so the panel shows an "Open PrivateEmail" link that
+  only (no OAuth/SSO/login API), so `/admin` shows an "Open PrivateEmail" link that
   opens privateemail.com in a new tab. Do not "connect" the login form to it: that would
   mean storing the mailbox password server-side and replaying a login, which is credential
   harvesting and breaks on captcha/2FA.
+- **Orders are in Postgres** (`src/lib/db.ts`, `src/lib/orders.ts`), not the Google Sheet.
+  `DATABASE_URL` (Neon / Vercel Postgres) is the production store; with it unset the app
+  falls back to embedded PGlite in `.pglite/` for local work. The sheet is still written
+  from `/api/orders` as a mirror, and can be imported once via `/portal/import` (CSV).
+- **Order lifecycle** is fixed in `src/lib/order-status.ts`: received → quoted → confirmed
+  → factory_order → production → ready_to_ship → in_transit → customs → out_for_delivery
+  → delivered, plus `on_hold` / `cancelled`. Every change writes an `order_events` row with
+  the actor's name — that timeline is both the internal history and the customer's view.
+  Labels are trilingual; add any new state to all three languages.
+- **Customers track without an account**: `/[lang]/track` + `/api/track` take order ref
+  + the phone used on the order. Wrong ref and wrong phone return the same 404 on purpose
+  (`normalisePhone` makes 0780…/`+964 780…`/`00964…` equal). The lookup throttle is
+  generous (40 / 10 min / IP) because Iraqi mobile networks share addresses via CGNAT.
 - **Uploads go to Vercel Blob** (needs `BLOB_READ_WRITE_TOKEN`), not the repo: the repo is
   public, and the function body limit would cap uploads at ~4.5 MB. The browser asks
-  `/api/admin/blob-upload` for a token and uploads directly.
+  `/api/admin/blob-upload` for a token and uploads directly. `/api/admin/*` is admin-only.
 - **Stamping happens in the browser before upload** (`src/lib/stamp-pdf.ts`): 45°, 55%
   opacity bilingual logo (built from the two SVG logos by `scripts/make-stamp.mjs` into
   `src/assets/stamp-logo.png`, deliberately outside `public/`), noise layer, invisible
@@ -140,5 +157,8 @@ in `types.ts` — all three must stay structurally identical.
 - Files are stored with neutral names (`catalogs/<category>/<category>.pdf` + random
   suffix) so supplier filenames never appear in a URL.
 - Repo-committed PDFs show as "locked" in the panel and can only be removed via a commit.
-- `/admin` is disallowed in `robots.ts` and `noindex`; it has its own root layout
-  (`src/app/admin/layout.tsx`) outside the `[lang]` tree, English-only by design.
+- `/admin`, `/portal` and `/login` are outside the `[lang]` tree, English-only, `noindex`,
+  each with its own root layout; `/admin` and `/portal` are disallowed in `robots.ts`.
+- No supplier name is ever shown to a customer: order details, notes and the timeline are
+  internal; the tracking page shows status and product only.
+

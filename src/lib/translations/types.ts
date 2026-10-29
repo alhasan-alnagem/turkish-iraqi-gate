@@ -7,6 +7,7 @@ export type Translations = {
     catalogs: string;
     career: string;
     contact: string;
+    track: string;
     getQuote: string;
   };
   footer: {
