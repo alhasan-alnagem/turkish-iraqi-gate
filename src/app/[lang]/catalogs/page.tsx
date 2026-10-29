@@ -1,28 +1,11 @@
-import fs from "node:fs";
-import path from "node:path";
 import Link from "next/link";
 import { getTranslations } from "@/lib/translations";
+import { CATEGORY_ORDER, listCatalogsByCategory } from "@/lib/catalogs";
 import { toLang } from "@/lib/seo";
 
-const CATEGORY_ORDER = [
-  "medical-equipment",
-  "construction-materials",
-  "specialized-equipment",
-  "electronics",
-  "automotive-parts",
-  "furniture",
-  "textiles-apparel",
-  "industrial-machinery",
-] as const;
-
-function listPdfs(folder: string): string[] {
-  const dir = path.join(process.cwd(), "public", "catalogs", folder);
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.toLowerCase().endsWith(".pdf"))
-    .sort();
-}
+// Catalog PDFs can now be added or removed from the admin panel, so the list
+// must be read on each request rather than baked in at build time.
+export const dynamic = "force-dynamic";
 
 type Params = { lang: string };
 
@@ -30,6 +13,7 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
   const { lang: langParam } = await params;
   const t = getTranslations(toLang(langParam));
   const c = t.catalogs;
+  const catalogs = await listCatalogsByCategory();
 
   return (
     <>
@@ -62,7 +46,7 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {CATEGORY_ORDER.map((key) => {
-              const pdfs = listPdfs(key);
+              const pdfs = catalogs[key];
               return (
                 <div
                   key={key}
@@ -73,16 +57,16 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
                   </h3>
                   {pdfs.length > 0 ? (
                     <ul className="space-y-3">
-                      {pdfs.map((pdf, i) => (
-                        <li key={pdf}>
+                      {pdfs.map((pdf) => (
+                        <li key={pdf.id}>
                           <a
-                            href={`/catalogs/${key}/${pdf}`}
+                            href={pdf.href}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block py-3 px-4 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--section)] transition-colors"
                           >
                             <span className="block font-medium text-[var(--primary)]">
-                              {c.categories[key] ?? key} {i + 1}
+                              {c.categories[key] ?? key} {pdf.index}
                             </span>
                             <span className="text-sm text-[var(--muted)]">{c.view}</span>
                           </a>
