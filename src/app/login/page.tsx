@@ -29,6 +29,12 @@ export default async function LoginPage() {
   const suggestedEmail = firstRun ? (process.env.ADMIN_EMAIL ?? "alhasan.alnagem@tigip.com") : "";
   const presence = databaseEnvPresence().filter((entry) => entry.present);
   const environment = process.env.VERCEL_ENV ?? (process.env.VERCEL ? "vercel" : "local");
+  const hasBootstrapPassword = Boolean(process.env.ADMIN_PASSWORD);
+  const hasSessionSecret = (process.env.ADMIN_SESSION_SECRET?.length ?? 0) >= 16;
+  const configGap =
+    dbProblem === null && !hasSessionSecret
+      ? "ADMIN_SESSION_SECRET is missing (needs 16+ characters), so no one can sign in."
+      : null;
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-16">
@@ -49,7 +55,15 @@ export default async function LoginPage() {
         </div>
 
         <div className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
-          {dbProblem ? (
+          {configGap ? (
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold text-red-700">Setup incomplete</p>
+              <p>{configGap}</p>
+              <p className="text-xs text-[var(--muted)]">
+                Vercel → Project → Settings → Environment Variables, then redeploy.
+              </p>
+            </div>
+          ) : dbProblem ? (
             <div className="space-y-3 text-sm">
               <p className="font-semibold text-red-700">Database not reachable</p>
               <p className="text-[var(--foreground)]">{dbProblem.reason}</p>
@@ -78,11 +92,21 @@ export default async function LoginPage() {
                 and <strong>Production</strong>, then redeploy.
               </p>
             </div>
+          ) : firstRun && !hasBootstrapPassword ? (
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold text-[var(--primary)]">No account exists yet</p>
+              <p>
+                The database is connected and empty. Set{" "}
+                <code className="font-mono">ADMIN_PASSWORD</code> in Vercel, redeploy, then sign in
+                here with <strong>{suggestedEmail}</strong> — that first sign-in creates your
+                administrator account.
+              </p>
+            </div>
           ) : (
             <LoginForm suggestedEmail={suggestedEmail} />
           )}
 
-          {firstRun && !dbProblem ? (
+          {firstRun && !dbProblem && !configGap && hasBootstrapPassword ? (
             <p className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
               First sign-in: use <strong>{suggestedEmail}</strong> with the{" "}
               <code className="font-mono">ADMIN_PASSWORD</code> you set in Vercel. You can add your

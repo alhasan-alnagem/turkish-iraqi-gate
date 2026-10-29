@@ -9,7 +9,7 @@ import {
   tooManyAttempts,
 } from "@/lib/auth";
 import { DatabaseConfigError, safeErrorMessage } from "@/lib/db";
-import { ensureBootstrapAdmin, findStaffByEmail, verifyPassword } from "@/lib/staff";
+import { ensureBootstrapAdmin, countStaff, findStaffByEmail, verifyPassword } from "@/lib/staff";
 
 export const runtime = "nodejs";
 
@@ -62,6 +62,16 @@ export async function POST(request: NextRequest) {
 
   const staff = await findStaffByEmail(email);
 
+  if (!staff && (await countStaff()) === 0) {
+    return Response.json(
+      {
+        error:
+          "No staff accounts exist yet. Set ADMIN_PASSWORD in Vercel (and ADMIN_EMAIL if you want a different address), redeploy, then sign in again.",
+      },
+      { status: 503 },
+    );
+  }
+
   // Same message and timing whether the account is missing, inactive or the
   // password is wrong — no account enumeration.
   if (!staff || !staff.active || !verifyPassword(password, staff.password_hash)) {
@@ -72,8 +82,22 @@ export async function POST(request: NextRequest) {
 
   clearFailures(key);
 
+  let token: string;
+  try {
+    token = createSessionToken(staff.id);
+  } catch (error) {
+    console.error("session secret missing", error);
+    return Response.json(
+      {
+        error:
+          "ADMIN_SESSION_SECRET is missing or too short (needs 16+ characters). Set it in Vercel and redeploy.",
+      },
+      { status: 503 },
+    );
+  }
+
   const store = await cookies();
-  store.set(SESSION_COOKIE, createSessionToken(staff.id), {
+  store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
