@@ -17,6 +17,7 @@ const en: Translations = {
     services: "Services",
     contact: "Contact",
     rights: "Turkish Iraq Gate. All rights reserved.",
+    staffLogin: "Staff login",
   },
   home: {
     hero: {

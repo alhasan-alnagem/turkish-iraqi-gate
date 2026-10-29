@@ -15,6 +15,7 @@ export type Translations = {
     services: string;
     contact: string;
     rights: string;
+    staffLogin: string;
   };
   home: {
     hero: {

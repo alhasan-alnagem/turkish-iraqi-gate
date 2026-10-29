@@ -152,8 +152,22 @@ export function SiteFooter() {
             </a>
           </div>
         </div>
-        <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm">
-          &copy; {new Date().getFullYear()} Turkish Iraq Gate. {t.footer.rights}
+        <div className="border-t border-white/10 mt-8 pt-8 text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <span>
+              &copy; {new Date().getFullYear()} Turkish Iraq Gate. {t.footer.rights}
+            </span>
+            <span className="hidden sm:inline text-white/25" aria-hidden="true">|</span>
+            <a
+              href="/admin/login"
+              className="inline-flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 12H4m0 0l4-4m-4 4l4 4m4-9V6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2h-6a2 2 0 01-2-2v-1" />
+              </svg>
+              {t.footer.staffLogin}
+            </a>
+          </div>
         </div>
       </div>
     </footer>

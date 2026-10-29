@@ -17,6 +17,7 @@ const tr: Translations = {
     services: "Hizmetler",
     contact: "İletişim",
     rights: "Türkiye Irak Kapısı. Tüm hakları saklıdır.",
+    staffLogin: "Personel girişi",
   },
   home: {
     hero: {

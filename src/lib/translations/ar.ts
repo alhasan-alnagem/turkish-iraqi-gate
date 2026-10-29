@@ -17,6 +17,7 @@ const ar: Translations = {
     services: "الخدمات",
     contact: "الاتصال",
     rights: "بوابة تركيا العراقية. جميع الحقوق محفوظة.",
+    staffLogin: "دخول الموظفين",
   },
   home: {
     hero: {
