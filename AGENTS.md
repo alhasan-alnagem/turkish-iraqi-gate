@@ -131,6 +131,10 @@ in `types.ts` — all three must stay structurally identical.
   Sessions last 8 hours; the **Remember me** checkbox on `/login` extends the cookie and
   the signed token to 30 days (`REMEMBER_TTL_SECONDS`). The session expiry is embedded in
   the token, so shortening the TTL never keeps an old long session alive.
+- **Everyone can change their own password** at `/portal/account` (nav: "My account").
+  It asks for the current password, requires 8+ characters and shares the login throttle
+  per account. Admins still reset other people's passwords from `/portal/staff`; a staff
+  member who has forgotten theirs asks an admin rather than using a reset link.
 - **The mailbox is deliberately NOT integrated.** PrivateEmail offers webmail + IMAP
   only (no OAuth/SSO/login API), so every dashboard header (`/portal` layout and `/admin`)
   carries a PrivateEmail button (`WEBMAIL_URL` in `src/lib/mailbox.ts`) that opens

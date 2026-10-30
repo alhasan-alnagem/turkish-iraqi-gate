@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { currentStaff } from "@/lib/auth";
+import { clearFailures, currentStaff, recordFailure, tooManyAttempts } from "@/lib/auth";
 import { importCsv } from "@/lib/import-orders";
 import { isOrderStatus } from "@/lib/order-status";
 import { addNote, assignOrder, createOrder, deleteOrder, getOrder, setStatus } from "@/lib/orders";
@@ -11,8 +11,10 @@ import {
   countActiveAdmins,
   createStaff,
   deleteStaff,
+  findStaffByEmail,
   findStaffById,
   updateStaff,
+  verifyPassword,
 } from "@/lib/staff";
 
 async function requireActor() {
@@ -26,6 +28,42 @@ async function requireAdminActor() {
   if (!staff) redirect("/login");
   if (staff.role !== "admin") redirect("/portal?error=forbidden");
   return staff;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/* -------------------------------- my account ------------------------------- */
+
+/**
+ * Self-service password change. The current password is required so a borrowed
+ * unlocked browser cannot be used to lock the owner out.
+ */
+export async function changeOwnPasswordAction(formData: FormData) {
+  const actor = await requireActor();
+
+  const current = String(formData.get("currentPassword") ?? "");
+  const next = String(formData.get("newPassword") ?? "");
+  const confirmation = String(formData.get("confirmPassword") ?? "");
+
+  // Same throttle shape as the sign-in form, keyed per account.
+  const key = `password:${actor.id}`;
+  if (tooManyAttempts(key)) redirect("/portal/account?error=too-many");
+  if (next.length < 8) redirect("/portal/account?error=short");
+  if (next !== confirmation) redirect("/portal/account?error=mismatch");
+  if (next === current) redirect("/portal/account?error=unchanged");
+
+  const row = await findStaffByEmail(actor.email);
+  if (!row || !row.active || !verifyPassword(current, row.password_hash)) {
+    recordFailure(key);
+    await sleep(300);
+    redirect("/portal/account?error=wrong-current");
+  }
+
+  clearFailures(key);
+  await updateStaff(actor.id, { password: next });
+
+  revalidatePath("/portal/account");
+  redirect("/portal/account?changed=1");
 }
 
 /* --------------------------------- orders --------------------------------- */

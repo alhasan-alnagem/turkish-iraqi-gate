@@ -44,6 +44,9 @@ export default async function PortalLayout({ children }: { children: React.React
                 <Link href="/portal/orders/new" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   New order
                 </Link>
+                <Link href="/portal/account" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
+                  My account
+                </Link>
                 {staff.role === "admin" ? (
                   <>
                     <Link href="/portal/staff" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
