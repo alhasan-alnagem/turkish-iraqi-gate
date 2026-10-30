@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ALL_STATUSES, statusLabel } from "@/lib/order-status";
 import { getOrder, getTimeline, normalisePhone } from "@/lib/orders";
+import { sheetMirrorConfigured } from "@/lib/sheet-mirror";
 import { listActiveStaff } from "@/lib/staff";
-import { assignAction, changeStatusAction, noteAction } from "../../actions";
+import { assignAction, changeStatusAction, noteAction, sendToSheetAction } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +18,20 @@ function fmt(value: string | Date): string {
   }).format(new Date(value));
 }
 
-export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function OrderDetail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ sheet?: string }>;
+}) {
+  const [{ id }, { sheet }] = await Promise.all([params, searchParams]);
   const order = await getOrder(id);
   if (!order) notFound();
 
   const [timeline, staff] = await Promise.all([getTimeline(id), listActiveStaff()]);
   const whatsapp = `https://wa.me/${normalisePhone(order.phone) ? `964${normalisePhone(order.phone)}` : ""}`;
+  const sheetReady = sheetMirrorConfigured();
 
   return (
     <div className="space-y-6">
@@ -54,6 +62,24 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           ) : null}
         </div>
       </div>
+
+      {sheet === "sent" ? (
+        <p
+          role="status"
+          className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+        >
+          Copy sent to the Google Sheet.
+        </p>
+      ) : sheet === "failed" ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          The Google Sheet copy could not be written. Check that{" "}
+          <code className="font-mono">GOOGLE_SHEETS_URL</code> is set and that the Apps Script
+          deployment is still live, then try again.
+        </p>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="space-y-6">
@@ -194,6 +220,34 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
             <p className="mt-3 text-xs text-[var(--muted)]">
               Notes appear on the internal timeline only. Customers see status changes.
             </p>
+          </section>
+
+          <section className="rounded-2xl border border-[var(--border)] bg-white p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+              Google Sheet
+            </h2>
+            {sheetReady ? (
+              <>
+                <p className="mt-2 text-xs text-[var(--muted)]">
+                  New orders are copied automatically. Use this if the row is missing or the
+                  spreadsheet was edited.
+                </p>
+                <form action={sendToSheetAction} className="mt-3">
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <button
+                    type="submit"
+                    className="w-full rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-[var(--section)]"
+                  >
+                    Send to sheet
+                  </button>
+                </form>
+              </>
+            ) : (
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                Not configured — <code className="font-mono">GOOGLE_SHEETS_URL</code> is unset in
+                this deployment, so the order lives only in the portal.
+              </p>
+            )}
           </section>
         </div>
       </div>

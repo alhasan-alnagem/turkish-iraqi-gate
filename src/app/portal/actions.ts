@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { currentStaff } from "@/lib/auth";
 import { importCsv } from "@/lib/import-orders";
 import { isOrderStatus } from "@/lib/order-status";
-import { addNote, assignOrder, createOrder, setStatus } from "@/lib/orders";
+import { addNote, assignOrder, createOrder, getOrder, setStatus } from "@/lib/orders";
+import { mirrorOrderToSheet, sendOrderToSheet } from "@/lib/sheet-mirror";
 import {
   countActiveAdmins,
   createStaff,
@@ -56,6 +57,10 @@ export async function createOrderAction(formData: FormData) {
       actorName: actor.name,
     });
     orderId = order.id;
+
+    // Keep the spreadsheet copy in step with the portal (no-op when the sheet
+    // is not configured).
+    mirrorOrderToSheet(order);
   } catch (error) {
     console.error("manual order creation failed", error);
     redirect("/portal/orders/new?error=create-failed");
@@ -108,8 +113,22 @@ export async function noteAction(formData: FormData) {
   revalidatePath(`/portal/orders/${orderId}`);
 }
 
-/* --------------------------------- import --------------------------------- */
+/** Re-sends one order to the spreadsheet (backfill or retry after a failure). */
+export async function sendToSheetAction(formData: FormData) {
+  await requireActor();
+  const orderId = String(formData.get("orderId") ?? "");
+  if (!orderId) redirect("/portal");
 
+  const order = await getOrder(orderId);
+  if (!order) redirect("/portal");
+
+  const result = await sendOrderToSheet(order);
+  if (!result.ok) console.error("Google Sheets write failed:", result.reason);
+
+  redirect(`/portal/orders/${orderId}?sheet=${result.ok ? "sent" : "failed"}`);
+}
+
+/* --------------------------------- import --------------------------------- */
 export async function importOrdersAction(formData: FormData) {
   await requireAdminActor();
 

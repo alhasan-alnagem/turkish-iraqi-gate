@@ -144,6 +144,9 @@ in `types.ts` — all three must stay structurally identical.
 - **Orders can also be created in the portal** at `/portal/orders/new` (any signed-in role,
   button on the queue and in the nav). They are stored with `source = 'manual'` and the
   first timeline entry names the staff member, so the Google Sheet is optional end to end.
+  When `GOOGLE_SHEETS_URL` *is* set, manual orders are mirrored to it too
+  (`src/lib/sheet-mirror.ts`, fire-and-forget with `after()`); the order detail page has a
+  **Send to sheet** button to backfill or retry a row. Without the URL the card says so.
 - **Order lifecycle** is fixed in `src/lib/order-status.ts`: received → quoted → confirmed
   → factory_order → production → ready_to_ship → in_transit → customs → out_for_delivery
   → delivered, plus `on_hold` / `cancelled`. Every change writes an `order_events` row with
