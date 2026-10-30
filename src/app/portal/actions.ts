@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { currentStaff } from "@/lib/auth";
 import { importCsv } from "@/lib/import-orders";
 import { isOrderStatus } from "@/lib/order-status";
-import { addNote, assignOrder, setStatus } from "@/lib/orders";
+import { addNote, assignOrder, createOrder, setStatus } from "@/lib/orders";
 import {
   countActiveAdmins,
   createStaff,
@@ -28,6 +28,42 @@ async function requireAdminActor() {
 }
 
 /* --------------------------------- orders --------------------------------- */
+
+export async function createOrderAction(formData: FormData) {
+  const actor = await requireActor();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const currency = String(formData.get("currency") ?? "USD").toUpperCase() === "IQD" ? "IQD" : "USD";
+
+  if (!name || !phone) redirect("/portal/orders/new?error=missing-contact");
+
+  let orderId: string;
+  try {
+    const order = await createOrder({
+      name,
+      phone,
+      city: String(formData.get("city") ?? "").trim(),
+      product: String(formData.get("product") ?? "").trim(),
+      quantity: String(formData.get("quantity") ?? "").trim(),
+      budget: String(formData.get("budget") ?? "").trim(),
+      currency,
+      shipping: formData.get("shipping") === "yes",
+      details: String(formData.get("details") ?? "").trim(),
+      source: "manual",
+      eventNote: `Order added manually by ${actor.name}`,
+      actorId: actor.id,
+      actorName: actor.name,
+    });
+    orderId = order.id;
+  } catch (error) {
+    console.error("manual order creation failed", error);
+    redirect("/portal/orders/new?error=create-failed");
+  }
+
+  revalidatePath("/portal");
+  redirect(`/portal/orders/${orderId}`);
+}
 
 export async function changeStatusAction(formData: FormData) {
   const actor = await requireActor();

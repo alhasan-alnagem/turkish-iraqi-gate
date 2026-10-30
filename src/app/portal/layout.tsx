@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import "../globals.css";
 import { currentStaff } from "@/lib/auth";
+import { WEBMAIL_URL } from "@/lib/mailbox";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,9 @@ export default async function PortalLayout({ children }: { children: React.React
                 <Link href="/portal" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   Orders
                 </Link>
+                <Link href="/portal/orders/new" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
+                  New order
+                </Link>
                 {staff.role === "admin" ? (
                   <>
                     <Link href="/portal/staff" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
@@ -54,6 +58,28 @@ export default async function PortalLayout({ children }: { children: React.React
               <span className="hidden text-white/70 sm:inline">
                 {staff.name} · {staff.role === "admin" ? "admin" : "staff"}
               </span>
+              <a
+                href={WEBMAIL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 font-semibold text-white transition-colors hover:bg-white/20"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm0 .5l9 6 9-6"
+                  />
+                </svg>
+                PrivateEmail
+              </a>
               <form action="/api/auth/logout" method="post">
                 <button
                   type="submit"

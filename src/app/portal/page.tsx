@@ -84,24 +84,33 @@ export default async function PortalDashboard({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] p-5">
           <h1 className="text-lg font-bold text-[var(--primary)]">Orders</h1>
 
-          <form className="flex items-center gap-2" action="/portal">
-            {statusFilter !== "open" ? (
-              <input type="hidden" name="status" value={statusFilter} />
-            ) : null}
-            <input
-              type="search"
-              name="q"
-              defaultValue={params.q ?? ""}
-              placeholder="Reference, name, phone, product…"
-              className="w-64 rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white"
+          <div className="flex flex-wrap items-center gap-2">
+            <form className="flex items-center gap-2" action="/portal">
+              {statusFilter !== "open" ? (
+                <input type="hidden" name="status" value={statusFilter} />
+              ) : null}
+              <input
+                type="search"
+                name="q"
+                defaultValue={params.q ?? ""}
+                placeholder="Reference, name, phone, product…"
+                className="w-64 rounded-lg border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-[var(--primary)] px-3 py-2 text-sm font-medium text-white"
+              >
+                Search
+              </button>
+            </form>
+
+            <Link
+              href="/portal/orders/new"
+              className="rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-light)]"
             >
-              Search
-            </button>
-          </form>
+              + New order
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 border-b border-[var(--border)] p-4">

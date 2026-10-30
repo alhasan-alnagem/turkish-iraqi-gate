@@ -1,16 +1,16 @@
 ﻿import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import CatalogManager from "@/components/admin/CatalogManager";
 import { isAdmin } from "@/lib/auth";
 import { blobConfigured, listCatalogsByCategory } from "@/lib/catalogs";
+import { WEBMAIL_URL } from "@/lib/mailbox";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "TIGIP — Catalog Manager",
 };
-
-const WEBMAIL_URL = "https://privateemail.com/";
 
 export default async function AdminDashboard() {
   if (!(await isAdmin())) redirect("/login");
@@ -39,13 +39,19 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/portal"
+              className="hidden rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white sm:inline"
+            >
+              Orders
+            </Link>
             <a
               href={WEBMAIL_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
             >
-              Open PrivateEmail
+              PrivateEmail
             </a>
             <form action="/api/auth/logout" method="post">
               <button
@@ -72,7 +78,8 @@ export default async function AdminDashboard() {
         <CatalogManager catalogs={catalogs} blobReady={blobReady} />
 
         <p className="pb-6 text-center text-xs text-[var(--muted)]">
-          Signed in as administrator · changes go live immediately · session expires after 8 hours
+          Signed in as administrator · changes go live immediately · sessions last 8 hours, or 30
+          days with &ldquo;Remember me&rdquo;
         </p>
       </main>
     </div>

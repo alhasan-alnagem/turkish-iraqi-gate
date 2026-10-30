@@ -18,6 +18,8 @@ import { findStaffById, type Staff } from "@/lib/staff";
 
 export const SESSION_COOKIE = "tigip_session";
 export const SESSION_TTL_SECONDS = 8 * 60 * 60;
+/** "Remember me" — a month on this device instead of a working day. */
+export const REMEMBER_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 export class AuthConfigError extends Error {}
 
@@ -37,8 +39,12 @@ function safeEqual(a: Buffer, b: Buffer): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function createSessionToken(staffId: string, now: number = Date.now()): string {
-  const expires = now + SESSION_TTL_SECONDS * 1000;
+export function createSessionToken(
+  staffId: string,
+  ttlSeconds: number = SESSION_TTL_SECONDS,
+  now: number = Date.now(),
+): string {
+  const expires = now + ttlSeconds * 1000;
   const payload = `${staffId}.${expires}`;
   return `${payload}.${sign(payload).toString("base64url")}`;
 }

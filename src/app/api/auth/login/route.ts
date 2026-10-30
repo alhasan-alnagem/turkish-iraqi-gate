@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import {
+  REMEMBER_TTL_SECONDS,
   SESSION_COOKIE,
   SESSION_TTL_SECONDS,
   clearFailures,
@@ -31,10 +32,12 @@ export async function POST(request: NextRequest) {
 
   let email = "";
   let password = "";
+  let remember = false;
   try {
-    const body = (await request.json()) as { email?: unknown; password?: unknown };
+    const body = (await request.json()) as { email?: unknown; password?: unknown; remember?: unknown };
     email = typeof body.email === "string" ? body.email : "";
     password = typeof body.password === "string" ? body.password : "";
+    remember = body.remember === true;
   } catch {
     /* fall through to the generic failure */
   }
@@ -82,9 +85,11 @@ export async function POST(request: NextRequest) {
 
   clearFailures(key);
 
+  const ttl = remember ? REMEMBER_TTL_SECONDS : SESSION_TTL_SECONDS;
+
   let token: string;
   try {
-    token = createSessionToken(staff.id);
+    token = createSessionToken(staff.id, ttl);
   } catch (error) {
     console.error("session secret missing", error);
     return Response.json(
@@ -102,7 +107,7 @@ export async function POST(request: NextRequest) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: SESSION_TTL_SECONDS,
+    maxAge: ttl,
   });
 
   return Response.json({ ok: true, role: staff.role });

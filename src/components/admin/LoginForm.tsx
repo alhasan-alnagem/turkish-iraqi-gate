@@ -7,6 +7,7 @@ export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: st
   const router = useRouter();
   const [email, setEmail] = useState(suggestedEmail);
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -20,7 +21,7 @@ export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: st
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, remember }),
       });
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
 
@@ -70,6 +71,21 @@ export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: st
           onChange={(event) => setPassword(event.target.value)}
           className="w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/25"
         />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          id="remember"
+          name="remember"
+          type="checkbox"
+          checked={remember}
+          onChange={(event) => setRemember(event.target.checked)}
+          className="h-4 w-4 rounded border-[var(--border)] accent-[var(--accent)]"
+        />
+        <label htmlFor="remember" className="text-sm text-[var(--muted)]">
+          Remember me on this device
+          <span className="block text-xs">Stay signed in for 30 days</span>
+        </label>
       </div>
 
       {error ? (

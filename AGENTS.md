@@ -128,15 +128,22 @@ in `types.ts` — all three must stay structurally identical.
   is empty (`ensureBootstrapAdmin`); everyone else is added from `/portal/staff`.
   Code: `src/lib/auth.ts` (HMAC session + login throttle), `/api/auth/login|logout`.
   The role is re-read from the database on every request, so revoking access is instant.
+  Sessions last 8 hours; the **Remember me** checkbox on `/login` extends the cookie and
+  the signed token to 30 days (`REMEMBER_TTL_SECONDS`). The session expiry is embedded in
+  the token, so shortening the TTL never keeps an old long session alive.
 - **The mailbox is deliberately NOT integrated.** PrivateEmail offers webmail + IMAP
-  only (no OAuth/SSO/login API), so `/admin` shows an "Open PrivateEmail" link that
-  opens privateemail.com in a new tab. Do not "connect" the login form to it: that would
-  mean storing the mailbox password server-side and replaying a login, which is credential
-  harvesting and breaks on captcha/2FA.
+  only (no OAuth/SSO/login API), so every dashboard header (`/portal` layout and `/admin`)
+  carries a PrivateEmail button (`WEBMAIL_URL` in `src/lib/mailbox.ts`) that opens
+  privateemail.com in a new tab — visible to staff and admins alike. Do not "connect" the
+  login form to it: that would mean storing the mailbox password server-side and replaying
+  a login, which is credential harvesting and breaks on captcha/2FA.
 - **Orders are in Postgres** (`src/lib/db.ts`, `src/lib/orders.ts`), not the Google Sheet.
   `DATABASE_URL` (Neon / Vercel Postgres) is the production store; with it unset the app
   falls back to embedded PGlite in `.pglite/` for local work. The sheet is still written
   from `/api/orders` as a mirror, and can be imported once via `/portal/import` (CSV).
+- **Orders can also be created in the portal** at `/portal/orders/new` (any signed-in role,
+  button on the queue and in the nav). They are stored with `source = 'manual'` and the
+  first timeline entry names the staff member, so the Google Sheet is optional end to end.
 - **Order lifecycle** is fixed in `src/lib/order-status.ts`: received → quoted → confirmed
   → factory_order → production → ready_to_ship → in_transit → customs → out_for_delivery
   → delivered, plus `on_hold` / `cancelled`. Every change writes an `order_events` row with

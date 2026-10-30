@@ -73,6 +73,10 @@ export type NewOrderInput = {
   lang?: string;
   source?: string;
   createdAt?: string;
+  /** First timeline entry. Defaults to the website wording. */
+  eventNote?: string;
+  actorId?: string | null;
+  actorName?: string | null;
 };
 
 /** Creates an order and its first timeline entry. */
@@ -107,7 +111,13 @@ export async function createOrder(input: NewOrderInput): Promise<Order> {
       );
 
       const order = await getOrder(rows[0].id);
-      await addEvent(rows[0].id, "received", "Order received from the website", null, null);
+      await addEvent(
+        rows[0].id,
+        "received",
+        input.eventNote ?? "Order received from the website",
+        input.actorId ?? null,
+        input.actorName ?? null,
+      );
       return order!;
     } catch (error) {
       lastError = error;
