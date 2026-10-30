@@ -23,14 +23,20 @@ export default async function PortalLayout({ children }: { children: React.React
         <header className="bg-[var(--primary)] text-white">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-4">
-              <Image
-                src="/logo.svg"
-                alt="Turkish Iraqi Gate"
-                width={230}
-                height={66}
-                className="h-8 w-auto rounded"
-                priority
-              />
+              <Link
+                href="/portal"
+                aria-label="Orders dashboard"
+                className="rounded transition-opacity hover:opacity-80"
+              >
+                <Image
+                  src="/logo.svg"
+                  alt="Turkish Iraqi Gate"
+                  width={230}
+                  height={66}
+                  className="h-8 w-auto rounded"
+                  priority
+                />
+              </Link>
               <nav className="flex items-center gap-1 text-sm">
                 <Link href="/portal" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   Orders

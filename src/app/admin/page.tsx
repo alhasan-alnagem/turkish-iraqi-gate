@@ -25,14 +25,20 @@ export default async function AdminDashboard() {
       <header className="bg-[var(--primary)] text-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-4">
-            <Image
-              src="/logo.svg"
-              alt="Turkish Iraqi Gate"
-              width={230}
-              height={66}
-              className="h-9 w-auto rounded"
-              priority
-            />
+            <Link
+              href="/portal"
+              aria-label="Orders dashboard"
+              className="rounded transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="/logo.svg"
+                alt="Turkish Iraqi Gate"
+                width={230}
+                height={66}
+                className="h-9 w-auto rounded"
+                priority
+              />
+            </Link>
             <span className="hidden text-sm font-medium text-white/80 sm:inline">
               Catalog manager
             </span>
