@@ -8,6 +8,7 @@ import { isOrderStatus } from "@/lib/order-status";
 import { addNote, assignOrder, createOrder, deleteOrder, getOrder, setStatus } from "@/lib/orders";
 import { mirrorOrderToSheet, sendOrderToSheet } from "@/lib/sheet-mirror";
 import {
+  canAssignOrders,
   countActiveAdmins,
   createStaff,
   deleteStaff,
@@ -15,6 +16,7 @@ import {
   findStaffById,
   updateStaff,
   verifyPassword,
+  type Role,
 } from "@/lib/staff";
 
 async function requireActor() {
@@ -28,6 +30,20 @@ async function requireAdminActor() {
   if (!staff) redirect("/login");
   if (staff.role !== "admin") redirect("/portal?error=forbidden");
   return staff;
+}
+
+/** Assignment is limited to coordinators and administrators. */
+async function requireAssigner() {
+  const staff = await currentStaff();
+  if (!staff) redirect("/login");
+  if (!canAssignOrders(staff.role)) redirect(`/portal?error=forbidden`);
+  return staff;
+}
+
+function parseRole(value: string): Role {
+  if (value === "admin") return "admin";
+  if (value === "coordinator") return "coordinator";
+  return "staff";
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -124,7 +140,7 @@ export async function changeStatusAction(formData: FormData) {
 }
 
 export async function assignAction(formData: FormData) {
-  const actor = await requireActor();
+  const actor = await requireAssigner();
   const orderId = String(formData.get("orderId") ?? "");
   const staffId = String(formData.get("staffId") ?? "");
 
@@ -175,7 +191,7 @@ export async function deleteOrderAction(formData: FormData) {
   const order = await getOrder(orderId);
   if (!order) redirect("/portal");
 
-  await deleteOrder(orderId);
+  await deleteOrder(orderId, actor.id, actor.name);
   console.warn(`order ${order.ref} deleted by ${actor.name} (${actor.id})`);
 
   revalidatePath("/portal");
@@ -208,7 +224,7 @@ export async function createStaffAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const role = String(formData.get("role") ?? "staff") === "admin" ? "admin" : "staff";
+  const role = parseRole(String(formData.get("role") ?? "staff"));
 
   if (!name || !email || password.length < 8) {
     redirect("/portal/staff?error=missing-fields");
@@ -231,7 +247,7 @@ export async function updateStaffAction(formData: FormData) {
   const actor = await requireAdminActor();
   const staffId = String(formData.get("staffId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const role = String(formData.get("role") ?? "staff") === "admin" ? "admin" : "staff";
+  const role = parseRole(String(formData.get("role") ?? "staff"));
   const password = String(formData.get("password") ?? "");
 
   if (!staffId) redirect("/portal/staff");

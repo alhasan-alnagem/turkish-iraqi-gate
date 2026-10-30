@@ -2,7 +2,8 @@ import "server-only";
 
 import { query } from "@/lib/db";
 import { ensureBootstrapAdmin } from "@/lib/staff";
-import { OPEN_STATUSES, type OrderStatus } from "@/lib/order-status";
+import { notify } from "@/lib/notifications";
+import { OPEN_STATUSES, statusLabel, type OrderStatus } from "@/lib/order-status";
 
 export type Order = {
   id: string;
@@ -118,6 +119,20 @@ export async function createOrder(input: NewOrderInput): Promise<Order> {
         input.actorId ?? null,
         input.actorName ?? null,
       );
+      await notify({
+        kind: "order_created",
+        summary: `New order ${ref} — ${input.name}`,
+        orderId: rows[0].id,
+        orderRef: ref,
+        actorId: input.actorId ?? null,
+        actorName:
+          input.actorName ??
+          (input.source === "website"
+            ? "Website"
+            : input.source === "sheet-import"
+              ? "Sheet import"
+              : null),
+      });
       return order!;
     } catch (error) {
       lastError = error;
@@ -221,8 +236,19 @@ export async function setStatus(
   actorName: string,
   note?: string,
 ): Promise<void> {
-  await query("update orders set status = $2, updated_at = now() where id = $1", [orderId, status]);
+  const rows = await query<{ ref: string }>(
+    "update orders set status = $2, updated_at = now() where id = $1 returning ref",
+    [orderId, status],
+  );
   await addEvent(orderId, status, note?.trim() || null, actorId, actorName);
+  await notify({
+    kind: "status_changed",
+    summary: `${rows[0]?.ref ?? "Order"} moved to ${statusLabel(status)}`,
+    orderId,
+    orderRef: rows[0]?.ref ?? "",
+    actorId,
+    actorName,
+  });
 }
 
 export async function assignOrder(
@@ -232,7 +258,10 @@ export async function assignOrder(
   actorName: string,
   assigneeName?: string | null,
 ): Promise<void> {
-  await query("update orders set assigned_to = $2, updated_at = now() where id = $1", [orderId, staffId]);
+  const rows = await query<{ ref: string }>(
+    "update orders set assigned_to = $2, updated_at = now() where id = $1 returning ref",
+    [orderId, staffId],
+  );
   await addEvent(
     orderId,
     null,
@@ -240,6 +269,16 @@ export async function assignOrder(
     actorId,
     actorName,
   );
+  await notify({
+    kind: "assigned",
+    summary: staffId
+      ? `${rows[0]?.ref ?? "Order"} assigned to ${assigneeName ?? "a team member"}`
+      : `${rows[0]?.ref ?? "Order"} unassigned`,
+    orderId,
+    orderRef: rows[0]?.ref ?? "",
+    actorId,
+    actorName,
+  });
 }
 
 export async function addNote(
@@ -252,8 +291,25 @@ export async function addNote(
 }
 
 /** Removes an order; its timeline goes with it (on delete cascade). */
-export async function deleteOrder(orderId: string): Promise<void> {
-  await query("delete from orders where id = $1", [orderId]);
+export async function deleteOrder(
+  orderId: string,
+  actorId: string | null = null,
+  actorName: string | null = null,
+): Promise<void> {
+  const rows = await query<{ ref: string; name: string }>(
+    "delete from orders where id = $1 returning ref, name",
+    [orderId],
+  );
+  const removed = rows[0];
+  if (removed) {
+    await notify({
+      kind: "deleted",
+      summary: `${removed.ref} deleted (customer ${removed.name})`,
+      orderRef: removed.ref,
+      actorId,
+      actorName,
+    });
+  }
 }
 
 export async function queueCounts(): Promise<Record<string, number>> {

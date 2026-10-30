@@ -1,4 +1,5 @@
 import { currentStaff } from "@/lib/auth";
+import { ROLE_LABELS } from "@/lib/staff";
 import { redirect } from "next/navigation";
 import { changeOwnPasswordAction } from "../actions";
 
@@ -30,7 +31,7 @@ export default async function AccountPage({
       <div>
         <h1 className="text-xl font-bold text-[var(--primary)]">My account</h1>
         <p className="text-sm text-[var(--muted)]">
-          {staff.name} · {staff.email} · {staff.role === "admin" ? "administrator" : "staff"}
+          {staff.name} · {staff.email} · {ROLE_LABELS[staff.role].toLowerCase()}
         </p>
       </div>
 

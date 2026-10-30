@@ -120,8 +120,9 @@ in `types.ts` — all three must stay structurally identical.
 ## 10. Staff portal (`/login`, `/portal`) and catalog manager (`/admin`) — Oct 2026
 - Two audiences, one sign-in page (`/login`, linked from the footer as
   "Staff login / دخول الموظفين / Personel girişi"). After signing in:
-  - **staff** → `/portal` (orders only: queue, detail, status, assignment, notes)
-  - **admin** → everything staff has, plus `/portal/staff` (team) and `/admin` (catalogues)
+  - **staff** → `/portal` (orders: queue, detail, status, notes — no assignment)
+  - **coordinator** → staff plus assigning orders to anyone on the team
+  - **admin** → everything above, plus `/portal/staff` (team) and `/admin` (catalogues)
 - **Login is a real account, not one shared password.** Accounts live in Postgres
   (`staff` table); passwords are scrypt-hashed (`src/lib/staff.ts`). The very first
   admin is created from `ADMIN_PASSWORD` + `ADMIN_EMAIL` on first login when the table
@@ -135,6 +136,22 @@ in `types.ts` — all three must stay structurally identical.
   It asks for the current password, requires 8+ characters and shares the login throttle
   per account. Admins still reset other people's passwords from `/portal/staff`; a staff
   member who has forgotten theirs asks an admin rather than using a reset link.
+- **Roles are `admin` | `coordinator` | `staff`** (`Role`, `ROLES`, `ROLE_LABELS`,
+  `canAssignOrders` in `src/lib/staff.ts`). The role CHECK constraint is widened in place
+  in `src/lib/db.ts` (`drop constraint if exists staff_role_check` + re-add), so adding a
+  future role means updating that list and the `<select>` on `/portal/staff`.
+  **Only coordinators and admins assign orders**; `assignAction` re-checks server-side
+  (`requireAssigner`) and plain staff see a read-only assignee card instead of the form.
+- **Internal activity feed** (`notifications` table, `src/lib/notifications.ts`) records
+  order created / status changed / assigned / deleted and is browsable at
+  `/portal/notifications` (nav tab). The dashboard also shows the six newest entries in a
+  "Recent activity" card. Unread = entries newer than `staff.notifications_seen_at`,
+  excluding the viewer's own actions; opening the feed stamps that column for the viewer
+  only. `notify()` swallows insert errors so it can never break an order operation, and
+  there is deliberately **no FK to `orders`** so a deleted order's entry survives (the card
+  drops the link and says the ref was removed).
+- **One shared renderer**: `src/components/portal/ActivityFeed.tsx` powers both the full
+  feed and the compact dashboard card — change wording/links there, not in each page.
 - **The mailbox is deliberately NOT integrated.** PrivateEmail offers webmail + IMAP
   only (no OAuth/SSO/login API), so every dashboard header (`/portal` layout and `/admin`)
   carries a PrivateEmail button (`WEBMAIL_URL` in `src/lib/mailbox.ts`) that opens

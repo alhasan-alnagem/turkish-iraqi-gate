@@ -5,7 +5,7 @@ import { currentStaff } from "@/lib/auth";
 import { ALL_STATUSES, statusLabel } from "@/lib/order-status";
 import { getOrder, getTimeline, normalisePhone } from "@/lib/orders";
 import { sheetMirrorConfigured } from "@/lib/sheet-mirror";
-import { listActiveStaff } from "@/lib/staff";
+import { listActiveStaff, canAssignOrders } from "@/lib/staff";
 import { assignAction, changeStatusAction, noteAction, sendToSheetAction } from "../../actions";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +36,7 @@ export default async function OrderDetail({
   const sheetReady = sheetMirrorConfigured();
   const viewer = await currentStaff();
   const canDelete = viewer?.role === "admin";
+  const canAssign = viewer ? canAssignOrders(viewer.role) : false;
 
   return (
     <div className="space-y-6">
@@ -178,27 +179,37 @@ export default async function OrderDetail({
             <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
               Assigned to
             </h2>
-            <form action={assignAction} className="mt-3 space-y-3">
-              <input type="hidden" name="orderId" value={order.id} />
-              <select
-                name="staffId"
-                defaultValue={order.assigned_to ?? "none"}
-                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
-              >
-                <option value="none">Unassigned</option>
-                {staff.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="w-full rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-[var(--section)]"
-              >
-                Save assignment
-              </button>
-            </form>
+            {canAssign ? (
+              <form action={assignAction} className="mt-3 space-y-3">
+                <input type="hidden" name="orderId" value={order.id} />
+                <select
+                  name="staffId"
+                  defaultValue={order.assigned_to ?? "none"}
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
+                >
+                  <option value="none">Unassigned</option>
+                  {staff.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="submit"
+                  className="w-full rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-[var(--section)]"
+                >
+                  Save assignment
+                </button>
+              </form>
+            ) : (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm">{order.assigned_name ?? "Unassigned"}</p>
+                <p className="text-xs text-[var(--muted)]">
+                  Coordinators and administrators assign orders. Asked to be put on this one? Add
+                  a note below and a coordinator will assign it.
+                </p>
+              </div>
+            )}
           </section>
 
           <section className="rounded-2xl border border-[var(--border)] bg-white p-5">

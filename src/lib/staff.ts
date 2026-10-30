@@ -3,7 +3,24 @@ import "server-only";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { query } from "@/lib/db";
 
-export type Role = "admin" | "staff";
+export type Role = "admin" | "coordinator" | "staff";
+
+export const ROLES: readonly Role[] = ["admin", "coordinator", "staff"];
+
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: "Administrator",
+  coordinator: "Coordinator",
+  staff: "Staff",
+};
+
+export function isRole(value: string): value is Role {
+  return (ROLES as readonly string[]).includes(value);
+}
+
+/** Coordinators and administrators may assign orders; plain staff may not. */
+export function canAssignOrders(role: Role): boolean {
+  return role === "admin" || role === "coordinator";
+}
 
 export type Staff = {
   id: string;

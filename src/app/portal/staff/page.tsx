@@ -30,7 +30,8 @@ export default async function StaffPage({
       <div>
         <h1 className="text-lg font-bold text-[var(--primary)]">Team</h1>
         <p className="text-sm text-[var(--muted)]">
-          Everyone here can see and move orders. Only admins can manage catalogues and this team.
+          Everyone here can see and move orders. Coordinators can also assign them; only admins
+          manage catalogues and this team.
         </p>
       </div>
 
@@ -72,6 +73,7 @@ export default async function StaffPage({
             className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
           >
             <option value="staff">Staff — orders only</option>
+            <option value="coordinator">Coordinator — orders + assignment</option>
             <option value="admin">Admin — orders, team, catalogues</option>
           </select>
           <div className="sm:col-span-2">
@@ -111,6 +113,7 @@ export default async function StaffPage({
                     className="mt-1 w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
                   >
                     <option value="staff">Staff</option>
+                    <option value="coordinator">Coordinator</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>

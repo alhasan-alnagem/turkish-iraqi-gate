@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import "../globals.css";
 import { currentStaff } from "@/lib/auth";
 import { WEBMAIL_URL } from "@/lib/mailbox";
+import { unreadNotificationCount } from "@/lib/notifications";
+import { ROLE_LABELS } from "@/lib/staff";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,8 @@ export const metadata: Metadata = {
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const staff = await currentStaff();
   if (!staff) redirect("/login");
+
+  const unread = await unreadNotificationCount(staff.id);
 
   return (
     <html lang="en" dir="ltr">
@@ -44,6 +48,17 @@ export default async function PortalLayout({ children }: { children: React.React
                 <Link href="/portal/orders/new" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   New order
                 </Link>
+                <Link
+                  href="/portal/notifications"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10"
+                >
+                  Notifications
+                  {unread > 0 ? (
+                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[var(--accent-light)] px-1.5 py-0.5 text-[11px] font-bold leading-none text-[var(--primary)]">
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  ) : null}
+                </Link>
                 <Link href="/portal/account" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   My account
                 </Link>
@@ -65,7 +80,7 @@ export default async function PortalLayout({ children }: { children: React.React
 
             <div className="flex items-center gap-3 text-sm">
               <span className="hidden text-white/70 sm:inline">
-                {staff.name} · {staff.role === "admin" ? "admin" : "staff"}
+                {staff.name} · {ROLE_LABELS[staff.role]}
               </span>
               <a
                 href={WEBMAIL_URL}

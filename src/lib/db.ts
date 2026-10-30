@@ -26,10 +26,15 @@ create table if not exists staff (
   name text not null,
   email text not null unique,
   password_hash text not null,
-  role text not null default 'staff' check (role in ('admin', 'staff')),
+  role text not null default 'staff' check (role in ('admin', 'coordinator', 'staff')),
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+-- Existing databases were created with a two-role check; widen it in place.
+alter table staff drop constraint if exists staff_role_check;
+alter table staff add constraint staff_role_check check (role in ('admin', 'coordinator', 'staff'));
+alter table staff add column if not exists notifications_seen_at timestamptz;
 
 create table if not exists orders (
   id uuid primary key default gen_random_uuid(),
@@ -67,6 +72,21 @@ create table if not exists order_events (
 );
 
 create index if not exists order_events_order_idx on order_events (order_id, created_at desc);
+
+-- Team-wide activity feed. Deliberately no foreign key to orders: the entry
+-- must survive the order being deleted.
+create table if not exists notifications (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid,
+  order_ref text not null default '',
+  kind text not null,
+  summary text not null,
+  actor_id uuid,
+  actor_name text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists notifications_created_idx on notifications (created_at desc);
 `;
 
 /**

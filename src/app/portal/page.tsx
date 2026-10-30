@@ -1,5 +1,7 @@
 import Link from "next/link";
+import ActivityFeed from "@/components/portal/ActivityFeed";
 import { currentStaff } from "@/lib/auth";
+import { listNotifications } from "@/lib/notifications";
 import { ALL_STATUSES, OPEN_STATUSES, type OrderStatus } from "@/lib/order-status";
 import { analytics, listOrders, queueCounts } from "@/lib/orders";
 
@@ -33,10 +35,11 @@ export default async function PortalDashboard({
       ? "all"
       : "open";
 
-  const [{ orders, total }, counts, stats] = await Promise.all([
+  const [{ orders, total }, counts, stats, activity] = await Promise.all([
     listOrders({ status: statusFilter, search: params.q, limit: 100 }),
     queueCounts(),
     analytics(),
+    listNotifications(6),
   ]);
 
   const awaitingPrice = (counts.received ?? 0) + (counts.quoted ?? 0);
@@ -87,6 +90,21 @@ export default async function PortalDashboard({
           <p className="mt-2 text-3xl font-bold text-[var(--primary)]">{stats.total}</p>
           <p className="mt-1 text-xs text-[var(--muted)]">{stats.cancelled} cancelled</p>
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+            Recent activity
+          </h2>
+          <Link
+            href="/portal/notifications"
+            className="text-xs font-semibold text-[var(--accent)] hover:underline"
+          >
+            View all notifications →
+          </Link>
+        </div>
+        <ActivityFeed entries={activity} compact />
       </section>
 
       <section className="rounded-2xl border border-[var(--border)] bg-white">
