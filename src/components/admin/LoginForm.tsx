@@ -5,8 +5,9 @@ import { useState } from "react";
 
 export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: string }) {
   const router = useRouter();
-  const [email, setEmail] = useState(suggestedEmail);
-  const [password, setPassword] = useState("");
+  // Email and password stay uncontrolled on purpose: browsers autofill them
+  // without firing React's onChange, and re-rendering a controlled input would
+  // wipe the autofilled text (that is why ticking "Remember me" cleared them).
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -14,6 +15,11 @@ export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: st
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
+
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+
     setBusy(true);
     setError(null);
 
@@ -51,8 +57,7 @@ export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: st
           type="email"
           autoComplete="username"
           required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          defaultValue={suggestedEmail}
           className="w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/25"
         />
       </div>
@@ -67,8 +72,6 @@ export default function LoginForm({ suggestedEmail = "" }: { suggestedEmail?: st
           type="password"
           autoComplete="current-password"
           required
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
           className="w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/25"
         />
       </div>
