@@ -2,15 +2,22 @@ import "server-only";
 
 import { after } from "next/server";
 import type { Order } from "@/lib/orders";
+import { whatsappNumber } from "@/lib/orders";
 
 /**
  * The Google Sheet is a mirror, never the source of truth. Every order lives in
  * Postgres; if GOOGLE_SHEETS_URL is unset (or Google is down) the portal keeps
  * working and the sheet simply misses the row.
+ *
+ * `phone` stays exactly as the customer typed it (the import matches on it),
+ * while `countryCode` and `phoneIntl` are extra fields the Apps Script may use
+ * to build a wa.me link. Unknown fields are ignored by the existing script.
  */
 export type SheetPayload = {
   name: string;
   phone: string;
+  phoneIntl: string;
+  countryCode: string;
   product: string;
   quantity: string;
   budget: string;
@@ -31,6 +38,8 @@ export function orderSheetPayload(order: Order): SheetPayload {
   return {
     name: order.name,
     phone: order.phone,
+    phoneIntl: whatsappNumber(order.phone, order.country_code),
+    countryCode: order.country_code,
     product: order.product,
     quantity: order.quantity,
     budget: order.budget,

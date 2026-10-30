@@ -1,5 +1,5 @@
 import { NextRequest, after } from "next/server";
-import { createOrder } from "@/lib/orders";
+import { createOrder, whatsappNumber } from "@/lib/orders";
 
 const GOOGLE_SHEETS_URL = process.env.GOOGLE_SHEETS_URL || "";
 
@@ -8,6 +8,8 @@ export const runtime = "nodejs";
 type Payload = {
   name: string;
   phone: string;
+  phoneIntl: string;
+  countryCode: string;
   product: string;
   quantity: string;
   budget: string;
@@ -28,6 +30,8 @@ export async function POST(request: NextRequest) {
 
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const countryCode =
+      typeof body.countryCode === "string" ? body.countryCode.replace(/\D/g, "") : "964";
     const currency = (typeof body.budgetCurrency === "string" ? body.budgetCurrency : "usd").toUpperCase();
     const shipping = body.shipping === "yes";
     const product = typeof body.product === "string" ? body.product : "";
@@ -50,6 +54,7 @@ export async function POST(request: NextRequest) {
       const order = await createOrder({
         name,
         phone,
+        countryCode,
         product,
         quantity,
         budget,
@@ -68,6 +73,8 @@ export async function POST(request: NextRequest) {
     payload = {
       name,
       phone,
+      phoneIntl: whatsappNumber(phone, countryCode),
+      countryCode,
       product,
       quantity,
       budget,

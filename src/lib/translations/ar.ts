@@ -278,6 +278,7 @@ const ar: Translations = {
       title: "أرسل لنا رسالة",
       name: "اسمك",
       phone: "رقم الهاتف",
+      countryCode: "رمز الدولة",
       product: "المنتج الذي تحتاج",
       quantity: "الكمية التقديرية",
       budget: "الميزانية التقديرية",

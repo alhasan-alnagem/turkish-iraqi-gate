@@ -89,6 +89,7 @@ export async function createOrderAction(formData: FormData) {
 
   const name = String(formData.get("name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
+  const countryCode = String(formData.get("countryCode") ?? "964");
   const currency = String(formData.get("currency") ?? "USD").toUpperCase() === "IQD" ? "IQD" : "USD";
 
   if (!name || !phone) redirect("/portal/orders/new?error=missing-contact");
@@ -98,6 +99,7 @@ export async function createOrderAction(formData: FormData) {
     const order = await createOrder({
       name,
       phone,
+      countryCode,
       city: String(formData.get("city") ?? "").trim(),
       product: String(formData.get("product") ?? "").trim(),
       quantity: String(formData.get("quantity") ?? "").trim(),

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { query } from "@/lib/db";
+import { guessCountryCode } from "@/lib/countries";
 import { createOrder, normalisePhone } from "@/lib/orders";
 
 /**
@@ -100,11 +101,14 @@ async function alreadyImported(
   name: string,
   product: string,
 ): Promise<boolean> {
-  const digits = normalisePhone(phone);
+  const code = guessCountryCode(phone);
+  const digits = normalisePhone(phone, code);
   if (!digits) return false;
 
-  const normalisedPhone =
-    "regexp_replace(regexp_replace(phone, '\\D', '', 'g'), '^(00)?(964)?0*', '')";
+  // Strip an optional 00 / country code / leading zeros before comparing, so
+  // 0780…, +964 780… and 00964 780… all collapse to the same number. The code
+  // comes from a fixed list, so it is safe to inline.
+  const normalisedPhone = `regexp_replace(regexp_replace(phone, '\\D', '', 'g'), '^(00)?(${code})?0*', '')`;
 
   // With a readable date the same phone on the same day is the same order.
   // Without one (a malformed sheet export) fall back to phone + name + product.
@@ -165,6 +169,7 @@ export async function importCsv(text: string): Promise<ImportResult> {
       await createOrder({
         name,
         phone,
+        countryCode: guessCountryCode(phone),
         product: product ?? "",
         quantity: quantity ?? "",
         budget: budgetValue,

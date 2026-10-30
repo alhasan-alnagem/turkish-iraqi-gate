@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import DeleteOrderButton from "@/components/admin/DeleteOrderButton";
 import { currentStaff } from "@/lib/auth";
 import { ALL_STATUSES, statusLabel } from "@/lib/order-status";
-import { getOrder, getTimeline, normalisePhone } from "@/lib/orders";
+import { getOrder, getTimeline, whatsappNumber, formatPhone } from "@/lib/orders";
 import { sheetMirrorConfigured } from "@/lib/sheet-mirror";
 import { listActiveStaff, canAssignOrders } from "@/lib/staff";
 import { assignAction, changeStatusAction, noteAction, sendToSheetAction } from "../../actions";
@@ -32,7 +32,8 @@ export default async function OrderDetail({
   if (!order) notFound();
 
   const [timeline, staff] = await Promise.all([getTimeline(id), listActiveStaff()]);
-  const whatsapp = `https://wa.me/${normalisePhone(order.phone) ? `964${normalisePhone(order.phone)}` : ""}`;
+  const whatsappDigits = whatsappNumber(order.phone, order.country_code);
+  const whatsapp = whatsappDigits ? `https://wa.me/${whatsappDigits}` : "";
   const sheetReady = sheetMirrorConfigured();
   const viewer = await currentStaff();
   const canDelete = viewer?.role === "admin";
@@ -95,7 +96,7 @@ export default async function OrderDetail({
             <dl className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
                 ["Customer", order.name],
-                ["Phone", order.phone],
+                ["Phone", formatPhone(order.phone, order.country_code)],
                 ["City", order.city || "—"],
                 ["Shipping needed", order.shipping ? "Yes" : "No"],
                 ["Product", order.product || "—"],

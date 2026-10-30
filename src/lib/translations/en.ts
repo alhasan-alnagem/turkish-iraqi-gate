@@ -278,6 +278,7 @@ const en: Translations = {
       title: "Send Us a Message",
       name: "Your Name",
       phone: "Phone Number",
+      countryCode: "Country code",
       product: "Product You Need",
       quantity: "Estimated Quantity",
       budget: "Estimated Budget",

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { DEFAULT_COUNTRY_CODE, ORDER_COUNTRIES, countryName } from "@/lib/countries";
 import { useLanguage } from "@/lib/LanguageProvider";
 
 export default function Contact() {
@@ -108,14 +109,29 @@ export default function Contact() {
                       >
                         {c.form.phone} *
                       </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        required
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
-                        placeholder={c.form.placeholders.phone}
-                      />
+                      <div className="flex gap-2">
+                        <select
+                          name="countryCode"
+                          defaultValue={DEFAULT_COUNTRY_CODE}
+                          aria-label={c.form.countryCode}
+                          className="w-32 shrink-0 px-2 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent bg-white text-sm"
+                        >
+                          {ORDER_COUNTRIES.map((country) => (
+                            <option key={country.code} value={country.code}>
+                              +{country.code} {countryName(country, lang)}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="tel"
+                          id="phone"
+                          name="phone"
+                          required
+                          dir="ltr"
+                          className="w-full min-w-0 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
+                          placeholder={c.form.placeholders.phone}
+                        />
+                      </div>
                     </div>
                   </div>
                   <div>

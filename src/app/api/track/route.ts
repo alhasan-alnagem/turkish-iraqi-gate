@@ -62,8 +62,13 @@ export async function POST(request: NextRequest) {
 
   const order = await getOrderByRef(ref).catch(() => null);
 
-  // Wrong reference and wrong phone look identical from the outside.
-  if (!order || normalisePhone(order.phone) !== normalisePhone(phone)) {
+  // Wrong reference and wrong phone look identical from the outside. The
+  // country code stored on the order makes 0780…, +964 780… and 00964 780…
+  // compare equal (and the same for Turkish and other numbers).
+  if (
+    !order ||
+    normalisePhone(order.phone, order.country_code) !== normalisePhone(phone, order.country_code)
+  ) {
     await sleep(500);
     return Response.json({ error: "No order matches that number and phone." }, { status: 404 });
   }

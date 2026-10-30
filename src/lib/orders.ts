@@ -1,6 +1,7 @@
 import "server-only";
 
 import { query } from "@/lib/db";
+import { DEFAULT_COUNTRY_CODE, normaliseCountryCode } from "@/lib/countries";
 import { ensureBootstrapAdmin } from "@/lib/staff";
 import { notify } from "@/lib/notifications";
 import { OPEN_STATUSES, statusLabel, type OrderStatus } from "@/lib/order-status";
@@ -10,6 +11,7 @@ export type Order = {
   ref: string;
   name: string;
   phone: string;
+  country_code: string;
   city: string;
   product: string;
   quantity: string;
@@ -37,17 +39,44 @@ export type OrderEvent = {
 };
 
 const ORDER_COLUMNS = `
-  o.id, o.ref, o.name, o.phone, o.city, o.product, o.quantity, o.budget, o.currency,
+  o.id, o.ref, o.name, o.phone, o.country_code, o.city, o.product, o.quantity, o.budget, o.currency,
   o.shipping, o.details, o.lang, o.status, o.assigned_to, o.source, o.created_at, o.updated_at,
   s.name as assigned_name
 `;
 
 const ORDER_JOIN = "from orders o left join staff s on s.id = o.assigned_to";
 
-/** Normalises a phone number so 0780… / +964 780… compare equal. */
-export function normalisePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  return digits.replace(/^00/, "").replace(/^964/, "").replace(/^0+/, "");
+/**
+ * Normalises a phone number so 0780… / +964 780… / 00964 780… compare equal.
+ * The country code comes from the order, so +90 501… matches a Turkish number
+ * that was saved as 0501….
+ */
+export function normalisePhone(phone: string, countryCode = DEFAULT_COUNTRY_CODE): string {
+  const code = countryCode.replace(/\D/g, "");
+
+  let digits = phone.replace(/\D/g, "").replace(/^00/, "");
+
+  // Only strip the code when there is a full national number behind it, so a
+  // local "0780…" can never be mistaken for a number that starts with it.
+  if (code && digits.startsWith(code) && digits.length > code.length + 5) {
+    digits = digits.slice(code.length);
+  }
+
+  return digits.replace(/^0+/, "");
+}
+
+/** E.164-style digits for wa.me, e.g. "9647801234567". */
+export function whatsappNumber(phone: string, countryCode = DEFAULT_COUNTRY_CODE): string {
+  const code = countryCode.replace(/\D/g, "") || DEFAULT_COUNTRY_CODE;
+  const national = normalisePhone(phone, code);
+  return national ? `${code}${national}` : "";
+}
+
+/** How the number is shown to staff: "+964 7801234567". */
+export function formatPhone(phone: string, countryCode = DEFAULT_COUNTRY_CODE): string {
+  const code = countryCode.replace(/\D/g, "") || DEFAULT_COUNTRY_CODE;
+  const national = normalisePhone(phone, code);
+  return national ? `+${code} ${national}` : phone;
 }
 
 async function nextRef(): Promise<string> {
@@ -64,6 +93,7 @@ async function nextRef(): Promise<string> {
 export type NewOrderInput = {
   name: string;
   phone: string;
+  countryCode?: string;
   city?: string;
   product?: string;
   quantity?: string;
@@ -90,14 +120,15 @@ export async function createOrder(input: NewOrderInput): Promise<Order> {
     const ref = await nextRef();
     try {
       const rows = await query<{ id: string }>(
-        `insert into orders (ref, name, phone, city, product, quantity, budget, currency,
+        `insert into orders (ref, name, phone, country_code, city, product, quantity, budget, currency,
                              shipping, details, lang, source, created_at)
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, coalesce($13::timestamptz, now()))
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, coalesce($14::timestamptz, now()))
          returning id`,
         [
           ref,
           input.name.trim(),
           input.phone.trim(),
+          normaliseCountryCode(input.countryCode),
           input.city ?? "",
           input.product ?? "",
           input.quantity ?? "",

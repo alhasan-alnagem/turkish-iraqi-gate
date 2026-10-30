@@ -278,6 +278,7 @@ const tr: Translations = {
       title: "Bize Mesaj Gönderin",
       name: "Adınız",
       phone: "Telefon Numarası",
+      countryCode: "Ülke kodu",
       product: "Talep Edilen Ürün",
       quantity: "Tahmini Miktar",
       budget: "Tahmini Bütçe",

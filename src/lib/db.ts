@@ -41,6 +41,7 @@ create table if not exists orders (
   ref text not null unique,
   name text not null,
   phone text not null,
+  country_code text not null default '964',
   city text default '',
   product text default '',
   quantity text default '',
@@ -60,6 +61,9 @@ create index if not exists orders_status_idx on orders (status);
 create index if not exists orders_created_idx on orders (created_at desc);
 create index if not exists orders_phone_idx on orders (phone);
 create index if not exists orders_assigned_idx on orders (assigned_to);
+
+-- Numbers created before the country code existed are all Iraqi.
+alter table orders add column if not exists country_code text not null default '964';
 
 create table if not exists order_events (
   id uuid primary key default gen_random_uuid(),

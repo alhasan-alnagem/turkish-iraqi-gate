@@ -180,6 +180,7 @@ export type Translations = {
       title: string;
       name: string;
       phone: string;
+      countryCode: string;
       product: string;
       quantity: string;
       budget: string;

@@ -178,6 +178,15 @@ in `types.ts` — all three must stay structurally identical.
   removes the order and its timeline (cascade) — the tracking number stops working — but
   leaves the Google Sheet row alone. Staff never see the button, and the action re-checks
   the role server-side.
+- **Every order stores a dialling code** (`orders.country_code`, default `964`) picked from
+  the select next to the phone field on the public contact form and on `/portal/orders/new`
+  (`src/lib/countries.ts` holds the short list, `normaliseCountryCode`, and
+  `guessCountryCode` used when a sheet row arrives in international form). Consumers:
+  `whatsappNumber()` builds `wa.me/<code><national>` for the detail-page WhatsApp button,
+  `formatPhone()` prints `+90 5015424248` to staff, and `/api/track` normalises both sides
+  with the order's own code, so `0501…`, `+90 501…` and `0090 501…` all match. The sheet
+  payload gained `countryCode` + `phoneIntl`; its `phone` field still holds the number
+  exactly as typed because the CSV import matches on it.
 - **Customers track without an account**: `/[lang]/track` + `/api/track` take order ref
   + the phone used on the order. Wrong ref and wrong phone return the same 404 on purpose
   (`normalisePhone` makes 0780…/`+964 780…`/`00964…` equal). The lookup throttle is

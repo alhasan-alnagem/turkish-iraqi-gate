@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ORDER_COUNTRIES, DEFAULT_COUNTRY_CODE } from "@/lib/countries";
 import { createOrderAction } from "../../actions";
 
 export const dynamic = "force-dynamic";
@@ -47,17 +48,34 @@ export default async function NewOrderPage({
           <label htmlFor="phone" className="mb-2 block text-sm font-medium">
             Phone <span className="text-red-600">*</span>
           </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            required
-            maxLength={40}
-            placeholder="0780 000 0000"
-            className={inputClass}
-          />
+          <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-2">
+            <select
+              id="countryCode"
+              name="countryCode"
+              defaultValue={DEFAULT_COUNTRY_CODE}
+              aria-label="Country code"
+              className={inputClass}
+            >
+              {ORDER_COUNTRIES.map((country) => (
+                <option key={country.code} value={country.code}>
+                  +{country.code} {country.name}
+                </option>
+              ))}
+            </select>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              required
+              maxLength={40}
+              placeholder="0780 000 0000"
+              dir="ltr"
+              className={inputClass}
+            />
+          </div>
           <p className="mt-1 text-xs text-[var(--muted)]">
-            The customer must type this exact number to track the order.
+            Pick the country code first, then the local number. The WhatsApp button and the
+            customer&rsquo;s tracking check both use it.
           </p>
         </div>
 
