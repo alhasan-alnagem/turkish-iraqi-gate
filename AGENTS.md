@@ -182,6 +182,9 @@ in `types.ts` — all three must stay structurally identical.
   + the phone used on the order. Wrong ref and wrong phone return the same 404 on purpose
   (`normalisePhone` makes 0780…/`+964 780…`/`00964…` equal). The lookup throttle is
   generous (40 / 10 min / IP) because Iraqi mobile networks share addresses via CGNAT.
+  The result shows a **"Last update" timestamp** plus date + time on every history row
+  (`TrackForm.tsx`: locale month names, `-u-nu-latn` so digits stay Latin, 24-hour clock,
+  rendered client-side after the lookup).
 - **Uploads go to Vercel Blob** (needs `BLOB_READ_WRITE_TOKEN`), not the repo: the repo is
   public, and the function body limit would cap uploads at ~4.5 MB. The browser asks
   `/api/admin/blob-upload` for a token and uploads directly. `/api/admin/*` is admin-only.

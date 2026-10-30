@@ -13,6 +13,7 @@ type TrackCopy = {
   status: string;
   history: string;
   progress: string;
+  updated: string;
 };
 
 type TrackResult = {
@@ -35,6 +36,18 @@ export default function TrackForm({ copy, lang }: { copy: TrackCopy; lang: "en" 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackResult | null>(null);
+
+  // Locale-aware month names, but always Latin digits so the timestamp lines up
+  // with the order reference and phone number the customer just typed.
+  const stampFormat = new Intl.DateTimeFormat(`${lang === "ar" ? "ar-IQ" : lang === "tr" ? "tr-TR" : "en-GB"}-u-nu-latn`, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const stamp = (value: string) => stampFormat.format(new Date(value));
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -124,6 +137,9 @@ export default function TrackForm({ copy, lang }: { copy: TrackCopy; lang: "en" 
               <p className="text-sm text-[var(--muted)]">
                 {result.order.product || "—"}
               </p>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                {copy.updated}: <span className="font-mono">{stamp(result.order.updatedAt)}</span>
+              </p>
             </div>
             <span className="text-sm font-medium text-[var(--accent)]">
               {result.order.step} / {result.order.totalSteps}
@@ -142,16 +158,17 @@ export default function TrackForm({ copy, lang }: { copy: TrackCopy; lang: "en" 
           </h3>
           <ol className="mt-3 space-y-2">
             {result.history.map((event, index) => (
-              <li key={`${event.status}-${index}`} className="flex items-center gap-3 text-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-                <span className="font-medium">{event.label}</span>
-                <span className="text-[var(--muted)]">
-                  {new Intl.DateTimeFormat("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  }).format(new Date(event.at))}
+              <li
+                key={`${event.status}-${index}`}
+                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[var(--border)] pb-2 text-sm last:border-0 last:pb-0"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+                  <span className="font-medium">{event.label}</span>
                 </span>
+                <time dateTime={event.at} className="font-mono text-xs text-[var(--muted)]">
+                  {stamp(event.at)}
+                </time>
               </li>
             ))}
           </ol>

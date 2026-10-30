@@ -25,6 +25,7 @@ const COPY = {
     status: "Status",
     history: "History",
     progress: "Progress",
+    updated: "Last update",
     help: "Your order number is on the confirmation you received from us.",
   },
   ar: {
@@ -42,6 +43,7 @@ const COPY = {
     status: "الحالة",
     history: "سجل الحالات",
     progress: "التقدّم",
+    updated: "آخر تحديث",
     help: "رقم الطلب موجود في رسالة التأكيد التي أرسلناها لك.",
   },
   tr: {
@@ -59,6 +61,7 @@ const COPY = {
     status: "Durum",
     history: "Durum geçmişi",
     progress: "İlerleme",
+    updated: "Son güncelleme",
     help: "Sipariş numaranız size gönderdiğimiz onay mesajında yer alır.",
   },
 } as const;
