@@ -152,6 +152,11 @@ in `types.ts` — all three must stay structurally identical.
   → delivered, plus `on_hold` / `cancelled`. Every change writes an `order_events` row with
   the actor's name — that timeline is both the internal history and the customer's view.
   Labels are trilingual; add any new state to all three languages.
+- **Deleting an order is admin-only**: the detail page shows a red "Danger zone" card with a
+  confirm dialog (`deleteOrderAction`, `src/components/admin/DeleteOrderButton.tsx`). It
+  removes the order and its timeline (cascade) — the tracking number stops working — but
+  leaves the Google Sheet row alone. Staff never see the button, and the action re-checks
+  the role server-side.
 - **Customers track without an account**: `/[lang]/track` + `/api/track` take order ref
   + the phone used on the order. Wrong ref and wrong phone return the same 404 on purpose
   (`normalisePhone` makes 0780…/`+964 780…`/`00964…` equal). The lookup throttle is

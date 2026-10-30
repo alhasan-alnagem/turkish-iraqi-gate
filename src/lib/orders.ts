@@ -251,6 +251,11 @@ export async function addNote(
   await addEvent(orderId, null, note.trim(), actorId, actorName);
 }
 
+/** Removes an order; its timeline goes with it (on delete cascade). */
+export async function deleteOrder(orderId: string): Promise<void> {
+  await query("delete from orders where id = $1", [orderId]);
+}
+
 export async function queueCounts(): Promise<Record<string, number>> {
   const rows = await query<{ status: string; count: string }>(
     "select status, count(*)::text as count from orders group by status",

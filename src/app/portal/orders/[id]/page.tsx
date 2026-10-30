@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DeleteOrderButton from "@/components/admin/DeleteOrderButton";
+import { currentStaff } from "@/lib/auth";
 import { ALL_STATUSES, statusLabel } from "@/lib/order-status";
 import { getOrder, getTimeline, normalisePhone } from "@/lib/orders";
 import { sheetMirrorConfigured } from "@/lib/sheet-mirror";
@@ -32,6 +34,8 @@ export default async function OrderDetail({
   const [timeline, staff] = await Promise.all([getTimeline(id), listActiveStaff()]);
   const whatsapp = `https://wa.me/${normalisePhone(order.phone) ? `964${normalisePhone(order.phone)}` : ""}`;
   const sheetReady = sheetMirrorConfigured();
+  const viewer = await currentStaff();
+  const canDelete = viewer?.role === "admin";
 
   return (
     <div className="space-y-6">
@@ -249,6 +253,21 @@ export default async function OrderDetail({
               </p>
             )}
           </section>
+
+          {canDelete ? (
+            <section className="rounded-2xl border border-red-200 bg-white p-5">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-red-700">
+                Danger zone
+              </h2>
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                Removes the order, its timeline and its tracking number. The Google Sheet row, if
+                there is one, is left as it is. Only administrators see this.
+              </p>
+              <div className="mt-3">
+                <DeleteOrderButton orderId={order.id} reference={order.ref} />
+              </div>
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

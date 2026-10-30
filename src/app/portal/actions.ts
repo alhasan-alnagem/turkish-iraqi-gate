@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { currentStaff } from "@/lib/auth";
 import { importCsv } from "@/lib/import-orders";
 import { isOrderStatus } from "@/lib/order-status";
-import { addNote, assignOrder, createOrder, getOrder, setStatus } from "@/lib/orders";
+import { addNote, assignOrder, createOrder, deleteOrder, getOrder, setStatus } from "@/lib/orders";
 import { mirrorOrderToSheet, sendOrderToSheet } from "@/lib/sheet-mirror";
 import {
   countActiveAdmins,
@@ -126,6 +126,22 @@ export async function sendToSheetAction(formData: FormData) {
   if (!result.ok) console.error("Google Sheets write failed:", result.reason);
 
   redirect(`/portal/orders/${orderId}?sheet=${result.ok ? "sent" : "failed"}`);
+}
+
+/** Deleting is admin-only and irreversible, so it lives on the detail page. */
+export async function deleteOrderAction(formData: FormData) {
+  const actor = await requireAdminActor();
+  const orderId = String(formData.get("orderId") ?? "");
+  if (!orderId) redirect("/portal");
+
+  const order = await getOrder(orderId);
+  if (!order) redirect("/portal");
+
+  await deleteOrder(orderId);
+  console.warn(`order ${order.ref} deleted by ${actor.name} (${actor.id})`);
+
+  revalidatePath("/portal");
+  redirect("/portal?deleted=1");
 }
 
 /* --------------------------------- import --------------------------------- */

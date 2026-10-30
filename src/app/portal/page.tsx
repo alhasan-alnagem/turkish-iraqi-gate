@@ -5,7 +5,7 @@ import { analytics, listOrders, queueCounts } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
-type Search = { status?: string; q?: string; assignee?: string };
+type Search = { status?: string; q?: string; assignee?: string; deleted?: string };
 
 function fmtDate(value: string | Date): string {
   return new Intl.DateTimeFormat("en-GB", {
@@ -51,6 +51,15 @@ export default async function PortalDashboard({
 
   return (
     <div className="space-y-8">
+      {params.deleted ? (
+        <p
+          role="status"
+          className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+        >
+          Order deleted. Its timeline and tracking number are gone as well.
+        </p>
+      ) : null}
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-[var(--border)] bg-white p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
