@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/admin/", "/portal", "/portal/", "/login", "/api/"],
+      disallow: ["/admin", "/admin/", "/portal", "/portal/", "/login", "/register", "/api/"],
     },
     sitemap: "https://www.tigip.com/sitemap.xml",
   };

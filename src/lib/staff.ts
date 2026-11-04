@@ -95,6 +95,26 @@ export async function createStaff(input: {
   return rows[0];
 }
 
+/**
+ * Creates an account from an already-hashed password. Used when an admin
+ * approves a join request: the password was hashed when the applicant
+ * submitted the form, so it never exists in plain text anywhere.
+ */
+export async function createStaffWithHash(input: {
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: Role;
+}): Promise<Staff> {
+  const rows = await query<Staff>(
+    `insert into staff (name, email, password_hash, role)
+     values ($1, lower($2), $3, $4)
+     returning ${PUBLIC_COLUMNS}`,
+    [input.name.trim(), input.email.trim(), input.passwordHash, input.role],
+  );
+  return rows[0];
+}
+
 export async function updateStaff(
   id: string,
   patch: { name?: string; role?: Role; active?: boolean; password?: string },

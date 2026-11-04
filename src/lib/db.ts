@@ -91,6 +91,58 @@ create table if not exists notifications (
 );
 
 create index if not exists notifications_created_idx on notifications (created_at desc);
+
+-- HR records live on the staff row: the account and the employee file are the
+-- same person, so splitting them would only create orphans.
+alter table staff add column if not exists job_title text not null default '';
+alter table staff add column if not exists department text not null default '';
+alter table staff add column if not exists phone text not null default '';
+alter table staff add column if not exists hired_on date;
+alter table staff add column if not exists employment_type text not null default 'full_time';
+alter table staff add column if not exists annual_leave_days integer not null default 21;
+alter table staff add column if not exists notes text not null default '';
+
+-- Public "register as an employee" form. The password is hashed at request
+-- time, so approving creates the account without ever re-handling a password.
+create table if not exists staff_requests (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  phone text not null default '',
+  message text not null default '',
+  password_hash text not null,
+  status text not null default 'pending',
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  reviewed_by uuid references staff(id) on delete set null,
+  constraint staff_requests_status_check check (status in ('pending', 'approved', 'rejected'))
+);
+
+create index if not exists staff_requests_status_idx on staff_requests (status, created_at desc);
+
+-- Only one open request per email, no matter how many times the form is sent.
+create unique index if not exists staff_requests_pending_email_idx
+  on staff_requests (lower(email)) where status = 'pending';
+
+create table if not exists leave_requests (
+  id uuid primary key default gen_random_uuid(),
+  staff_id uuid not null references staff(id) on delete cascade,
+  kind text not null default 'annual',
+  start_date date not null,
+  end_date date not null,
+  days integer not null default 1,
+  reason text not null default '',
+  status text not null default 'pending',
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  reviewed_by uuid references staff(id) on delete set null,
+  review_note text not null default '',
+  constraint leave_requests_kind_check check (kind in ('annual', 'sick', 'unpaid', 'other')),
+  constraint leave_requests_status_check check (status in ('pending', 'approved', 'rejected'))
+);
+
+create index if not exists leave_requests_staff_idx on leave_requests (staff_id, created_at desc);
+create index if not exists leave_requests_status_idx on leave_requests (status, created_at desc);
 `;
 
 /**

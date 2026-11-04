@@ -18,6 +18,15 @@ import {
   verifyPassword,
   type Role,
 } from "@/lib/staff";
+import {
+  decideLeaveRequest,
+  isEmploymentType,
+  isLeaveKind,
+  requestLeave,
+  updateHrProfile,
+} from "@/lib/hr";
+import { approveJoinRequest, rejectJoinRequest } from "@/lib/staff-requests";
+import { notify } from "@/lib/notifications";
 
 async function requireActor() {
   const staff = await currentStaff();
@@ -289,4 +298,143 @@ export async function removeStaffAction(formData: FormData) {
   await deleteStaff(staffId);
   revalidatePath("/portal/staff");
   revalidatePath("/portal");
+}
+
+/* ----------------------------------- HR ----------------------------------- */
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export async function saveHrProfileAction(formData: FormData) {
+  await requireAdminActor();
+
+  const staffId = String(formData.get("staffId") ?? "");
+  if (!staffId) redirect("/portal/hr");
+
+  const employmentType = String(formData.get("employmentType") ?? "full_time");
+  const hiredOn = String(formData.get("hiredOn") ?? "").trim();
+  const annualLeaveDays = Number(formData.get("annualLeaveDays") ?? "0");
+
+  const profile = await updateHrProfile(staffId, {
+    jobTitle: String(formData.get("jobTitle") ?? ""),
+    department: String(formData.get("department") ?? ""),
+    phone: String(formData.get("phone") ?? ""),
+    hiredOn: ISO_DATE.test(hiredOn) ? hiredOn : null,
+    employmentType: isEmploymentType(employmentType) ? employmentType : "full_time",
+    annualLeaveDays: Number.isFinite(annualLeaveDays) ? annualLeaveDays : 0,
+    notes: String(formData.get("notes") ?? ""),
+  });
+
+  revalidatePath("/portal/hr");
+  if (!profile) redirect("/portal/hr?error=not-found");
+  redirect("/portal/hr?saved=1");
+}
+
+export async function requestLeaveAction(formData: FormData) {
+  const actor = await requireActor();
+
+  const kind = String(formData.get("kind") ?? "annual");
+  const startDate = String(formData.get("startDate") ?? "").trim();
+  const endDate = String(formData.get("endDate") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
+
+  if (!isLeaveKind(kind) || !ISO_DATE.test(startDate) || !ISO_DATE.test(endDate)) {
+    redirect("/portal/hr/me?error=invalid-dates");
+  }
+
+  const result = await requestLeave({ staffId: actor.id, kind, startDate, endDate, reason });
+
+  if (!result.ok) {
+    redirect(`/portal/hr/me?error=${result.reason === "too-long" ? "too-long" : "invalid-dates"}`);
+  }
+
+  await notify({
+    kind: "leave_request",
+    summary: `${actor.name} requested ${result.days} day(s) of ${kind} leave`,
+    actorId: actor.id,
+    actorName: actor.name,
+  });
+
+  revalidatePath("/portal/hr/me");
+  revalidatePath("/portal/hr");
+  redirect(`/portal/hr/me?requested=${result.days}`);
+}
+
+export async function decideLeaveAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const requestId = String(formData.get("requestId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  const note = String(formData.get("reviewNote") ?? "").trim();
+
+  if (!requestId || (decision !== "approved" && decision !== "rejected")) {
+    redirect("/portal/hr");
+  }
+
+  const decided = await decideLeaveRequest({
+    id: requestId,
+    decision,
+    reviewerId: actor.id,
+    note,
+  });
+
+  revalidatePath("/portal/hr");
+  if (!decided) redirect("/portal/hr?error=not-found");
+
+  await notify({
+    kind: "leave_decided",
+    summary: `${decided.staff_name}'s leave request was ${decision} by ${actor.name}`,
+    actorId: actor.id,
+    actorName: actor.name,
+  });
+
+  redirect("/portal/hr?decided=1");
+}
+
+/* ------------------------------ join requests ------------------------------ */
+
+export async function approveJoinRequestAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const requestId = String(formData.get("requestId") ?? "");
+  const role = parseRole(String(formData.get("role") ?? "staff"));
+  if (!requestId) redirect("/portal/requests");
+
+  const result = await approveJoinRequest({ requestId, role, reviewerId: actor.id });
+
+  if (!result.ok) {
+    redirect(`/portal/requests?error=${result.reason}`);
+  }
+
+  await notify({
+    kind: "staff_request",
+    summary: `${result.name} was approved as ${role}`,
+    actorId: actor.id,
+    actorName: actor.name,
+  });
+
+  revalidatePath("/portal/requests");
+  revalidatePath("/portal/staff");
+  revalidatePath("/portal/hr");
+  redirect("/portal/requests?approved=1");
+}
+
+export async function rejectJoinRequestAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const requestId = String(formData.get("requestId") ?? "");
+  if (!requestId) redirect("/portal/requests");
+
+  const result = await rejectJoinRequest({ requestId, reviewerId: actor.id });
+
+  if (result.ok && result.name) {
+    await notify({
+      kind: "staff_request",
+      summary: `${result.name}'s request to join was declined`,
+      actorId: actor.id,
+      actorName: actor.name,
+    });
+  }
+
+  revalidatePath("/portal/requests");
+  redirect("/portal/requests?rejected=1");
 }

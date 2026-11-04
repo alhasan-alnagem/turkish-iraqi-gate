@@ -7,6 +7,7 @@ import { currentStaff } from "@/lib/auth";
 import { WEBMAIL_URL } from "@/lib/mailbox";
 import { unreadNotificationCount } from "@/lib/notifications";
 import { ROLE_LABELS } from "@/lib/staff";
+import { countPendingJoinRequests } from "@/lib/staff-requests";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,10 @@ export default async function PortalLayout({ children }: { children: React.React
   const staff = await currentStaff();
   if (!staff) redirect("/login");
 
-  const unread = await unreadNotificationCount(staff.id);
+  const [unread, pendingJoin] = await Promise.all([
+    unreadNotificationCount(staff.id),
+    staff.role === "admin" ? countPendingJoinRequests() : Promise.resolve(0),
+  ]);
 
   return (
     <html lang="en" dir="ltr">
@@ -41,12 +45,15 @@ export default async function PortalLayout({ children }: { children: React.React
                   priority
                 />
               </Link>
-              <nav className="flex items-center gap-1 text-sm">
+              <nav className="flex flex-wrap items-center gap-1 text-sm">
                 <Link href="/portal" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   Orders
                 </Link>
                 <Link href="/portal/orders/new" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                   New order
+                </Link>
+                <Link href="/portal/hr/me" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
+                  HR
                 </Link>
                 <Link
                   href="/portal/notifications"
@@ -64,6 +71,17 @@ export default async function PortalLayout({ children }: { children: React.React
                 </Link>
                 {staff.role === "admin" ? (
                   <>
+                    <Link
+                      href="/portal/requests"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10"
+                    >
+                      Requests
+                      {pendingJoin > 0 ? (
+                        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-300 px-1.5 py-0.5 text-[11px] font-bold leading-none text-[var(--primary)]">
+                          {pendingJoin > 99 ? "99+" : pendingJoin}
+                        </span>
+                      ) : null}
+                    </Link>
                     <Link href="/portal/staff" className="rounded-lg px-3 py-1.5 hover:bg-white/10">
                       Team
                     </Link>

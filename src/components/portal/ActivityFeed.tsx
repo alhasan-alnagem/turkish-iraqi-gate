@@ -22,6 +22,9 @@ const DOT: Record<string, string> = {
   status_changed: "bg-blue-500",
   assigned: "bg-amber-500",
   deleted: "bg-red-500",
+  staff_request: "bg-purple-500",
+  leave_request: "bg-teal-500",
+  leave_decided: "bg-slate-400",
 };
 
 /**

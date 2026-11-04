@@ -115,6 +115,19 @@ export default async function LoginPage() {
           ) : null}
         </div>
 
+        <div className="mt-5 rounded-2xl border border-dashed border-[var(--border)] bg-white/70 p-5 text-center">
+          <p className="text-sm font-semibold text-[var(--primary)]">Want to work with us?</p>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            Send an employee request — an administrator reviews it and picks your role.
+          </p>
+          <Link
+            href="/register"
+            className="mt-3 inline-flex rounded-lg border border-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+          >
+            Register as an employee
+          </Link>
+        </div>
+
         <p className="mt-6 text-center text-sm text-[var(--muted)]">
           <Link href="/ar" className="text-[var(--accent)] hover:underline">
             ← Back to tigip.com

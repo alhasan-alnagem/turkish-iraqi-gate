@@ -209,4 +209,28 @@ in `types.ts` — all three must stay structurally identical.
   each with its own root layout; `/admin` and `/portal` are disallowed in `robots.ts`.
 - No supplier name is ever shown to a customer: order details, notes and the timeline are
   internal; the tracking page shows status and product only.
+- **Anyone can ask to join** at `/register` (button under the `/login` card). The form is
+  English-only, `noindex`, in `robots.ts`, has its own root layout, and is throttled per
+  `x-forwarded-for` IP. The applicant **chooses their own password** and it is scrypt-hashed
+  before it is stored (`staff_requests.password_hash`), so approving never re-handles a
+  password. One open request per email via the partial unique index
+  `staff_requests_pending_email_idx`. Admins review the queue at `/portal/requests` and pick
+  the role there; approving creates the `staff` account from the stored hash
+  (`createStaffWithHash`), declining closes it. Leftover requests are harmless.
+- **HR hangs off the same `staff` row** — one identity for orders and for people. Added
+  columns: `job_title`, `department`, `phone`, `hired_on`, `employment_type`
+  (`full_time | part_time | contract | intern`), `annual_leave_days` (default 21), `notes`.
+  Logic lives in `src/lib/hr.ts`; admins edit every file at `/portal/hr`, and everyone sees
+  their own at `/portal/hr/me` (nav: "HR"). Staff never edit their own file.
+- **Leave requests** are their own table (`leave_requests`): `kind` =
+  `annual | sick | unpaid | other`, inclusive `days` (Friday→Monday = 4, capped at 62 per
+  request), `pending | approved | rejected`, plus the reviewer and an optional note.
+  Anyone signed in can request from `/portal/hr/me`; **only admins decide** —
+  `decideLeaveAction` re-checks the role server-side. The requester always sees their own
+  history and the decision note.
+- `leaveBalance` = `annual_leave_days` minus approved **annual** leave starting in the
+  current calendar year (`to_char(...,'YYYY-MM-DD')` keeps dates as text). Adding a leave
+  kind or employment type means updating the list, the CHECK constraint and the `<select>`.
+- HR and join-request events also land in the activity feed (`staff_request`,
+  `leave_request`, `leave_decided`), with their own dot colours in `ActivityFeed.tsx`.
 

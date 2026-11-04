@@ -2,7 +2,14 @@ import "server-only";
 
 import { query } from "@/lib/db";
 
-export type NotificationKind = "order_created" | "status_changed" | "assigned" | "deleted";
+export type NotificationKind =
+  | "order_created"
+  | "status_changed"
+  | "assigned"
+  | "deleted"
+  | "staff_request"
+  | "leave_request"
+  | "leave_decided";
 
 export type Notification = {
   id: string;
