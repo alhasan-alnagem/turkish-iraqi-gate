@@ -143,6 +143,38 @@ create table if not exists leave_requests (
 
 create index if not exists leave_requests_staff_idx on leave_requests (staff_id, created_at desc);
 create index if not exists leave_requests_status_idx on leave_requests (status, created_at desc);
+
+-- Job applications from the public /career form. The CV was previously only
+-- emailed; it is now stored with the application so nothing is lost when the
+-- mailbox misses a message. The PDF lives in its own table so list queries
+-- never drag megabytes around.
+create table if not exists job_applications (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  phone text not null default '',
+  position text not null,
+  message text not null default '',
+  lang text not null default 'en',
+  cv_name text not null default '',
+  cv_type text not null default 'application/pdf',
+  cv_size integer not null default 0,
+  status text not null default 'new',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  reviewed_by uuid references staff(id) on delete set null,
+  review_note text not null default '',
+  constraint job_applications_status_check
+    check (status in ('new', 'shortlisted', 'interview', 'hired', 'rejected'))
+);
+
+create index if not exists job_applications_status_idx on job_applications (status, created_at desc);
+create index if not exists job_applications_created_idx on job_applications (created_at desc);
+
+create table if not exists job_application_files (
+  application_id uuid primary key references job_applications(id) on delete cascade,
+  data bytea not null
+);
 `;
 
 /**

@@ -8,6 +8,7 @@ import { WEBMAIL_URL } from "@/lib/mailbox";
 import { unreadNotificationCount } from "@/lib/notifications";
 import { ROLE_LABELS } from "@/lib/staff";
 import { countPendingJoinRequests } from "@/lib/staff-requests";
+import { countNewApplications } from "@/lib/job-applications";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,10 @@ export default async function PortalLayout({ children }: { children: React.React
   const staff = await currentStaff();
   if (!staff) redirect("/login");
 
-  const [unread, pendingJoin] = await Promise.all([
+  const [unread, pendingJoin, newApplications] = await Promise.all([
     unreadNotificationCount(staff.id),
     staff.role === "admin" ? countPendingJoinRequests() : Promise.resolve(0),
+    staff.role === "admin" ? countNewApplications() : Promise.resolve(0),
   ]);
 
   return (
@@ -79,6 +81,17 @@ export default async function PortalLayout({ children }: { children: React.React
                       {pendingJoin > 0 ? (
                         <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-300 px-1.5 py-0.5 text-[11px] font-bold leading-none text-[var(--primary)]">
                           {pendingJoin > 99 ? "99+" : pendingJoin}
+                        </span>
+                      ) : null}
+                    </Link>
+                    <Link
+                      href="/portal/applications"
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 hover:bg-white/10"
+                    >
+                      Applications
+                      {newApplications > 0 ? (
+                        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-sky-300 px-1.5 py-0.5 text-[11px] font-bold leading-none text-[var(--primary)]">
+                          {newApplications > 99 ? "99+" : newApplications}
                         </span>
                       ) : null}
                     </Link>

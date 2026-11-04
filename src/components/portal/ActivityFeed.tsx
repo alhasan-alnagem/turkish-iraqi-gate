@@ -25,6 +25,7 @@ const DOT: Record<string, string> = {
   staff_request: "bg-purple-500",
   leave_request: "bg-teal-500",
   leave_decided: "bg-slate-400",
+  job_application: "bg-indigo-500",
 };
 
 /**

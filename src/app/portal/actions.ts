@@ -26,6 +26,13 @@ import {
   updateHrProfile,
 } from "@/lib/hr";
 import { approveJoinRequest, rejectJoinRequest } from "@/lib/staff-requests";
+import {
+  APPLICATION_STATUS_LABELS,
+  deleteJobApplication,
+  getJobApplication,
+  isApplicationStatus,
+  updateApplicationStatus,
+} from "@/lib/job-applications";
 import { notify } from "@/lib/notifications";
 
 async function requireActor() {
@@ -437,4 +444,61 @@ export async function rejectJoinRequestAction(formData: FormData) {
 
   revalidatePath("/portal/requests");
   redirect("/portal/requests?rejected=1");
+}
+
+/* ------------------------------ job applications --------------------------- */
+
+export async function updateApplicationStatusAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const note = String(formData.get("reviewNote") ?? "").trim();
+  const back = String(formData.get("statusFilter") ?? "");
+
+  if (!applicationId || !isApplicationStatus(status)) redirect("/portal/applications");
+
+  const updated = await updateApplicationStatus({
+    id: applicationId,
+    status,
+    reviewerId: actor.id,
+    note,
+  });
+
+  revalidatePath("/portal/applications");
+  if (!updated) redirect("/portal/applications?error=not-found");
+
+  await notify({
+    kind: "job_application",
+    summary: `${updated.name}'s application moved to ${APPLICATION_STATUS_LABELS[status].toLowerCase()}`,
+    actorId: actor.id,
+    actorName: actor.name,
+  });
+
+  const target = isApplicationStatus(back)
+    ? `/portal/applications?status=${back}&updated=1`
+    : "/portal/applications?updated=1";
+  redirect(target);
+}
+
+export async function deleteApplicationAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  if (!applicationId) redirect("/portal/applications");
+
+  const application = await getJobApplication(applicationId);
+  const removed = await deleteJobApplication(applicationId);
+
+  if (removed && application) {
+    await notify({
+      kind: "job_application",
+      summary: `${application.name}'s application was deleted`,
+      actorId: actor.id,
+      actorName: actor.name,
+    });
+  }
+
+  revalidatePath("/portal/applications");
+  redirect("/portal/applications?deleted=1");
 }

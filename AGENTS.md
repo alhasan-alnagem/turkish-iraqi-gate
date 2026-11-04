@@ -91,6 +91,8 @@ user's standing decisions, not suggestions.
   actually written (that bug was fixed — keep the optimistic/success behaviour).
 - Career applications `/api/careers` (PDF form, Resend email) and supplier catalog
   submissions `/api/catalog-submissions` exist; pages: `career`, `submit-catalog`.
+  Every career application is now also stored in Postgres with its CV, so the portal
+  (`/portal/applications`) is the record and the email is only a notification.
 - The temporary "work in progress / coming soon" overlay on the contact form is gone.
 
 ## 7. Deploy & SEO
@@ -233,4 +235,16 @@ in `types.ts` — all three must stay structurally identical.
   kind or employment type means updating the list, the CHECK constraint and the `<select>`.
 - HR and join-request events also land in the activity feed (`staff_request`,
   `leave_request`, `leave_decided`), with their own dot colours in `ActivityFeed.tsx`.
+- **Job applications are handled in the system, not only by email.** The public
+  `/[lang]/career` form still posts to `/api/careers`, but the route now stores the
+  application and its CV PDF in Postgres first (`job_applications` +
+  `job_application_files`, same statement) and only then emails the company; the email is
+  best effort, so a mail failure no longer loses an application. A missing
+  `RESEND_API_KEY` is not fatal. Admins review everything at `/portal/applications`
+  (nav badge = new): status workflow `new → shortlisted → interview → hired | rejected`,
+  an internal note, search, and an admin-only CV link at
+  `/api/portal/applications/<id>/cv` (bytes come from the DB, `no-store`). Deleting an
+  application removes its CV too. Do **not** move CVs into the public Blob store — they
+  are personal documents. Old email-only applications (before this table) are not
+  backfilled; the mailbox remains their source.
 

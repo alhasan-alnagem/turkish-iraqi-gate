@@ -11,6 +11,7 @@ import {
   listOnLeaveToday,
   listTeamHr,
 } from "@/lib/hr";
+import { applicationCounts } from "@/lib/job-applications";
 import { decideLeaveAction, saveHrProfileAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -37,13 +38,15 @@ export default async function HrPage({
   if (!me) redirect("/login");
   if (me.role !== "admin") redirect("/portal/hr/me");
 
-  const [{ error, saved, decided }, summary, team, pendingLeave, onLeave] = await Promise.all([
-    searchParams,
-    hrSummary(),
-    listTeamHr(),
-    listLeaveRequests({ status: "pending" }),
-    listOnLeaveToday(),
-  ]);
+  const [{ error, saved, decided }, summary, team, pendingLeave, onLeave, applications] =
+    await Promise.all([
+      searchParams,
+      hrSummary(),
+      listTeamHr(),
+      listLeaveRequests({ status: "pending" }),
+      listOnLeaveToday(),
+      applicationCounts(),
+    ]);
 
   return (
     <div className="space-y-6">
@@ -75,7 +78,7 @@ export default async function HrPage({
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {[
           { label: "Team", value: summary.headcount, hint: "active accounts" },
           { label: "Departments", value: summary.departments, hint: "with people in them" },
@@ -101,6 +104,15 @@ export default async function HrPage({
             {summary.pendingJoinRequests}
           </p>
           <p className="text-xs text-[var(--accent)]">review →</p>
+        </Link>
+
+        <Link
+          href="/portal/applications"
+          className="rounded-2xl border border-[var(--border)] bg-white p-4 transition-colors hover:border-[var(--accent)]"
+        >
+          <p className="text-xs uppercase tracking-wide text-[var(--muted)]">Applications</p>
+          <p className="mt-1 text-2xl font-bold text-[var(--primary)]">{applications.new}</p>
+          <p className="text-xs text-[var(--accent)]">new · review →</p>
         </Link>
       </div>
 

@@ -9,7 +9,8 @@ export type NotificationKind =
   | "deleted"
   | "staff_request"
   | "leave_request"
-  | "leave_decided";
+  | "leave_decided"
+  | "job_application";
 
 export type Notification = {
   id: string;

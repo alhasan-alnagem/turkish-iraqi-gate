@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { createJobApplication } from "@/lib/job-applications";
+import { notify } from "@/lib/notifications";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL = process.env.CAREER_TO_EMAIL || "alhasony1@gmail.com";
@@ -108,16 +110,38 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, message: "cv_too_large" }, { status: 400 });
     }
 
-    if (!RESEND_API_KEY) {
-      console.error("Career API error: RESEND_API_KEY is not configured.");
-      return Response.json(
-        { success: false, message: "not_configured" },
-        { status: 500 }
-      );
+    // --- Store first: the portal is the record of truth ---
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    let stored = false;
+    try {
+      await createJobApplication({
+        name,
+        email,
+        phone,
+        position,
+        message,
+        lang,
+        cvName: file.name,
+        cvType: file.type || "application/pdf",
+        cvSize: file.size,
+        cv: buffer,
+      });
+      stored = true;
+    } catch (error) {
+      console.error("Career API error: could not store application", error);
     }
 
-    // --- Build & send email ---
-    const buffer = Buffer.from(await file.arrayBuffer());
+    if (stored) {
+      await notify({
+        kind: "job_application",
+        summary: `${name} applied for ${position}`,
+        actorName: name,
+      });
+    }
+
+    // --- Email the company. Best effort: a mail failure must not lose the
+    // application, because it is already waiting in the portal. ---
     const base64 = buffer.toString("base64");
 
     const html = `
@@ -141,64 +165,80 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: TO_EMAILS,
-        reply_to: email,
-        subject: `New job application: ${position} — ${name}`,
-        html,
-        attachments: [
-          {
-            filename: file.name,
-            content: base64,
-            content_type: "application/pdf",
-          },
-        ],
-      }),
-    });
+    let emailed = false;
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error("Career API error: Resend", res.status, text);
-      return Response.json(
-        { success: false, message: "email_failed" },
-        { status: 502 }
+    if (RESEND_API_KEY) {
+      try {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: TO_EMAILS,
+            reply_to: email,
+            subject: `New job application: ${position} — ${name}`,
+            html,
+            attachments: [
+              {
+                filename: file.name,
+                content: base64,
+                content_type: "application/pdf",
+              },
+            ],
+          }),
+        });
+
+        if (res.ok) {
+          emailed = true;
+        } else {
+          const text = await res.text().catch(() => "");
+          console.error("Career API warning: Resend", res.status, text);
+        }
+      } catch (error) {
+        console.error("Career API warning: could not send application email", error);
+      }
+    } else {
+      console.warn(
+        "Career API: RESEND_API_KEY is not configured — application stored without email.",
       );
+    }
+
+    // Losing both copies is the only real failure.
+    if (!stored && !emailed) {
+      return Response.json({ success: false, message: "error" }, { status: 502 });
     }
 
     // Best-effort confirmation to the applicant. If this fails (e.g. while
     // still on the onboarding@resend.dev fallback sender, which can only reach
-    // the account owner's inbox), log it but keep the application successful —
-    // the application email was already delivered to the company inbox.
-    const langKey: LangKey = lang === "ar" || lang === "tr" ? lang : "en";
-    const ack = ackTemplates[langKey];
-    try {
-      const ackRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [email],
-          reply_to: REPLY_TO_EMAIL,
-          subject: ack.subject,
-          html: ack.html(name, position),
-        }),
-      });
-      if (!ackRes.ok) {
-        const text = await ackRes.text().catch(() => "");
-        console.error("Career API warning: applicant ack failed", ackRes.status, text);
+    // the account owner's inbox), log it but keep the application successful.
+    if (RESEND_API_KEY) {
+      const langKey: LangKey = lang === "ar" || lang === "tr" ? lang : "en";
+      const ack = ackTemplates[langKey];
+      try {
+        const ackRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: [email],
+            reply_to: REPLY_TO_EMAIL,
+            subject: ack.subject,
+            html: ack.html(name, position),
+          }),
+        });
+        if (!ackRes.ok) {
+          const text = await ackRes.text().catch(() => "");
+          console.error("Career API warning: applicant ack failed", ackRes.status, text);
+        }
+      } catch (err) {
+        console.error("Career API warning: applicant ack failed", err);
       }
-    } catch (err) {
-      console.error("Career API warning: applicant ack failed", err);
     }
 
     return Response.json({ success: true }, { status: 200 });
