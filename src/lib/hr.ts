@@ -11,12 +11,18 @@ import type { Role } from "@/lib/staff";
  * decided by an administrator; the requester always sees their own history.
  */
 
-export type EmploymentType = "full_time" | "part_time" | "contract" | "intern";
+export type EmploymentType =
+  | "full_time"
+  | "part_time"
+  | "contract"
+  | "commission"
+  | "intern";
 
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = [
   "full_time",
   "part_time",
   "contract",
+  "commission",
   "intern",
 ];
 
@@ -24,6 +30,7 @@ export const EMPLOYMENT_LABELS: Record<EmploymentType, string> = {
   full_time: "Full time",
   part_time: "Part time",
   contract: "Contract",
+  commission: "Commission based",
   intern: "Intern",
 };
 

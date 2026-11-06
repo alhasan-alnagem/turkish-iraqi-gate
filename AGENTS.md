@@ -221,7 +221,7 @@ in `types.ts` — all three must stay structurally identical.
   (`createStaffWithHash`), declining closes it. Leftover requests are harmless.
 - **HR hangs off the same `staff` row** — one identity for orders and for people. Added
   columns: `job_title`, `department`, `phone`, `hired_on`, `employment_type`
-  (`full_time | part_time | contract | intern`), `annual_leave_days` (default 21), `notes`.
+  (`full_time | part_time | contract | commission | intern`), `annual_leave_days` (default 21), `notes`.
   Logic lives in `src/lib/hr.ts`; admins edit every file at `/portal/hr`, and everyone sees
   their own at `/portal/hr/me` (nav: "HR"). Staff never edit their own file.
 - **Leave requests** are their own table (`leave_requests`): `kind` =
