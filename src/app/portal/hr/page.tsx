@@ -18,6 +18,7 @@ import {
   type ApplicationStatus,
 } from "@/lib/job-applications";
 import { listJoinRequests } from "@/lib/staff-requests";
+import { formatInterview } from "@/lib/application-mail";
 import { decideLeaveAction, saveHrProfileAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -228,7 +229,8 @@ export default async function HrPage({
                 <li key={application.id} className="space-y-3 px-5 py-4">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="text-sm font-semibold text-[var(--foreground)]">
-                      New application — {application.name}
+                      {application.status === "new" ? "New application" : "Application"} —{" "}
+                      {application.name}
                     </p>
                     <span
                       className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${APPLICATION_BADGE[application.status]}`}
@@ -241,6 +243,13 @@ export default async function HrPage({
                     Received {fmtReceived(application.created_at)} · site language{" "}
                     {application.lang.toUpperCase()}
                   </p>
+
+                  {application.interview_at ? (
+                    <p className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-800">
+                      Interview: <strong>{formatInterview(application.interview_at)}</strong>
+                      {application.interview_mode ? ` · ${application.interview_mode}` : ""}
+                    </p>
+                  ) : null}
 
                   <dl className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[5.5rem_minmax(0,1fr)]">
                     <dt className="text-[var(--muted)]">Full name</dt>

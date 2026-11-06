@@ -93,6 +93,16 @@ user's standing decisions, not suggestions.
   submissions `/api/catalog-submissions` exist; pages: `career`, `submit-catalog`.
   Every career application is now also stored in Postgres with its CV, so the portal
   (`/portal/applications`) is the record and the email is only a notification.
+- **Applicant replies are written and sent by the system** (`src/lib/application-mail.ts`):
+  the admin ticks the language(s) — English / العربية / Türkçe — and one email goes out
+  **per ticked language**, so a message is never mixed. Hiring, declining and interview
+  invitations each have their own copy, in the same green/white look as the site, RTL for
+  Arabic (`dir` + `text-align`). The sender/reply-to come from `CAREER_FROM_EMAIL` /
+  `CAREER_REPLY_TO`, the same as the career form. The decision is stored **before** the
+  mail is sent, so a mail outage never loses it; the page then says what actually
+  happened (sent in …, not configured, or failed). Zero ticked languages is refused.
+  Interview times are typed and shown in **Baghdad time** (`Asia/Baghdad`, fixed `+03`,
+  `interviewStamp` / `formatInterview`) and every reply states that.
 - The temporary "work in progress / coming soon" overlay on the contact form is gone.
 
 ## 7. Deploy & SEO
@@ -254,4 +264,24 @@ in `types.ts` — all three must stay structurally identical.
   timestamp. Both cards stop at `RECENT_DAYS = 14` in `src/app/portal/hr/page.tsx` — a
   request or application from 15 days ago drops off the dashboard, stays in the full queue
   (`/portal/requests`, `/portal/applications`), and each card says how many it hid.
+- **Interview tracker and decisions live on `/portal/applications`.** Columns added to
+  `job_applications` in place: `interview_at timestamptz`, `interview_mode`,
+  `interview_note`, `decision_langs` (the language codes the reply went out in, e.g.
+  `en,ar`), `decided_at`, plus a partial index on `interview_at`. The tracker card at the
+  top lists every booked interview from yesterday onwards, soonest first, with a `past`
+  flag computed in SQL (`is_past`, keeps the React purity lint quiet); each row jumps to
+  the application (`#app-<id>`). Per application there are three forms, each re-checking
+  `admin` server-side in `src/app/portal/actions.ts`:
+  - `scheduleInterviewAction` — date + time (Baghdad), format (Office / Video call /
+    Phone call), place/notes, language checkboxes and an optional "send the invitation
+    now" box. Saving a date sets the status to `interview`. Emptying both date and time
+    removes the interview (the invite box is ignored on that path, so it can't block a
+    clear).
+  - `decideApplicationAction` — Approve / Decline, language checkboxes (required) and a
+    personal line that is also saved as the internal note. Stores the decision and
+    `decision_langs` first, then sends one email per language.
+  - `updateApplicationStatusAction` — status-only changes and the internal note, with no
+    email (unchanged behaviour, still on the page).
+  The tracked languages default to what the applicant was answered in, otherwise their
+  site language, otherwise English; the page shows `Decided … · replied in …` for audit.
 

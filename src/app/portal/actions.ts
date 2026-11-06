@@ -31,8 +31,14 @@ import {
   deleteJobApplication,
   getJobApplication,
   isApplicationStatus,
+  setApplicationInterview,
   updateApplicationStatus,
 } from "@/lib/job-applications";
+import {
+  interviewStamp,
+  parseReplyLanguages,
+  sendApplicationReply,
+} from "@/lib/application-mail";
 import { notify } from "@/lib/notifications";
 
 async function requireActor() {
@@ -479,6 +485,143 @@ export async function updateApplicationStatusAction(formData: FormData) {
     ? `/portal/applications?status=${back}&updated=1`
     : "/portal/applications?updated=1";
   redirect(target);
+}
+
+/**
+ * Hire / decline, with the language(s) the automatic reply is written in.
+ * The decision is stored first, then the reply is sent — a mail outage can
+ * never lose the decision.
+ */
+export async function decideApplicationAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  const note = String(formData.get("reviewNote") ?? "").trim();
+  const back = String(formData.get("statusFilter") ?? "");
+  const langs = parseReplyLanguages(formData.getAll("langs").map(String));
+
+  if (!applicationId || (decision !== "hired" && decision !== "rejected")) {
+    redirect("/portal/applications");
+  }
+  // The tick list is the whole point of this form: at least one language.
+  if (langs.length === 0) {
+    redirect(`/portal/applications?error=language&id=${encodeURIComponent(applicationId)}`);
+  }
+
+  const application = await getJobApplication(applicationId);
+  if (!application) redirect("/portal/applications?error=not-found");
+
+  const updated = await updateApplicationStatus({
+    id: applicationId,
+    status: decision,
+    reviewerId: actor.id,
+    note,
+    decisionLangs: langs,
+  });
+  if (!updated) redirect("/portal/applications?error=not-found");
+
+  const reply = await sendApplicationReply({
+    to: application.email,
+    name: application.name,
+    position: application.position,
+    kind: decision,
+    langs,
+    note,
+  });
+
+  await notify({
+    kind: "job_application",
+    summary: `${updated.name}'s application ${decision === "hired" ? "approved" : "declined"}${
+      reply.sent.length ? ` — reply sent (${reply.sent.join(", ")})` : " — no reply sent"
+    }`,
+    actorId: actor.id,
+    actorName: actor.name,
+  });
+
+  revalidatePath("/portal/applications");
+  revalidatePath("/portal/hr");
+
+  const params = new URLSearchParams({ decided: decision });
+  params.set("mailed", reply.sent.join(",") || (reply.skipped ? "off" : "failed"));
+  if (isApplicationStatus(back)) params.set("status", back);
+  redirect(`/portal/applications?${params.toString()}`);
+}
+
+/** Interview tracker: book, move or clear an interview; optionally invite by email. */
+export async function scheduleInterviewAction(formData: FormData) {
+  const actor = await requireAdminActor();
+
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const date = String(formData.get("interviewDate") ?? "").trim();
+  const time = String(formData.get("interviewTime") ?? "").trim();
+  const mode = String(formData.get("interviewMode") ?? "").trim();
+  const note = String(formData.get("interviewNote") ?? "").trim();
+  const invite = formData.get("sendInvite") === "on";
+  const langs = parseReplyLanguages(formData.getAll("langs").map(String));
+
+  if (!applicationId) redirect("/portal/applications");
+
+  const at = date && time ? interviewStamp(`${date}T${time}`) : "";
+  if ((date && !time) || (time && !date)) {
+    redirect(`/portal/applications?error=interview-date&id=${encodeURIComponent(applicationId)}`);
+  }
+  // Empty date + time means "remove the interview" — the invite box may still be
+  // ticked from the earlier booking, so it must not block the clear.
+  if (at && invite && langs.length === 0) {
+    redirect(`/portal/applications?error=language&id=${encodeURIComponent(applicationId)}`);
+  }
+
+  const application = await getJobApplication(applicationId);
+  if (!application) redirect("/portal/applications?error=not-found");
+
+  const updated = await setApplicationInterview({
+    id: applicationId,
+    at,
+    mode,
+    note,
+    reviewerId: actor.id,
+  });
+  if (!updated) redirect("/portal/applications?error=not-found");
+
+  let mailed = "";
+  if (invite && at) {
+    const reply = await sendApplicationReply({
+      to: application.email,
+      name: application.name,
+      position: application.position,
+      kind: "interview",
+      langs,
+      note: "",
+      interview: { at, mode, note },
+    });
+    mailed = reply.sent.join(",") || (reply.skipped ? "off" : "failed");
+
+    await notify({
+      kind: "job_application",
+      summary: `Interview booked with ${application.name}${
+        reply.sent.length ? ` — invitation sent (${reply.sent.join(", ")})` : " — no invitation sent"
+      }`,
+      actorId: actor.id,
+      actorName: actor.name,
+    });
+  } else {
+    await notify({
+      kind: "job_application",
+      summary: at
+        ? `Interview booked with ${application.name}`
+        : `Interview cleared for ${application.name}`,
+      actorId: actor.id,
+      actorName: actor.name,
+    });
+  }
+
+  revalidatePath("/portal/applications");
+  revalidatePath("/portal/hr");
+
+  const params = new URLSearchParams({ interview: at ? "saved" : "cleared" });
+  if (mailed) params.set("mailed", mailed);
+  redirect(`/portal/applications?${params.toString()}`);
 }
 
 export async function deleteApplicationAction(formData: FormData) {

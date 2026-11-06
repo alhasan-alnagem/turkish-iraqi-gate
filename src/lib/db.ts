@@ -171,6 +171,18 @@ create table if not exists job_applications (
 create index if not exists job_applications_status_idx on job_applications (status, created_at desc);
 create index if not exists job_applications_created_idx on job_applications (created_at desc);
 
+-- Interview tracker + the language(s) the applicant was answered in, so the
+-- automatic reply is auditable. The create-table above never alters an existing
+-- table, so new columns are added in place.
+alter table job_applications add column if not exists interview_at timestamptz;
+alter table job_applications add column if not exists interview_mode text not null default '';
+alter table job_applications add column if not exists interview_note text not null default '';
+alter table job_applications add column if not exists decision_langs text not null default '';
+alter table job_applications add column if not exists decided_at timestamptz;
+
+create index if not exists job_applications_interview_idx
+  on job_applications (interview_at) where interview_at is not null;
+
 create table if not exists job_application_files (
   application_id uuid primary key references job_applications(id) on delete cascade,
   data bytea not null

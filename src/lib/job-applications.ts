@@ -49,12 +49,19 @@ export type JobApplication = {
   updated_at: string;
   reviewed_by_name: string | null;
   review_note: string;
+  interview_at: string | null;
+  interview_mode: string;
+  interview_note: string;
+  decision_langs: string;
+  decided_at: string | null;
 };
 
 const COLUMNS = `
   a.id, a.name, a.email, a.phone, a.position, a.message, a.lang,
   a.cv_name, a.cv_size, a.status, a.created_at, a.updated_at,
-  s.name as reviewed_by_name, a.review_note
+  s.name as reviewed_by_name, a.review_note,
+  a.interview_at, a.interview_mode, a.interview_note,
+  a.decision_langs, a.decided_at
 `;
 
 const JOIN = "from job_applications a left join staff s on s.id = a.reviewed_by";
@@ -200,16 +207,79 @@ export async function updateApplicationStatus(input: {
   status: ApplicationStatus;
   reviewerId: string;
   note?: string;
+  /** Languages the automatic reply was written in ('' when none was sent). */
+  decisionLangs?: string[];
 }): Promise<JobApplication | null> {
+  const langs = (input.decisionLangs ?? [])
+    .map((lang) => lang.trim().toLowerCase())
+    .filter(Boolean)
+    .join(",")
+    .slice(0, 20);
+
   const updated = await query<{ id: string }>(
     `update job_applications
-     set status = $2, review_note = $3, reviewed_by = $4, updated_at = now()
+     set status = $2,
+         review_note = $3,
+         reviewed_by = $4,
+         decision_langs = $5,
+         decided_at = case when $2 in ('hired', 'rejected') then now() else decided_at end,
+         updated_at = now()
      where id = $1
      returning id`,
-    [input.id, input.status, input.note?.trim().slice(0, 500) ?? "", input.reviewerId],
+    [input.id, input.status, input.note?.trim().slice(0, 500) ?? "", input.reviewerId, langs],
   );
   if (!updated[0]) return null;
   return getJobApplication(updated[0].id);
+}
+
+/** Interview tracker: when, how and any note, all in one row. */
+export async function setApplicationInterview(input: {
+  id: string;
+  at: string | null;
+  mode: string;
+  note: string;
+  reviewerId: string;
+}): Promise<JobApplication | null> {
+  const updated = await query<{ id: string }>(
+    `update job_applications
+     set interview_at = case when $2 = '' then null else $2::timestamptz end,
+         interview_mode = $3,
+         interview_note = $4,
+         status = case when $2 = '' then status else 'interview' end,
+         reviewed_by = $5,
+         updated_at = now()
+     where id = $1
+     returning id`,
+    [
+      input.id,
+      input.at?.trim() ?? "",
+      input.mode.trim().slice(0, 40),
+      input.note.trim().slice(0, 500),
+      input.reviewerId,
+    ],
+  );
+  if (!updated[0]) return null;
+  return getJobApplication(updated[0].id);
+}
+
+export type InterviewRow = Pick<
+  JobApplication,
+  "id" | "name" | "email" | "position" | "status" | "interview_at" | "interview_mode" | "interview_note"
+> & { is_past: boolean };
+
+/** Interviews from `daysBack` ago forwards, soonest first — the tracker list. */
+export async function listInterviews(daysBack = 1): Promise<InterviewRow[]> {
+  return query<InterviewRow>(
+    `select a.id, a.name, a.email, a.position, a.status,
+            a.interview_at, a.interview_mode, a.interview_note,
+            (a.interview_at < now()) as is_past
+     from job_applications a
+     where a.interview_at is not null
+       and a.interview_at >= now() - ($1 || ' days')::interval
+     order by a.interview_at asc
+     limit 50`,
+    [Math.max(0, Math.round(daysBack))],
+  );
 }
 
 export async function deleteJobApplication(id: string): Promise<boolean> {
