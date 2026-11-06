@@ -11,10 +11,23 @@ import {
   listOnLeaveToday,
   listTeamHr,
 } from "@/lib/hr";
-import { applicationCounts } from "@/lib/job-applications";
+import {
+  APPLICATION_STATUS_LABELS,
+  applicationCounts,
+  listJobApplications,
+  type ApplicationStatus,
+} from "@/lib/job-applications";
+import { listJoinRequests } from "@/lib/staff-requests";
 import { decideLeaveAction, saveHrProfileAction } from "../actions";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * "Current requests" on the dashboard is a two-week inbox: an applicant or a
+ * join request from 15 days ago is no longer current, so it drops off this card
+ * (it stays in the full queue at /portal/applications and /portal/requests).
+ */
+const RECENT_DAYS = 14;
 
 const inputClass =
   "w-full rounded-lg border border-[var(--border)] bg-white px-2.5 py-1.5 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/25";
@@ -29,6 +42,23 @@ const fmtDate = (value: string | null) =>
       }).format(new Date(`${value}T00:00:00Z`))
     : "—";
 
+const fmtReceived = (value: string | Date) =>
+  new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+
+const APPLICATION_BADGE: Record<ApplicationStatus, string> = {
+  new: "border-blue-200 bg-blue-50 text-blue-700",
+  shortlisted: "border-amber-200 bg-amber-50 text-amber-700",
+  interview: "border-violet-200 bg-violet-50 text-violet-700",
+  hired: "border-green-200 bg-green-50 text-green-700",
+  rejected: "border-red-200 bg-red-50 text-red-700",
+};
+
 export default async function HrPage({
   searchParams,
 }: {
@@ -38,15 +68,25 @@ export default async function HrPage({
   if (!me) redirect("/login");
   if (me.role !== "admin") redirect("/portal/hr/me");
 
-  const [{ error, saved, decided }, summary, team, pendingLeave, onLeave, applications] =
-    await Promise.all([
-      searchParams,
-      hrSummary(),
-      listTeamHr(),
-      listLeaveRequests({ status: "pending" }),
-      listOnLeaveToday(),
-      applicationCounts(),
-    ]);
+  const [
+    { error, saved, decided },
+    summary,
+    team,
+    pendingLeave,
+    onLeave,
+    applications,
+    recentApplications,
+    recentJoinRequests,
+  ] = await Promise.all([
+    searchParams,
+    hrSummary(),
+    listTeamHr(),
+    listLeaveRequests({ status: "pending" }),
+    listOnLeaveToday(),
+    applicationCounts(),
+    listJobApplications({ limit: 6, withinDays: RECENT_DAYS }),
+    listJoinRequests("pending", { withinDays: RECENT_DAYS }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -54,7 +94,7 @@ export default async function HrPage({
         <div>
           <h1 className="text-lg font-bold text-[var(--primary)]">People &amp; HR</h1>
           <p className="text-sm text-[var(--muted)]">
-            Employee files, leave decisions and the join queue in one place.
+            Employee files, leave decisions, join requests and job applications in one place.
           </p>
         </div>
         <Link href="/portal/hr/me" className="text-sm text-[var(--accent)] hover:underline">
@@ -114,6 +154,156 @@ export default async function HrPage({
           <p className="mt-1 text-2xl font-bold text-[var(--primary)]">{applications.new}</p>
           <p className="text-xs text-[var(--accent)]">new · review →</p>
         </Link>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl border border-[var(--border)] bg-white">
+          <h2 className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border)] px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+            Current requests
+            <span className="text-[11px] font-medium normal-case tracking-normal">
+              last {RECENT_DAYS} days
+            </span>
+          </h2>
+
+          {recentJoinRequests.length === 0 ? (
+            <p className="px-5 py-6 text-sm text-[var(--muted)]">
+              No join requests in the last {RECENT_DAYS} days.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[var(--border)]">
+              {recentJoinRequests.map((request) => (
+                <li key={request.id} className="px-5 py-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      {request.name}
+                    </p>
+                    <span className="rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[11px] font-medium text-purple-700">
+                      wants to join
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-[var(--muted)]" dir="ltr">
+                    {request.email}
+                    {request.phone ? ` · ${request.phone}` : ""}
+                  </p>
+                  {request.message ? (
+                    <p className="mt-1 line-clamp-2 text-xs text-[var(--foreground)]">
+                      “{request.message}”
+                    </p>
+                  ) : null}
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    Received {fmtReceived(request.created_at)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] px-5 py-3 text-sm">
+            <span className="text-xs text-[var(--muted)]">
+              {summary.pendingJoinRequests > recentJoinRequests.length
+                ? `${summary.pendingJoinRequests - recentJoinRequests.length} older still waiting`
+                : "Nothing older waiting"}
+            </span>
+            <Link href="/portal/requests" className="font-medium text-[var(--accent)] hover:underline">
+              Open the join queue →
+            </Link>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-[var(--border)] bg-white">
+          <h2 className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--border)] px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+            Job applications
+            <span className="text-[11px] font-medium normal-case tracking-normal">
+              last {RECENT_DAYS} days
+            </span>
+          </h2>
+
+          {recentApplications.length === 0 ? (
+            <p className="px-5 py-6 text-sm text-[var(--muted)]">
+              No applications in the last {RECENT_DAYS} days.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[var(--border)]">
+              {recentApplications.map((application) => (
+                <li key={application.id} className="space-y-3 px-5 py-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="text-sm font-semibold text-[var(--foreground)]">
+                      New application — {application.name}
+                    </p>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${APPLICATION_BADGE[application.status]}`}
+                    >
+                      {APPLICATION_STATUS_LABELS[application.status]}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-[var(--muted)]">
+                    Received {fmtReceived(application.created_at)} · site language{" "}
+                    {application.lang.toUpperCase()}
+                  </p>
+
+                  <dl className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[5.5rem_minmax(0,1fr)]">
+                    <dt className="text-[var(--muted)]">Full name</dt>
+                    <dd className="text-[var(--foreground)]">{application.name}</dd>
+                    <dt className="text-[var(--muted)]">Email</dt>
+                    <dd className="text-[var(--foreground)]" dir="ltr">
+                      <a href={`mailto:${application.email}`} className="hover:underline">
+                        {application.email}
+                      </a>
+                    </dd>
+                    <dt className="text-[var(--muted)]">Phone</dt>
+                    <dd className="text-[var(--foreground)]" dir="ltr">
+                      {application.phone || "—"}
+                    </dd>
+                    <dt className="text-[var(--muted)]">Position</dt>
+                    <dd className="text-[var(--foreground)]">{application.position}</dd>
+                    <dt className="text-[var(--muted)]">CV file</dt>
+                    <dd className="text-[var(--foreground)]" dir="ltr">
+                      {application.cv_name ? (
+                        <a
+                          href={`/api/portal/applications/${application.id}/cv`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold text-[var(--accent)] hover:underline"
+                        >
+                          {application.cv_name}
+                        </a>
+                      ) : (
+                        "No CV stored"
+                      )}
+                      {application.cv_name && application.cv_size > 0
+                        ? ` (${Math.max(1, Math.round(application.cv_size / 1024))} KB)`
+                        : ""}
+                    </dd>
+                  </dl>
+
+                  {application.message ? (
+                    <div>
+                      <p className="text-xs text-[var(--muted)]">Cover letter</p>
+                      <p className="mt-1 whitespace-pre-line rounded-lg bg-[var(--section)] px-3 py-2 text-sm text-[var(--foreground)]">
+                        {application.message}
+                      </p>
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] px-5 py-3 text-sm">
+            <span className="text-xs text-[var(--muted)]">
+              {applications.all > recentApplications.length
+                ? `${applications.all - recentApplications.length} older in the file`
+                : "Nothing older in the file"}
+            </span>
+            <Link
+              href="/portal/applications"
+              className="font-medium text-[var(--accent)] hover:underline"
+            >
+              Review all applications →
+            </Link>
+          </div>
+        </section>
       </div>
 
       <section className="rounded-2xl border border-[var(--border)] bg-white">

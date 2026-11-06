@@ -247,4 +247,11 @@ in `types.ts` — all three must stay structurally identical.
   application removes its CV too. Do **not** move CVs into the public Blob store — they
   are personal documents. Old email-only applications (before this table) are not
   backfilled; the mailbox remains their source.
+- `/portal/hr` also shows a **Current requests** card (pending join requests received in
+  the last 14 days) and a **Job applications** card that mirrors the notification email:
+  every field the applicant filled (name, email, phone, position, site language), the CV
+  file name/size linking to the admin-only CV route, the cover letter, and the `Received`
+  timestamp. Both cards stop at `RECENT_DAYS = 14` in `src/app/portal/hr/page.tsx` — a
+  request or application from 15 days ago drops off the dashboard, stays in the full queue
+  (`/portal/requests`, `/portal/applications`), and each card says how many it hid.
 

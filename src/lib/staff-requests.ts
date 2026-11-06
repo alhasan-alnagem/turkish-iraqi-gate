@@ -31,7 +31,19 @@ const COLUMNS = `
 
 const JOIN = "from staff_requests r left join staff s on s.id = r.reviewed_by";
 
-export async function listJoinRequests(status: JoinRequest["status"] = "pending"): Promise<JoinRequest[]> {
+export async function listJoinRequests(
+  status: JoinRequest["status"] = "pending",
+  options: { withinDays?: number } = {},
+): Promise<JoinRequest[]> {
+  if (options.withinDays && options.withinDays > 0) {
+    return query<JoinRequest>(
+      `select ${COLUMNS} ${JOIN}
+       where r.status = $1 and r.created_at >= now() - ($2 || ' days')::interval
+       order by r.created_at desc limit 100`,
+      [status, Math.round(options.withinDays)],
+    );
+  }
+
   return query<JoinRequest>(
     `select ${COLUMNS} ${JOIN} where r.status = $1 order by r.created_at desc limit 100`,
     [status],

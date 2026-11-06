@@ -104,6 +104,8 @@ export async function listJobApplications(filters: {
   status?: ApplicationStatus;
   search?: string;
   limit?: number;
+  /** Only applications received in the last N days (older ones drop off). */
+  withinDays?: number;
 } = {}): Promise<JobApplication[]> {
   const where: string[] = [];
   const params: unknown[] = [];
@@ -117,6 +119,10 @@ export async function listJobApplications(filters: {
     where.push(
       `(a.name ilike $${params.length} or a.email ilike $${params.length} or a.position ilike $${params.length})`,
     );
+  }
+  if (filters.withinDays && filters.withinDays > 0) {
+    params.push(Math.round(filters.withinDays));
+    where.push(`a.created_at >= now() - ($${params.length} || ' days')::interval`);
   }
 
   params.push(Math.min(filters.limit ?? 100, 200));
