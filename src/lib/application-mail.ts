@@ -13,26 +13,15 @@ import "server-only";
  * what actually happened.
  */
 
-export type ReplyLanguage = "en" | "ar" | "tr";
+import type { ReplyLanguage } from "@/lib/reply-languages";
 
-export const REPLY_LANGUAGES: readonly ReplyLanguage[] = ["en", "ar", "tr"];
-
-export const REPLY_LANGUAGE_LABELS: Record<ReplyLanguage, string> = {
-  en: "English",
-  ar: "العربية",
-  tr: "Türkçe",
-};
-
-export function isReplyLanguage(value: string): value is ReplyLanguage {
-  return (REPLY_LANGUAGES as readonly string[]).includes(value);
-}
-
-export function parseReplyLanguages(values: string[]): ReplyLanguage[] {
-  const picked = values
-    .map((value) => value.trim().toLowerCase())
-    .filter((value): value is ReplyLanguage => isReplyLanguage(value));
-  return Array.from(new Set(picked));
-}
+export {
+  REPLY_LANGUAGES,
+  REPLY_LANGUAGE_LABELS,
+  isReplyLanguage,
+  parseReplyLanguages,
+  type ReplyLanguage,
+} from "@/lib/reply-languages";
 
 export type DecisionKind = "hired" | "rejected" | "interview";
 
@@ -243,6 +232,65 @@ function subjectFor(lang: ReplyLanguage, input: ReplyInput): string {
   const base = COPY[lang].subject;
   const suffix = DECISION_LABELS[input.kind].toLowerCase();
   return `${base} — ${suffix}`;
+}
+
+/**
+ * A free-text reply typed by an administrator. Subject and body are used
+ * exactly as written (the body is escaped and keeps its line breaks), so this
+ * is the "reply manually" path — no template and no language tick list.
+ */
+export async function sendManualReply(input: {
+  to: string;
+  subject: string;
+  body: string;
+}): Promise<{ sent: boolean; skipped: boolean }> {
+  if (!RESEND_API_KEY) {
+    console.warn("manual application reply: RESEND_API_KEY is not configured — nothing sent.");
+    return { sent: false, skipped: true };
+  }
+
+  const subject =
+    input.subject.trim().replace(/\s+/g, " ").slice(0, 200) ||
+    "Your application — Turkish Iraqi Gate";
+
+  const html = `<!doctype html>
+  <html lang="en">
+  <body style="margin:0;padding:24px 12px;background:#f9fafb;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:28px;line-height:1.65">
+      <p style="margin:0 0 6px;color:#16a34a;font-size:12px;letter-spacing:2px;text-transform:uppercase">Turkish Iraqi Gate</p>
+      <div dir="auto" style="margin:16px 0 0;white-space:pre-wrap;text-align:start">${esc(input.body.trim())}</div>
+      <p style="margin:20px 0 0;border-top:1px solid #e5e7eb;padding-top:12px;color:#6b7280;font-size:12px">
+        tigip.com
+      </p>
+    </div>
+  </body>
+  </html>`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [input.to],
+        reply_to: REPLY_TO,
+        subject,
+        html,
+      }),
+    });
+
+    if (res.ok) return { sent: true, skipped: false };
+
+    const text = await res.text().catch(() => "");
+    console.error("manual application reply: Resend", res.status, text);
+  } catch (error) {
+    console.error("manual application reply: could not send", error);
+  }
+
+  return { sent: false, skipped: false };
 }
 
 /**

@@ -272,21 +272,44 @@ in `types.ts` — all three must stay structurally identical.
 - **Interview tracker and decisions live on `/portal/applications`.** Columns added to
   `job_applications` in place: `interview_at timestamptz`, `interview_mode`,
   `interview_note`, `decision_langs` (the language codes the reply went out in, e.g.
-  `en,ar`), `decided_at`, plus a partial index on `interview_at`. The tracker card at the
-  top lists every booked interview from yesterday onwards, soonest first, with a `past`
-  flag computed in SQL (`is_past`, keeps the React purity lint quiet); each row jumps to
-  the application (`#app-<id>`). Per application there are three forms, each re-checking
-  `admin` server-side in `src/app/portal/actions.ts`:
-  - `scheduleInterviewAction` — date + time (Baghdad), format (Office / Video call /
+  `en,ar`), `decided_at`, plus a partial index on `interview_at`.
+- **`/portal/applications` is a master–detail page, not a stack of cards.** The left
+  column is a scrollable name list (status badge, position, received date, language,
+  "from email" tag); the right column is the selected application. Selection is the
+  query string `?app=<id>` (the older `?id=` still works), so links, filters, decisions
+  and errors all keep the same row open, and the addressbar link is shareable. On narrow
+  screens the list hides while a detail is open and the detail shows a `← All
+  applications` link; the empty state tells the user to pick a name. Filters
+  (`?status=`) and search (`?q=`) live above the grid and are preserved by every
+  `appHref()`/`filterHref()` link. The tracker card above the grid lists every booked
+  interview from yesterday onwards, soonest first, with a `past` flag computed in SQL
+  (`is_past`, keeps the React purity lint quiet); each row opens that application with
+  the same `?app=` link. Creating a new application is still only the public form — the
+  portal does not add rows by hand.
+- **Actions are three buttons that open dialogs** (`src/components/portal/
+  ApplicationActions.tsx`, a client component; it imports language constants from
+  `src/lib/reply-languages.ts` because `src/lib/application-mail.ts` is `server-only`):
+  - **Reply manually** — free-text subject and message, sent through the careers mailbox
+    (`sendManualReply`), signed off as tigip.com. The status is deliberately unchanged
+    and no template language is involved; empty fields redirect with
+    `error=manual-empty`.
+  - **Approve** / **Reject** — the dialog first asks "do you want to send the applicant
+    an email as well?" and offers two submits in one form: `Send email reply`
+    (`decideApplicationAction`, language checkboxes, one email per ticked language) or
+    `Save without email` (`updateApplicationStatusAction`). Both save the same personal
+    line as the internal note, so cancelling after typing changes nothing.
+  - **Schedule an interview** (collapsed `<details>` below the buttons) —
+    `scheduleInterviewAction`: date + time (Baghdad), format (Office / Video call /
     Phone call), place/notes, language checkboxes and an optional "send the invitation
     now" box. Saving a date sets the status to `interview`. Emptying both date and time
     removes the interview (the invite box is ignored on that path, so it can't block a
     clear).
-  - `decideApplicationAction` — Approve / Decline, language checkboxes (required) and a
-    personal line that is also saved as the internal note. Stores the decision and
-    `decision_langs` first, then sends one email per language.
-  - `updateApplicationStatusAction` — status-only changes and the internal note, with no
-    email (unchanged behaviour, still on the page).
+  - **Status & internal note** (collapsed) — `updateApplicationStatusAction`, no email.
+  - `decideApplicationAction` stores the decision and `decision_langs` first, then sends
+    one email per language; a mail failure never undoes the decision.
+  Every action re-checks `admin` server-side in `src/app/portal/actions.ts`.
   The tracked languages default to what the applicant was answered in, otherwise their
-  site language, otherwise English; the page shows `Decided … · replied in …` for audit.
+  site language, otherwise English; the detail shows `Decided … · replied in …` for
+  audit. Manual replies report back as `?replied=sent|off|failed` and decisions as
+  `?decided=hired|rejected&mailed=…`.
 

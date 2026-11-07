@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import ApplicationActions from "@/components/portal/ApplicationActions";
 import DeleteApplicationButton from "@/components/portal/DeleteApplicationButton";
 import { currentStaff } from "@/lib/auth";
 import {
   APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
   applicationCounts,
+  getJobApplication,
   isApplicationStatus,
   listInterviews,
   listJobApplications,
@@ -19,11 +21,7 @@ import {
   parseReplyLanguages,
   type ReplyLanguage,
 } from "@/lib/application-mail";
-import {
-  decideApplicationAction,
-  scheduleInterviewAction,
-  updateApplicationStatusAction,
-} from "../actions";
+import { scheduleInterviewAction, updateApplicationStatusAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +43,13 @@ const fmtDateTime = (value: string | Date) =>
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+  }).format(new Date(value));
+
+const fmtDate = (value: string | Date) =>
+  new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   }).format(new Date(value));
 
 /** `datetime-local` inputs need the office clock, not the server's. */
@@ -119,12 +124,15 @@ export default async function ApplicationsPage({
   searchParams: Promise<{
     status?: string;
     q?: string;
+    app?: string;
+    id?: string;
     error?: string;
     updated?: string;
     deleted?: string;
     decided?: string;
     interview?: string;
     mailed?: string;
+    replied?: string;
   }>;
 }) {
   const me = await currentStaff();
@@ -136,11 +144,13 @@ export default async function ApplicationsPage({
     ? (params.status as ApplicationStatus)
     : undefined;
   const search = (params.q ?? "").trim();
+  const selectedId = (params.app ?? params.id ?? "").trim();
 
-  const [applications, counts, interviews] = await Promise.all([
+  const [applications, counts, interviews, selected] = await Promise.all([
     listJobApplications({ status, search }),
     applicationCounts(),
     listInterviews(1),
+    selectedId ? getJobApplication(selectedId) : Promise.resolve(null),
   ]);
 
   const filterHref = (next?: ApplicationStatus) => {
@@ -149,6 +159,16 @@ export default async function ApplicationsPage({
     if (search) query.set("q", search);
     const suffix = query.toString();
     return `/portal/applications${suffix ? `?${suffix}` : ""}`;
+  };
+
+  const listHref = filterHref(status);
+
+  const appHref = (id: string) => {
+    const query = new URLSearchParams();
+    if (status) query.set("status", status);
+    if (search) query.set("q", search);
+    query.set("app", id);
+    return `/portal/applications?${query.toString()}`;
   };
 
   const mailed = params.mailed ?? "";
@@ -175,7 +195,19 @@ export default async function ApplicationsPage({
         text: "Give both a date and a time for the interview (and a date/time when sending an invitation).",
       };
     }
+    if (params.error === "manual-empty") {
+      return { tone: "error" as const, text: "Write both a subject and a message before sending." };
+    }
     if (params.error) return { tone: "error" as const, text: "That application no longer exists." };
+    if (params.replied === "sent") {
+      return { tone: "ok" as const, text: "Manual reply sent." };
+    }
+    if (params.replied === "off") {
+      return { tone: "error" as const, text: "Reply not sent: mail is not configured." };
+    }
+    if (params.replied === "failed") {
+      return { tone: "error" as const, text: "Reply could not be sent — check the mail setup." };
+    }
     if (params.decided === "hired") {
       return { tone: "ok" as const, text: `Application approved.${mailedText}` };
     }
@@ -193,14 +225,18 @@ export default async function ApplicationsPage({
     return null;
   })();
 
+  const cvSize =
+    selected && selected.cv_size > 0
+      ? `${Math.max(1, Math.round(selected.cv_size / 1024))} KB`
+      : "size unknown";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-[var(--primary)]">Job applications</h1>
           <p className="text-sm text-[var(--muted)]">
-            Everything sent through the public career form. Decisions and interview
-            invitations are emailed automatically in the language you tick.
+            Pick a name to see the CV, the cover letter and the decision buttons.
           </p>
         </div>
         <Link href="/portal/hr" className="text-sm text-[var(--accent)] hover:underline">
@@ -224,6 +260,7 @@ export default async function ApplicationsPage({
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href={filterHref()}
+          scroll={false}
           className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
             status
               ? "border-[var(--border)] bg-white text-[var(--muted)] hover:border-[var(--accent)]"
@@ -236,6 +273,7 @@ export default async function ApplicationsPage({
           <Link
             key={key}
             href={filterHref(key)}
+            scroll={false}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
               status === key
                 ? "border-[var(--accent)] bg-[var(--accent)] text-white"
@@ -265,20 +303,23 @@ export default async function ApplicationsPage({
         </form>
       </div>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white">
-        <h2 className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+      <details
+        className="rounded-2xl border border-[var(--border)] bg-white"
+        open={interviews.length > 0}
+      >
+        <summary className="cursor-pointer px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
           Interview tracker
-          <span className="rounded-full bg-[var(--section)] px-2 py-0.5 text-xs font-bold text-[var(--primary)]">
+          <span className="ml-2 rounded-full bg-[var(--section)] px-2 py-0.5 text-xs font-bold text-[var(--primary)]">
             {interviews.length}
           </span>
-        </h2>
+        </summary>
 
         {interviews.length === 0 ? (
-          <p className="px-5 py-6 text-sm text-[var(--muted)]">
-            No interviews booked. Set a date on an application below and it shows up here.
+          <p className="border-t border-[var(--border)] px-5 py-4 text-sm text-[var(--muted)]">
+            No interviews booked. Open an application and use “Schedule an interview”.
           </p>
         ) : (
-          <ul className="divide-y divide-[var(--border)]">
+          <ul className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
             {interviews.map((interview) => (
               <li
                 key={interview.id}
@@ -306,7 +347,8 @@ export default async function ApplicationsPage({
                   </p>
                 </div>
                 <Link
-                  href={`#app-${interview.id}`}
+                  href={appHref(interview.id)}
+                  scroll={false}
                   className="text-sm font-medium text-[var(--accent)] hover:underline"
                 >
                   Open →
@@ -315,334 +357,396 @@ export default async function ApplicationsPage({
             ))}
           </ul>
         )}
-      </section>
+      </details>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white">
-        <h2 className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
-          {status ? APPLICATION_STATUS_LABELS[status] : "All applications"}
-          <span className="rounded-full bg-[var(--section)] px-2 py-0.5 text-xs font-bold text-[var(--primary)]">
-            {applications.length}
-          </span>
-        </h2>
+      <div className="grid items-start gap-5 lg:grid-cols-[21rem_minmax(0,1fr)]">
+        <aside
+          className={`overflow-hidden rounded-2xl border border-[var(--border)] bg-white lg:sticky lg:top-4 ${
+            selected ? "hidden lg:block" : ""
+          }`}
+        >
+          <h2 className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
+            {status ? APPLICATION_STATUS_LABELS[status] : "All applications"}
+            <span className="rounded-full bg-[var(--section)] px-2 py-0.5 text-xs font-bold text-[var(--primary)]">
+              {applications.length}
+            </span>
+          </h2>
 
-        {applications.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-[var(--muted)]">
-            {search || status
-              ? "Nothing matches that filter."
-              : "No applications yet. They appear here as soon as the public form is used."}
-          </p>
-        ) : (
-          <ul className="divide-y divide-[var(--border)]">
-            {applications.map((application) => {
-              const langs = languagesFor(application);
-              const slot = officeInputs(application.interview_at);
-
-              return (
-                <li
-                  key={application.id}
-                  id={`app-${application.id}`}
-                  className="scroll-mt-24 space-y-4 px-5 py-5"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-                        {application.name}
+          {applications.length === 0 ? (
+            <p className="px-4 py-8 text-sm text-[var(--muted)]">
+              {search || status
+                ? "Nothing matches that filter."
+                : "No applications yet. They appear here as soon as the public form is used."}
+            </p>
+          ) : (
+            <ul className="max-h-[70vh] divide-y divide-[var(--border)] overflow-y-auto lg:max-h-[calc(100vh-16rem)]">
+              {applications.map((application) => {
+                const active = selected?.id === application.id;
+                return (
+                  <li key={application.id}>
+                    <Link
+                      href={appHref(application.id)}
+                      scroll={false}
+                      aria-current={active ? "true" : undefined}
+                      className={`block border-l-2 px-4 py-3 transition-colors ${
+                        active
+                          ? "border-[var(--accent)] bg-[var(--section)]"
+                          : "border-transparent hover:bg-[var(--section)]"
+                      }`}
+                    >
+                      <span className="flex items-start justify-between gap-2">
+                        <span className="min-w-0 truncate text-sm font-semibold text-[var(--foreground)]">
+                          {application.name}
+                        </span>
                         <span
-                          className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${BADGE[application.status]}`}
+                          className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${BADGE[application.status]}`}
                         >
                           {APPLICATION_STATUS_LABELS[application.status]}
                         </span>
-                        <span className="rounded bg-[var(--section)] px-1.5 py-0.5 text-[11px] font-medium uppercase text-[var(--muted)]">
-                          {application.lang}
-                        </span>
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-[var(--foreground)]">
+                        {application.position}
+                      </span>
+                      <span className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[var(--muted)]">
+                        <span>{fmtDate(application.created_at)}</span>
+                        <span className="uppercase">{application.lang}</span>
                         {application.source === "email" ? (
-                          <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+                          <span className="rounded border border-amber-200 bg-amber-50 px-1 py-0.5 text-[10px] font-medium text-amber-700">
                             from email
                           </span>
                         ) : null}
-                      </p>
-                      <p className="text-sm text-[var(--foreground)]">{application.position}</p>
-                      <p className="mt-1 text-xs text-[var(--muted)]" dir="ltr">
-                        <a href={`mailto:${application.email}`} className="hover:underline">
-                          {application.email}
-                        </a>
-                        {application.phone ? ` · ${application.phone}` : ""}
-                      </p>
-                    </div>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </aside>
 
-                    <div className="text-right text-xs text-[var(--muted)]">
-                      <p>Received {fmtDateTime(application.created_at)}</p>
-                      {application.reviewed_by_name ? (
-                        <p>Last touched by {application.reviewed_by_name}</p>
+        <section className={selected ? "min-w-0" : "hidden min-w-0 lg:block"}>
+          {selected ? (
+            <article
+              key={selected.id}
+              className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white"
+            >
+              <div className="border-b border-[var(--border)] px-5 py-4">
+                <Link
+                  href={listHref}
+                  scroll={false}
+                  className="text-xs font-medium text-[var(--accent)] hover:underline lg:hidden"
+                >
+                  ← All applications
+                </Link>
+                <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-bold text-[var(--primary)]">{selected.name}</h2>
+                    <p className="text-sm text-[var(--foreground)]">{selected.position}</p>
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${BADGE[selected.status]}`}
+                      >
+                        {APPLICATION_STATUS_LABELS[selected.status]}
+                      </span>
+                      <span className="rounded bg-[var(--section)] px-1.5 py-0.5 text-[11px] font-medium uppercase text-[var(--muted)]">
+                        {selected.lang}
+                      </span>
+                      {selected.source === "email" ? (
+                        <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+                          from email
+                        </span>
                       ) : null}
-                      {application.cv_name ? (
-                        <a
-                          href={`/api/portal/applications/${application.id}/cv`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-1 inline-flex items-center gap-1 font-semibold text-[var(--accent)] hover:underline"
-                        >
-                          Open CV
-                          <span className="font-normal text-[var(--muted)]">
-                            ({application.cv_name},{" "}
-                            {application.cv_size > 0
-                              ? `${Math.max(1, Math.round(application.cv_size / 1024))} KB`
-                              : "size unknown"}
-                            )
-                          </span>
-                        </a>
-                      ) : (
-                        <p>No CV stored</p>
-                      )}
-                    </div>
+                      <span>Received {fmtDateTime(selected.created_at)}</span>
+                    </p>
                   </div>
+                  <div className="text-right text-xs text-[var(--muted)]">
+                    {selected.reviewed_by_name ? (
+                      <p>Last touched by {selected.reviewed_by_name}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
 
-                  {application.message ? (
-                    <p className="max-w-prose whitespace-pre-line rounded-lg bg-[var(--section)] px-3 py-2 text-sm">
-                      {application.message}
+              <dl className="grid gap-3 border-b border-[var(--border)] px-5 py-4 sm:grid-cols-2">
+                <div className="min-w-0">
+                  <dt className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Email
+                  </dt>
+                  <dd className="mt-0.5 break-all text-sm">
+                    <a href={`mailto:${selected.email}`} className="text-[var(--accent)] hover:underline">
+                      {selected.email}
+                    </a>
+                  </dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    Phone
+                  </dt>
+                  <dd className="mt-0.5 text-sm" dir="ltr">
+                    {selected.phone || "—"}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="space-y-3 border-b border-[var(--border)] px-5 py-4">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--section)] p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    CV
+                  </p>
+                  {selected.cv_name ? (
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+                      <p className="min-w-0 break-all text-sm">
+                        {selected.cv_name}{" "}
+                        <span className="text-[var(--muted)]">· {cvSize}</span>
+                      </p>
+                      <a
+                        href={`/api/portal/applications/${selected.id}/cv`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-light)]"
+                      >
+                        Open CV ↗
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-sm text-[var(--muted)]">
+                      No CV stored with this application.
                     </p>
-                  ) : null}
+                  )}
+                </div>
 
-                  {application.interview_at ? (
+                {selected.message ? (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                      Cover letter
+                    </p>
+                    <p className="mt-1 whitespace-pre-line text-sm">{selected.message}</p>
+                  </div>
+                ) : null}
+              </div>
+
+              {selected.interview_at || selected.decision_langs || selected.decided_at ? (
+                <div className="space-y-2 border-b border-[var(--border)] px-5 py-3">
+                  {selected.interview_at ? (
                     <p className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-800">
-                      Interview booked: <strong>{formatInterview(application.interview_at)}</strong>
-                      {application.interview_mode ? ` · ${application.interview_mode}` : ""}
-                      {application.interview_note ? ` · ${application.interview_note}` : ""}
+                      Interview booked: <strong>{formatInterview(selected.interview_at)}</strong>
+                      {selected.interview_mode ? ` · ${selected.interview_mode}` : ""}
+                      {selected.interview_note ? ` · ${selected.interview_note}` : ""}
                     </p>
                   ) : null}
-
-                  {application.decision_langs || application.decided_at ? (
+                  {selected.decision_langs || selected.decided_at ? (
                     <p className="rounded-lg border border-[var(--border)] bg-[var(--section)] px-3 py-2 text-sm">
-                      {application.decided_at ? (
-                        <>
-                          Decided {fmtDateTime(application.decided_at)} ·{" "}
-                        </>
+                      {selected.decided_at ? (
+                        <>Decided {fmtDateTime(selected.decided_at)} · </>
                       ) : null}
-                      {application.decision_langs
-                        ? `replied in ${parseReplyLanguages(application.decision_langs.split(","))
+                      {selected.decision_langs
+                        ? `replied in ${parseReplyLanguages(selected.decision_langs.split(","))
                             .map((lang) => REPLY_LANGUAGE_LABELS[lang])
                             .join(", ")}`
                         : "no reply email recorded"}
                     </p>
                   ) : null}
+                </div>
+              ) : null}
 
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border border-[var(--border)] p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                        Interview tracker
-                      </p>
-                      <form
-                        action={scheduleInterviewAction}
-                        className="mt-2 grid gap-2 sm:grid-cols-2"
-                      >
-                        <input type="hidden" name="applicationId" value={application.id} />
-                        <div>
-                          <label
-                            htmlFor={`interview-date-${application.id}`}
-                            className="block text-xs text-[var(--muted)]"
-                          >
-                            Date
-                          </label>
-                          <input
-                            id={`interview-date-${application.id}`}
-                            type="date"
-                            name="interviewDate"
-                            defaultValue={slot.date}
-                            className={`mt-1 ${inputClass}`}
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor={`interview-time-${application.id}`}
-                            className="block text-xs text-[var(--muted)]"
-                          >
-                            Time (Baghdad)
-                          </label>
-                          <input
-                            id={`interview-time-${application.id}`}
-                            type="time"
-                            name="interviewTime"
-                            defaultValue={slot.time}
-                            className={`mt-1 ${inputClass}`}
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor={`interview-mode-${application.id}`}
-                            className="block text-xs text-[var(--muted)]"
-                          >
-                            Format
-                          </label>
-                          <select
-                            id={`interview-mode-${application.id}`}
-                            name="interviewMode"
-                            defaultValue={application.interview_mode}
-                            className={`mt-1 ${inputClass}`}
-                          >
-                            <option value="">Not set</option>
-                            <option value="Office">Office</option>
-                            <option value="Video call">Video call</option>
-                            <option value="Phone call">Phone call</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label
-                            htmlFor={`interview-note-${application.id}`}
-                            className="block text-xs text-[var(--muted)]"
-                          >
-                            Place / notes
-                          </label>
-                          <input
-                            id={`interview-note-${application.id}`}
-                            name="interviewNote"
-                            defaultValue={application.interview_note}
-                            maxLength={500}
-                            placeholder="Office, 2nd floor…"
-                            className={`mt-1 ${inputClass}`}
-                          />
-                        </div>
+              <div className="border-b border-[var(--border)] px-5 py-4">
+                <ApplicationActions
+                  key={selected.id}
+                  applicationId={selected.id}
+                  name={selected.name}
+                  position={selected.position}
+                  statusFilter={status ?? ""}
+                  defaultLangs={languagesFor(selected)}
+                  reviewNote={selected.review_note}
+                />
+              </div>
 
-                        <LangChecks
-                          idPrefix={`invite-langs-${application.id}`}
-                          label="Invitation language(s)"
-                          selected={langs}
-                        />
-
-                        <label className="flex items-center gap-2 text-xs text-[var(--foreground)] sm:col-span-2">
-                          <input
-                            type="checkbox"
-                            name="sendInvite"
-                            defaultChecked
-                            className="h-3.5 w-3.5 accent-[var(--accent)]"
-                          />
-                          Send the invitation email now
-                        </label>
-
-                        <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-                          <button
-                            type="submit"
-                            className="rounded-lg bg-[var(--accent)] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[var(--accent-light)]"
-                          >
-                            Save interview
-                          </button>
-                          <span className="text-[11px] text-[var(--muted)]">
-                            Clear both date and time to remove it.
-                          </span>
-                        </div>
-                      </form>
-                    </div>
-
-                    <div className="rounded-xl border border-[var(--border)] p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                        Decision &amp; automatic reply
-                      </p>
-                      <form action={decideApplicationAction} className="mt-2 grid gap-2">
-                        <input type="hidden" name="applicationId" value={application.id} />
-                        <input type="hidden" name="statusFilter" value={status ?? ""} />
-
-                        <LangChecks
-                          idPrefix={`decision-langs-${application.id}`}
-                          label="Reply language(s) — one email per ticked language"
-                          selected={langs}
-                        />
-
-                        <div>
-                          <label
-                            htmlFor={`decision-note-${application.id}`}
-                            className="block text-xs text-[var(--muted)]"
-                          >
-                            Personal line (optional, also saved internally)
-                          </label>
-                          <input
-                            id={`decision-note-${application.id}`}
-                            name="reviewNote"
-                            defaultValue={application.review_note}
-                            maxLength={500}
-                            placeholder="Start date, feedback, reason…"
-                            className={`mt-1 ${inputClass}`}
-                          />
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="submit"
-                            name="decision"
-                            value="hired"
-                            className="rounded-lg bg-[var(--accent)] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[var(--accent-light)]"
-                          >
-                            Approve &amp; send
-                          </button>
-                          <button
-                            type="submit"
-                            name="decision"
-                            value="rejected"
-                            className="rounded-lg border border-red-300 px-4 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-50"
-                          >
-                            Decline &amp; send
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-end justify-between gap-2 border-t border-[var(--border)] pt-3">
-                    <form
-                      action={updateApplicationStatusAction}
-                      className="flex flex-wrap items-end gap-2"
+              <details className="border-b border-[var(--border)] px-5 py-4">
+                <summary className="cursor-pointer text-sm font-medium text-[var(--foreground)]">
+                  Status &amp; internal note{" "}
+                  <span className="text-xs font-normal text-[var(--muted)]">
+                    (no email is sent)
+                  </span>
+                </summary>
+                <form
+                  action={updateApplicationStatusAction}
+                  className="mt-3 flex flex-wrap items-end gap-2"
+                >
+                  <input type="hidden" name="applicationId" value={selected.id} />
+                  <input type="hidden" name="statusFilter" value={status ?? ""} />
+                  <div>
+                    <label
+                      htmlFor={`status-${selected.id}`}
+                      className="block text-xs text-[var(--muted)]"
                     >
-                      <input type="hidden" name="applicationId" value={application.id} />
-                      <input type="hidden" name="statusFilter" value={status ?? ""} />
-                      <div>
-                        <label
-                          htmlFor={`status-${application.id}`}
-                          className="block text-xs text-[var(--muted)]"
-                        >
-                          Status only (no email)
-                        </label>
-                        <select
-                          id={`status-${application.id}`}
-                          name="status"
-                          defaultValue={application.status}
-                          className={`mt-1 ${inputClass}`}
-                        >
-                          {APPLICATION_STATUSES.map((key) => (
-                            <option key={key} value={key}>
-                              {APPLICATION_STATUS_LABELS[key]}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="min-w-48 flex-1">
-                        <label
-                          htmlFor={`note-${application.id}`}
-                          className="block text-xs text-[var(--muted)]"
-                        >
-                          Internal note
-                        </label>
-                        <input
-                          id={`note-${application.id}`}
-                          name="reviewNote"
-                          defaultValue={application.review_note}
-                          maxLength={500}
-                          className={`mt-1 ${inputClass}`}
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-[var(--border)] px-4 py-1.5 text-sm font-medium hover:bg-[var(--section)]"
-                      >
-                        Save
-                      </button>
-                    </form>
-
-                    <DeleteApplicationButton applicationId={application.id} name={application.name} />
+                      Status
+                    </label>
+                    <select
+                      id={`status-${selected.id}`}
+                      name="status"
+                      defaultValue={selected.status}
+                      className={`mt-1 ${inputClass}`}
+                    >
+                      {APPLICATION_STATUSES.map((key) => (
+                        <option key={key} value={key}>
+                          {APPLICATION_STATUS_LABELS[key]}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+                  <div className="min-w-48 flex-1">
+                    <label
+                      htmlFor={`note-${selected.id}`}
+                      className="block text-xs text-[var(--muted)]"
+                    >
+                      Internal note
+                    </label>
+                    <input
+                      id={`note-${selected.id}`}
+                      name="reviewNote"
+                      defaultValue={selected.review_note}
+                      maxLength={500}
+                      className={`mt-1 ${inputClass}`}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-[var(--border)] px-4 py-1.5 text-sm font-medium hover:bg-[var(--section)]"
+                  >
+                    Save
+                  </button>
+                </form>
+              </details>
+
+              <details
+                className="border-b border-[var(--border)] px-5 py-4"
+                open={Boolean(selected.interview_at)}
+              >
+                <summary className="cursor-pointer text-sm font-medium text-[var(--foreground)]">
+                  Schedule an interview
+                </summary>
+                <form
+                  action={scheduleInterviewAction}
+                  className="mt-3 grid gap-2 sm:grid-cols-2"
+                >
+                  <input type="hidden" name="applicationId" value={selected.id} />
+                  <input type="hidden" name="statusFilter" value={status ?? ""} />
+                  <div>
+                    <label
+                      htmlFor={`interview-date-${selected.id}`}
+                      className="block text-xs text-[var(--muted)]"
+                    >
+                      Date
+                    </label>
+                    <input
+                      id={`interview-date-${selected.id}`}
+                      type="date"
+                      name="interviewDate"
+                      defaultValue={officeInputs(selected.interview_at).date}
+                      className={`mt-1 ${inputClass}`}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`interview-time-${selected.id}`}
+                      className="block text-xs text-[var(--muted)]"
+                    >
+                      Time (Baghdad)
+                    </label>
+                    <input
+                      id={`interview-time-${selected.id}`}
+                      type="time"
+                      name="interviewTime"
+                      defaultValue={officeInputs(selected.interview_at).time}
+                      className={`mt-1 ${inputClass}`}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`interview-mode-${selected.id}`}
+                      className="block text-xs text-[var(--muted)]"
+                    >
+                      Format
+                    </label>
+                    <select
+                      id={`interview-mode-${selected.id}`}
+                      name="interviewMode"
+                      defaultValue={selected.interview_mode}
+                      className={`mt-1 ${inputClass}`}
+                    >
+                      <option value="">Not set</option>
+                      <option value="Office">Office</option>
+                      <option value="Video call">Video call</option>
+                      <option value="Phone call">Phone call</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`interview-note-${selected.id}`}
+                      className="block text-xs text-[var(--muted)]"
+                    >
+                      Place / notes
+                    </label>
+                    <input
+                      id={`interview-note-${selected.id}`}
+                      name="interviewNote"
+                      defaultValue={selected.interview_note}
+                      maxLength={500}
+                      placeholder="Office, 2nd floor…"
+                      className={`mt-1 ${inputClass}`}
+                    />
+                  </div>
+
+                  <LangChecks
+                    idPrefix={`invite-langs-${selected.id}`}
+                    label="Invitation language(s)"
+                    selected={languagesFor(selected)}
+                  />
+
+                  <label className="flex items-center gap-2 text-xs text-[var(--foreground)] sm:col-span-2">
+                    <input
+                      type="checkbox"
+                      name="sendInvite"
+                      defaultChecked
+                      className="h-3.5 w-3.5 accent-[var(--accent)]"
+                    />
+                    Send the invitation email now
+                  </label>
+
+                  <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+                    <button
+                      type="submit"
+                      className="rounded-lg bg-[var(--accent)] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[var(--accent-light)]"
+                    >
+                      Save interview
+                    </button>
+                    <span className="text-[11px] text-[var(--muted)]">
+                      Clear both date and time to remove it.
+                    </span>
+                  </div>
+                </form>
+              </details>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                <p className="text-xs text-[var(--muted)]">
+                  Deleting removes the application and its CV permanently.
+                </p>
+                <DeleteApplicationButton
+                  applicationId={selected.id}
+                  name={selected.name}
+                />
+              </div>
+            </article>
+          ) : (
+            <div className="flex min-h-72 items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-white p-8">
+              <p className="max-w-sm text-center text-sm text-[var(--muted)]">
+                Select a name from the list to see the application, open the CV and approve
+                or reject it.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
