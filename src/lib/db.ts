@@ -196,6 +196,30 @@ create table if not exists job_application_files (
   application_id uuid primary key references job_applications(id) on delete cascade,
   data bytea not null
 );
+
+-- Every applicant email the portal sends is recorded here. Resend (and any
+-- SMTP relay) does not write into a mailbox's Sent folder, so this table is
+-- the only audit trail of what an applicant actually received. A copy is also
+-- BCC'd to CAREER_BCC_EMAIL so it shows up in the careers inbox.
+create table if not exists application_emails (
+  id uuid primary key default gen_random_uuid(),
+  application_id uuid not null references job_applications(id) on delete cascade,
+  kind text not null default 'manual',
+  to_email text not null,
+  subject text not null default '',
+  body text not null default '',
+  langs text not null default '',
+  status text not null default 'sent',
+  error text not null default '',
+  sent_by uuid references staff(id) on delete set null,
+  sent_by_name text not null default '',
+  created_at timestamptz not null default now(),
+  constraint application_emails_status_check
+    check (status in ('sent', 'failed', 'skipped'))
+);
+
+create index if not exists application_emails_application_idx
+  on application_emails (application_id, created_at desc);
 `;
 
 /**

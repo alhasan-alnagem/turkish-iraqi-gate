@@ -14,6 +14,11 @@ import {
   type ApplicationStatus,
 } from "@/lib/job-applications";
 import {
+  APPLICATION_EMAIL_KIND_LABELS,
+  APPLICATION_EMAIL_STATUS_LABELS,
+  listApplicationEmails,
+} from "@/lib/application-emails";
+import {
   OFFICE_TZ,
   REPLY_LANGUAGES,
   REPLY_LANGUAGE_LABELS,
@@ -146,11 +151,12 @@ export default async function ApplicationsPage({
   const search = (params.q ?? "").trim();
   const selectedId = (params.app ?? params.id ?? "").trim();
 
-  const [applications, counts, interviews, selected] = await Promise.all([
+  const [applications, counts, interviews, selected, emails] = await Promise.all([
     listJobApplications({ status, search }),
     applicationCounts(),
     listInterviews(1),
     selectedId ? getJobApplication(selectedId) : Promise.resolve(null),
+    selectedId ? listApplicationEmails(selectedId) : Promise.resolve([]),
   ]);
 
   const filterHref = (next?: ApplicationStatus) => {
@@ -559,6 +565,74 @@ export default async function ApplicationsPage({
                   defaultLangs={languagesFor(selected)}
                   reviewNote={selected.review_note}
                 />
+              </div>
+
+              {/* Resend does not write to a mailbox Sent folder, so this is the
+                  record of what the applicant actually received. */}
+              <div className="border-b border-[var(--border)] px-5 py-4">
+                <p className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  Sent messages
+                  <span className="rounded-full bg-[var(--section)] px-2 py-0.5 text-xs font-bold text-[var(--primary)]">
+                    {emails.length}
+                  </span>
+                </p>
+                {emails.length === 0 ? (
+                  <p className="mt-2 text-sm text-[var(--muted)]">
+                    Nothing sent yet. Manual replies and decision emails are recorded here,
+                    and a copy is BCC&apos;d to the careers inbox.
+                  </p>
+                ) : (
+                  <ul className="mt-2 space-y-2">
+                    {emails.map((mail) => (
+                      <li
+                        key={mail.id}
+                        className="rounded-xl border border-[var(--border)] bg-[var(--section)] p-3"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-[var(--foreground)]">
+                              {mail.subject}
+                            </p>
+                            <p className="mt-0.5 break-all text-xs text-[var(--muted)]">
+                              {fmtDateTime(mail.created_at)} · {APPLICATION_EMAIL_KIND_LABELS[mail.kind]} ·
+                              to {mail.to_email}
+                              {mail.langs
+                                ? ` · ${mail.langs
+                                    .split(",")
+                                    .filter(Boolean)
+                                    .map((lang) => REPLY_LANGUAGE_LABELS[lang as ReplyLanguage] ?? lang)
+                                    .join(", ")}`
+                                : ""}
+                              {mail.sent_by_name ? ` · by ${mail.sent_by_name}` : ""}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                              mail.status === "sent"
+                                ? "border-green-200 bg-green-50 text-green-700"
+                                : mail.status === "failed"
+                                  ? "border-red-200 bg-red-50 text-red-700"
+                                  : "border-amber-200 bg-amber-50 text-amber-700"
+                            }`}
+                          >
+                            {APPLICATION_EMAIL_STATUS_LABELS[mail.status]}
+                          </span>
+                        </div>
+                        {mail.body ? (
+                          <details className="mt-1">
+                            <summary className="cursor-pointer text-xs font-medium text-[var(--accent)]">
+                              Show message
+                            </summary>
+                            <p className="mt-1 whitespace-pre-line text-sm">{mail.body}</p>
+                          </details>
+                        ) : null}
+                        {mail.error ? (
+                          <p className="mt-1 break-words text-xs text-red-700">{mail.error}</p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <details className="border-b border-[var(--border)] px-5 py-4">

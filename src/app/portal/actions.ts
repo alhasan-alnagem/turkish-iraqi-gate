@@ -39,7 +39,13 @@ import {
   parseReplyLanguages,
   sendApplicationReply,
   sendManualReply,
+  type ReplyAttempt,
+  type ReplyLanguage,
 } from "@/lib/application-mail";
+import {
+  recordApplicationEmail,
+  type ApplicationEmailKind,
+} from "@/lib/application-emails";
 import { notify } from "@/lib/notifications";
 
 async function requireActor() {
@@ -61,6 +67,52 @@ async function requireAssigner() {
   if (!staff) redirect("/login");
   if (!canAssignOrders(staff.role)) redirect(`/portal?error=forbidden`);
   return staff;
+}
+
+/**
+ * Store one `application_emails` row per language attempted, so the detail page
+ * shows exactly what went out (and why nothing did). Called after the mail is
+ * sent, so a logging failure never changes the outcome for the applicant.
+ */
+async function logReplyAttempts(input: {
+  applicationId: string;
+  to: string;
+  kind: ApplicationEmailKind;
+  langs: ReplyLanguage[];
+  attempts: ReplyAttempt[];
+  skipped: boolean;
+  fallbackSubject: string;
+  actorId: string;
+  actorName: string;
+}): Promise<void> {
+  if (input.attempts.length === 0) {
+    await recordApplicationEmail({
+      applicationId: input.applicationId,
+      kind: input.kind,
+      to: input.to,
+      subject: input.fallbackSubject,
+      langs: input.langs.join(","),
+      status: input.skipped ? "skipped" : "failed",
+      error: input.skipped ? "Mail is not configured." : "No email was sent.",
+      actorId: input.actorId,
+      actorName: input.actorName,
+    });
+    return;
+  }
+
+  for (const attempt of input.attempts) {
+    await recordApplicationEmail({
+      applicationId: input.applicationId,
+      kind: input.kind,
+      to: input.to,
+      subject: attempt.subject,
+      langs: attempt.lang,
+      status: attempt.status,
+      error: attempt.error,
+      actorId: input.actorId,
+      actorName: input.actorName,
+    });
+  }
 }
 
 function parseRole(value: string): Role {
@@ -514,6 +566,20 @@ export async function replyManuallyAction(formData: FormData) {
     body,
   });
 
+  // Resend does not write into the mailbox's Sent folder, so the portal keeps
+  // its own copy of the message (and a BCC goes to the careers inbox).
+  await recordApplicationEmail({
+    applicationId,
+    kind: "manual",
+    to: application.email,
+    subject,
+    body,
+    status: result.sent ? "sent" : result.skipped ? "skipped" : "failed",
+    error: result.error,
+    actorId: actor.id,
+    actorName: actor.name,
+  });
+
   await notify({
     kind: "job_application",
     summary: `${actor.name} replied manually to ${application.name}${
@@ -576,6 +642,18 @@ export async function decideApplicationAction(formData: FormData) {
     kind: decision,
     langs,
     note,
+  });
+
+  await logReplyAttempts({
+    applicationId,
+    to: application.email,
+    kind: decision,
+    langs,
+    attempts: reply.attempts,
+    skipped: reply.skipped,
+    fallbackSubject: "Your application — Turkish Iraqi Gate",
+    actorId: actor.id,
+    actorName: actor.name,
   });
 
   await notify({
@@ -649,6 +727,18 @@ export async function scheduleInterviewAction(formData: FormData) {
       interview: { at, mode, note },
     });
     mailed = reply.sent.join(",") || (reply.skipped ? "off" : "failed");
+
+    await logReplyAttempts({
+      applicationId,
+      to: application.email,
+      kind: "interview",
+      langs,
+      attempts: reply.attempts,
+      skipped: reply.skipped,
+      fallbackSubject: "Interview invitation — Turkish Iraqi Gate",
+      actorId: actor.id,
+      actorName: actor.name,
+    });
 
     await notify({
       kind: "job_application",

@@ -72,10 +72,18 @@ export type ReplyInput = {
   interview?: InterviewDetails | null;
 };
 
+export type ReplyAttempt = {
+  lang: ReplyLanguage;
+  subject: string;
+  status: "sent" | "failed";
+  error: string;
+};
+
 export type ReplyResult = {
   sent: ReplyLanguage[];
   skipped: boolean;
   failed: ReplyLanguage[];
+  attempts: ReplyAttempt[];
 };
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
@@ -83,6 +91,19 @@ const FROM_EMAIL =
   process.env.CAREER_FROM_EMAIL ||
   "Careers at Turkish Iraqi Gate <onboarding@resend.dev>";
 const REPLY_TO = process.env.CAREER_REPLY_TO || "alhasan.alnagem@tigip.com";
+/**
+ * A blind copy of every applicant email goes to the careers mailbox, so the
+ * conversation is at least visible in PrivateEmail's inbox. Resend sends
+ * directly and never writes to the mailbox's Sent folder.
+ */
+const BCC_EMAIL =
+  process.env.CAREER_BCC_EMAIL || "alhasan.alnagem@careers.tigip.com";
+
+function recipients(to: string): { to: string[]; bcc?: string[] } {
+  return BCC_EMAIL && BCC_EMAIL !== to
+    ? { to: [to], bcc: [BCC_EMAIL] }
+    : { to: [to] };
+}
 
 function esc(value: string): string {
   return value
@@ -243,10 +264,10 @@ export async function sendManualReply(input: {
   to: string;
   subject: string;
   body: string;
-}): Promise<{ sent: boolean; skipped: boolean }> {
+}): Promise<{ sent: boolean; skipped: boolean; providerId: string; error: string }> {
   if (!RESEND_API_KEY) {
     console.warn("manual application reply: RESEND_API_KEY is not configured — nothing sent.");
-    return { sent: false, skipped: true };
+    return { sent: false, skipped: true, providerId: "", error: "Mail is not configured." };
   }
 
   const subject =
@@ -275,31 +296,46 @@ export async function sendManualReply(input: {
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
-        to: [input.to],
+        ...recipients(input.to),
         reply_to: REPLY_TO,
         subject,
         html,
       }),
     });
 
-    if (res.ok) return { sent: true, skipped: false };
+    const raw = await res.text().catch(() => "");
 
-    const text = await res.text().catch(() => "");
-    console.error("manual application reply: Resend", res.status, text);
+    if (res.ok) {
+      let providerId = "";
+      try {
+        providerId = (JSON.parse(raw) as { id?: string }).id ?? "";
+      } catch {
+        providerId = "";
+      }
+      return { sent: true, skipped: false, providerId, error: "" };
+    }
+
+    console.error("manual application reply: Resend", res.status, raw);
+    return { sent: false, skipped: false, providerId: "", error: raw.slice(0, 500) };
   } catch (error) {
     console.error("manual application reply: could not send", error);
+    return {
+      sent: false,
+      skipped: false,
+      providerId: "",
+      error: error instanceof Error ? error.message : "Could not reach the mail service.",
+    };
   }
-
-  return { sent: false, skipped: false };
 }
 
 /**
  * One email per ticked language, so the applicant is never sent a mixed-language
- * message. Returns which languages went out, and which failed.
+ * message. Returns which languages went out, which failed, and a per-language
+ * record the caller can store in `application_emails`.
  */
 export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResult> {
   const langs = Array.from(new Set(input.langs));
-  const result: ReplyResult = { sent: [], skipped: false, failed: [] };
+  const result: ReplyResult = { sent: [], skipped: false, failed: [], attempts: [] };
 
   if (langs.length === 0) return result;
 
@@ -310,6 +346,7 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
   }
 
   for (const lang of langs) {
+    const subject = subjectFor(lang, input);
     try {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -319,23 +356,36 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
         },
         body: JSON.stringify({
           from: FROM_EMAIL,
-          to: [input.to],
+          ...recipients(input.to),
           reply_to: REPLY_TO,
-          subject: subjectFor(lang, input),
+          subject,
           html: htmlFor(lang, input),
         }),
       });
 
       if (res.ok) {
         result.sent.push(lang);
+        result.attempts.push({ lang, subject, status: "sent", error: "" });
       } else {
         result.failed.push(lang);
         const text = await res.text().catch(() => "");
         console.error("application reply: Resend", lang, res.status, text);
+        result.attempts.push({
+          lang,
+          subject,
+          status: "failed",
+          error: `${res.status} ${text}`.slice(0, 500),
+        });
       }
     } catch (error) {
       result.failed.push(lang);
       console.error("application reply: could not send", lang, error);
+      result.attempts.push({
+        lang,
+        subject,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Could not reach the mail service.",
+      });
     }
   }
 

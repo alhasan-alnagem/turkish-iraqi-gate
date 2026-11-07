@@ -221,7 +221,8 @@ export default function ApplicationActions({
             </h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
               Write the message yourself. It is sent from the careers mailbox, so the
-              applicant&apos;s answer comes back to the same address.
+              applicant&apos;s answer comes back to the same address. A copy is saved on this
+              application and BCC&apos;d to the careers inbox.
             </p>
 
             <form action={replyManuallyAction} className="mt-4 space-y-3">
