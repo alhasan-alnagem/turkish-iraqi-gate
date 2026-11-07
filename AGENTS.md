@@ -255,8 +255,13 @@ in `types.ts` — all three must stay structurally identical.
   an internal note, search, and an admin-only CV link at
   `/api/portal/applications/<id>/cv` (bytes come from the DB, `no-store`). Deleting an
   application removes its CV too. Do **not** move CVs into the public Blob store — they
-  are personal documents. Old email-only applications (before this table) are not
-  backfilled; the mailbox remains their source.
+  are personal documents. Old email-only applications can be backfilled with
+  `POST /api/admin/applications/import` (admin session, multipart, one application
+  per request, original `createdAt` kept). Imported rows carry `source = 'email'`
+  and the provider message id in `source_email_id` (unique index), so a retry
+  skips instead of duplicating; the portal shows a small "from email" tag. New
+  form submissions go straight to Postgres, so the mailbox is only a notification
+  (and the source of pre-table history).
 - `/portal/hr` also shows a **Current requests** card (pending join requests received in
   the last 14 days) and a **Job applications** card that mirrors the notification email:
   every field the applicant filled (name, email, phone, position, site language), the CV

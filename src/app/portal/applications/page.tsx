@@ -355,6 +355,11 @@ export default async function ApplicationsPage({
                         <span className="rounded bg-[var(--section)] px-1.5 py-0.5 text-[11px] font-medium uppercase text-[var(--muted)]">
                           {application.lang}
                         </span>
+                        {application.source === "email" ? (
+                          <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700">
+                            from email
+                          </span>
+                        ) : null}
                       </p>
                       <p className="text-sm text-[var(--foreground)]">{application.position}</p>
                       <p className="mt-1 text-xs text-[var(--muted)]" dir="ltr">

@@ -183,6 +183,15 @@ alter table job_applications add column if not exists decided_at timestamptz;
 create index if not exists job_applications_interview_idx
   on job_applications (interview_at) where interview_at is not null;
 
+-- Applications that arrived by email before the form started storing them in
+-- Postgres. source_email_id is the provider's message id, so re-running the
+-- mailbox import can never create a second copy of the same application.
+alter table job_applications add column if not exists source text not null default 'form';
+alter table job_applications add column if not exists source_email_id text;
+
+create unique index if not exists job_applications_source_email_idx
+  on job_applications (source_email_id) where source_email_id is not null;
+
 create table if not exists job_application_files (
   application_id uuid primary key references job_applications(id) on delete cascade,
   data bytea not null

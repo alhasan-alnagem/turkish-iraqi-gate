@@ -54,6 +54,9 @@ export type JobApplication = {
   interview_note: string;
   decision_langs: string;
   decided_at: string | null;
+  /** `form` for public submissions, `email` for mailbox imports. */
+  source: string;
+  source_email_id: string | null;
 };
 
 const COLUMNS = `
@@ -61,7 +64,7 @@ const COLUMNS = `
   a.cv_name, a.cv_size, a.status, a.created_at, a.updated_at,
   s.name as reviewed_by_name, a.review_note,
   a.interview_at, a.interview_mode, a.interview_note,
-  a.decision_langs, a.decided_at
+  a.decision_langs, a.decided_at, a.source, a.source_email_id
 `;
 
 const JOIN = "from job_applications a left join staff s on s.id = a.reviewed_by";
@@ -105,6 +108,66 @@ export async function createJobApplication(input: {
   );
 
   return { id: rows[0]?.id ?? "" };
+}
+
+/**
+ * Adds an application that originally arrived by email, keeping the date the
+ * applicant submitted it (not the date of the import). `sourceEmailId` is the
+ * mail provider's message id and makes the operation safe to retry.
+ */
+export async function importJobApplication(input: {
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  message: string;
+  lang: string;
+  cvName: string;
+  cvType: string;
+  cvSize: number;
+  cv: Buffer;
+  createdAt: string;
+  sourceEmailId: string;
+}): Promise<{ id: string; skipped: boolean }> {
+  const existing = await query<{ id: string }>(
+    "select id from job_applications where source_email_id = $1 limit 1",
+    [input.sourceEmailId.trim().slice(0, 400)],
+  );
+  if (existing[0]) return { id: existing[0].id, skipped: true };
+
+  const parsed = new Date(input.createdAt);
+  const when = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+
+  const rows = await query<{ id: string }>(
+    `with app as (
+       insert into job_applications
+         (name, email, phone, position, message, lang, cv_name, cv_type, cv_size,
+          status, source, source_email_id, created_at, updated_at)
+       values ($1, lower($2), $3, $4, $5, $6, $7, $8, $9,
+               'new', 'email', $10, $11::timestamptz, $11::timestamptz)
+       returning id
+     ), file as (
+       insert into job_application_files (application_id, data)
+       select id, $12 from app
+     )
+     select id from app`,
+    [
+      input.name.trim().slice(0, 160),
+      input.email.trim().slice(0, 200),
+      input.phone.trim().slice(0, 40),
+      input.position.trim().slice(0, 160),
+      input.message.trim().slice(0, 4000),
+      input.lang.trim().slice(0, 8) || "en",
+      input.cvName.trim().slice(0, 200),
+      input.cvType.trim().slice(0, 100) || "application/pdf",
+      Math.max(0, Math.round(input.cvSize)),
+      input.sourceEmailId.trim().slice(0, 400),
+      when.toISOString(),
+      input.cv,
+    ],
+  );
+
+  return { id: rows[0]?.id ?? "", skipped: false };
 }
 
 export async function listJobApplications(filters: {
