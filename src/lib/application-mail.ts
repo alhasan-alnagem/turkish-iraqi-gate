@@ -95,9 +95,10 @@ const FROM_EMAIL =
 /**
  * Where applicant answers go. This must be a real, receiving mailbox on
  * tigip.com — `careers.tigip.com` is send-only (Resend DKIM, no MX), so an
- * address there cannot receive anything.
+ * address there cannot receive anything. `careers@tigip.com` was created in
+ * PrivateEmail for exactly this.
  */
-const REPLY_TO = process.env.CAREER_REPLY_TO || "alhasan.alnagem@tigip.com";
+const REPLY_TO = process.env.CAREER_REPLY_TO || "careers@tigip.com";
 /**
  * A blind copy of every applicant email goes to the same mailbox, so the
  * conversation is at least visible in PrivateEmail's inbox. Resend sends

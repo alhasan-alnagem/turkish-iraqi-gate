@@ -19,7 +19,7 @@ const FROM_EMAIL =
 // Applicant confirmations are sent from the careers subdomain (send-only, no MX).
 // Replies must be directed to the real mailbox, otherwise they bounce.
 const REPLY_TO_EMAIL =
-  process.env.CAREER_REPLY_TO || "alhasan.alnagem@tigip.com";
+  process.env.CAREER_REPLY_TO || "careers@tigip.com";
 const MAX_CV_BYTES = 4 * 1024 * 1024; // 4 MB
 
 function esc(value: string): string {
