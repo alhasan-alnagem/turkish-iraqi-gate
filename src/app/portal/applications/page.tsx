@@ -618,14 +618,23 @@ export default async function ApplicationsPage({
                             {APPLICATION_EMAIL_STATUS_LABELS[mail.status]}
                           </span>
                         </div>
-                        {mail.body ? (
-                          <details className="mt-1">
-                            <summary className="cursor-pointer text-xs font-medium text-[var(--accent)]">
-                              Show message
-                            </summary>
-                            <p className="mt-1 whitespace-pre-line text-sm">{mail.body}</p>
-                          </details>
-                        ) : null}
+                        <div className="mt-2 rounded-lg border border-[var(--border)] bg-white p-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+                            Message as sent
+                          </p>
+                          {mail.body ? (
+                            <p
+                              dir="auto"
+                              className="mt-1 whitespace-pre-line text-sm text-[var(--foreground)]"
+                            >
+                              {mail.body}
+                            </p>
+                          ) : (
+                            <p className="mt-1 text-sm text-[var(--muted)]">
+                              The message text was not recorded for this send.
+                            </p>
+                          )}
+                        </div>
                         {mail.error ? (
                           <p className="mt-1 break-words text-xs text-red-700">{mail.error}</p>
                         ) : null}

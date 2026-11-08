@@ -75,6 +75,8 @@ export type ReplyInput = {
 export type ReplyAttempt = {
   lang: ReplyLanguage;
   subject: string;
+  /** The message as plain text, stored and shown in the portal. */
+  body: string;
   status: "sent" | "failed";
   error: string;
 };
@@ -255,6 +257,43 @@ function subjectFor(lang: ReplyLanguage, input: ReplyInput): string {
   return `${base} — ${suffix}`;
 }
 
+/** The same copy as the HTML mail, without markup — this is what the portal shows. */
+function plain(value: string): string {
+  return value
+    .replace(/<\/?strong>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&");
+}
+
+function textFor(lang: ReplyLanguage, input: ReplyInput): string {
+  const copy = COPY[lang];
+  const labels = INTERVIEW_LABELS[lang];
+  const lines = [
+    "TURKISH IRAQI GATE",
+    plain(copy.heading),
+    "",
+    plain(copy.greeting(esc(input.name))),
+    "",
+    plain(copy.lead(input.position)),
+    "",
+    plain(MESSAGE[lang][input.kind](input.position)),
+  ];
+
+  if (input.kind === "interview" && input.interview) {
+    lines.push("", `${labels.when}: ${formatInterview(input.interview.at)}`);
+    if (input.interview.mode) lines.push(`${labels.how}: ${input.interview.mode}`);
+    if (input.interview.note) lines.push(`${labels.note}: ${input.interview.note}`);
+    lines.push(labels.closing);
+  }
+
+  if (input.note) lines.push("", input.note);
+
+  lines.push("", plain(copy.signature), plain(copy.company), "", "tigip.com");
+  return lines.join("\n");
+}
+
 /**
  * A free-text reply typed by an administrator. Subject and body are used
  * exactly as written (the body is escaped and keeps its line breaks), so this
@@ -264,10 +303,19 @@ export async function sendManualReply(input: {
   to: string;
   subject: string;
   body: string;
-}): Promise<{ sent: boolean; skipped: boolean; providerId: string; error: string }> {
+}): Promise<{
+  sent: boolean;
+  skipped: boolean;
+  providerId: string;
+  error: string;
+  /** The message as plain text, including the header/footer the applicant sees. */
+  text: string;
+}> {
+  const text = `Turkish Iraqi Gate\n\n${input.body.trim()}\n\ntigip.com`;
+
   if (!RESEND_API_KEY) {
     console.warn("manual application reply: RESEND_API_KEY is not configured — nothing sent.");
-    return { sent: false, skipped: true, providerId: "", error: "Mail is not configured." };
+    return { sent: false, skipped: true, providerId: "", error: "Mail is not configured.", text };
   }
 
   const subject =
@@ -300,6 +348,7 @@ export async function sendManualReply(input: {
         reply_to: REPLY_TO,
         subject,
         html,
+        text,
       }),
     });
 
@@ -312,11 +361,11 @@ export async function sendManualReply(input: {
       } catch {
         providerId = "";
       }
-      return { sent: true, skipped: false, providerId, error: "" };
+      return { sent: true, skipped: false, providerId, error: "", text };
     }
 
     console.error("manual application reply: Resend", res.status, raw);
-    return { sent: false, skipped: false, providerId: "", error: raw.slice(0, 500) };
+    return { sent: false, skipped: false, providerId: "", error: raw.slice(0, 500), text };
   } catch (error) {
     console.error("manual application reply: could not send", error);
     return {
@@ -324,6 +373,7 @@ export async function sendManualReply(input: {
       skipped: false,
       providerId: "",
       error: error instanceof Error ? error.message : "Could not reach the mail service.",
+      text,
     };
   }
 }
@@ -347,6 +397,7 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
 
   for (const lang of langs) {
     const subject = subjectFor(lang, input);
+    const text = textFor(lang, input);
     try {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -360,21 +411,23 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
           reply_to: REPLY_TO,
           subject,
           html: htmlFor(lang, input),
+          text,
         }),
       });
 
       if (res.ok) {
         result.sent.push(lang);
-        result.attempts.push({ lang, subject, status: "sent", error: "" });
+        result.attempts.push({ lang, subject, body: text, status: "sent", error: "" });
       } else {
         result.failed.push(lang);
-        const text = await res.text().catch(() => "");
-        console.error("application reply: Resend", lang, res.status, text);
+        const raw = await res.text().catch(() => "");
+        console.error("application reply: Resend", lang, res.status, raw);
         result.attempts.push({
           lang,
           subject,
+          body: text,
           status: "failed",
-          error: `${res.status} ${text}`.slice(0, 500),
+          error: `${res.status} ${raw}`.slice(0, 500),
         });
       }
     } catch (error) {
@@ -383,6 +436,7 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
       result.attempts.push({
         lang,
         subject,
+        body: text,
         status: "failed",
         error: error instanceof Error ? error.message : "Could not reach the mail service.",
       });

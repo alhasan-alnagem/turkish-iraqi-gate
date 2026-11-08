@@ -316,11 +316,15 @@ in `types.ts` — all three must stay structurally identical.
   `src/lib/db.ts`, logic in `src/lib/application-emails.ts`). Resend delivers straight
   to the applicant and never writes into PrivateEmail's Sent folder, so the detail page
   has a **Sent messages** list: one row per manual reply, decision letter or interview
-  invitation, with subject, recipient, language, sender, timestamp and `Sent` / `Failed`
-  / `Not sent`. Manual replies also store the body behind "Show message"; failures store
-  the provider error. Logging is best effort (insert errors are logged and swallowed) and
-  happens **after** the send, so it can never change the applicant's outcome. Every
-  applicant email is also **BCC'd to `CAREER_BCC_EMAIL`** (default
+  invitation, with subject, recipient, language, sender and `Sent` / `Failed` /
+  `Not sent`. **The full message text is stored and shown inline** under "Message as
+  sent" — manual replies keep exactly what was typed (plus the header/footer), and the
+  template mails are recorded from `textFor()` in `src/lib/application-mail.ts`, which
+  renders the same copy as plain text (the same string is sent to Resend as the `text`
+  part, so the portal and the inbox cannot drift). Failures also store the provider
+  error. Logging is best effort (insert errors are logged and swallowed) and happens
+  **after** the send, so it can never change the applicant's outcome. Every applicant
+  email is also **BCC'd to `CAREER_BCC_EMAIL`** (default
   `alhasan.alnagem@careers.tigip.com`) so a copy is visible in the careers inbox — that
   is the only mailbox-side trace, since SMTP/IMAP integration is deliberately avoided.
   The `/portal/notifications` feed still gets one summary entry per action.
