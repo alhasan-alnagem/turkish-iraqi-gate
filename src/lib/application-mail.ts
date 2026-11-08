@@ -92,14 +92,19 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const FROM_EMAIL =
   process.env.CAREER_FROM_EMAIL ||
   "Careers at Turkish Iraqi Gate <onboarding@resend.dev>";
+/**
+ * Where applicant answers go. This must be a real, receiving mailbox on
+ * tigip.com — `careers.tigip.com` is send-only (Resend DKIM, no MX), so an
+ * address there cannot receive anything.
+ */
 const REPLY_TO = process.env.CAREER_REPLY_TO || "alhasan.alnagem@tigip.com";
 /**
- * A blind copy of every applicant email goes to the careers mailbox, so the
+ * A blind copy of every applicant email goes to the same mailbox, so the
  * conversation is at least visible in PrivateEmail's inbox. Resend sends
- * directly and never writes to the mailbox's Sent folder.
+ * directly and never writes to the mailbox's Sent folder. Defaults to the
+ * reply-to address; never point this at the send-only careers subdomain.
  */
-const BCC_EMAIL =
-  process.env.CAREER_BCC_EMAIL || "alhasan.alnagem@careers.tigip.com";
+const BCC_EMAIL = process.env.CAREER_BCC_EMAIL || REPLY_TO;
 
 function recipients(to: string): { to: string[]; bcc?: string[] } {
   return BCC_EMAIL && BCC_EMAIL !== to

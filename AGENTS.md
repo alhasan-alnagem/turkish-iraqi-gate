@@ -324,8 +324,12 @@ in `types.ts` — all three must stay structurally identical.
   part, so the portal and the inbox cannot drift). Failures also store the provider
   error. Logging is best effort (insert errors are logged and swallowed) and happens
   **after** the send, so it can never change the applicant's outcome. Every applicant
-  email is also **BCC'd to `CAREER_BCC_EMAIL`** (default
-  `alhasan.alnagem@careers.tigip.com`) so a copy is visible in the careers inbox — that
-  is the only mailbox-side trace, since SMTP/IMAP integration is deliberately avoided.
+  email is also **BCC'd to `CAREER_BCC_EMAIL`**, which defaults to `CAREER_REPLY_TO`
+  (i.e. the real mailbox, `alhasan.alnagem@tigip.com` today) so a copy is visible in
+  PrivateEmail's inbox — the only mailbox-side trace, since SMTP/IMAP integration is
+  deliberately avoided. **Never point the reply-to or BCC at `careers.tigip.com`:** that
+  subdomain is send-only (Resend DKIM + `send.` return path, **no MX**), so mail sent to
+  it bounces. `CAREER_REPLY_TO` is the single switch for "where do applicant answers
+  go", and it is shared with the public form's acknowledgement in `/api/careers`.
   The `/portal/notifications` feed still gets one summary entry per action.
 
