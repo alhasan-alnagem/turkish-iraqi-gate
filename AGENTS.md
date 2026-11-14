@@ -102,7 +102,10 @@ user's standing decisions, not suggestions.
   mail is sent, so a mail outage never loses it; the page then says what actually
   happened (sent in …, not configured, or failed). Zero ticked languages is refused.
   Interview times are typed and shown in **Baghdad time** (`Asia/Baghdad`, fixed `+03`,
-  `interviewStamp` / `formatInterview`) and every reply states that.
+  `interviewStamp` / `formatInterview`) and every reply states that. Dates are always
+  written **day/month/year** (`14/11/2026`) in the portal, the emails and the HR card, and
+  the schedule form has a **Today** button (`src/components/portal/TodayButton.tsx`) that
+  fills the date with the current Baghdad day.
 - The temporary "work in progress / coming soon" overlay on the contact form is gone.
 
 ## 7. Deploy & SEO

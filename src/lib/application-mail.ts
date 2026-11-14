@@ -42,12 +42,16 @@ export function interviewStamp(local: string): string {
   return `${clean.replace("T", " ")} ${OFFICE_OFFSET}`;
 }
 
+/**
+ * Interviews are always written day/month/year (`14/11/2026`) — the same date
+ * the staff type in the portal and the applicant reads in the invitation.
+ */
 export function formatInterview(stamp: string | Date | null): string {
   if (!stamp) return "";
   return new Intl.DateTimeFormat("en-GB", {
     weekday: "short",
     day: "2-digit",
-    month: "short",
+    month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",

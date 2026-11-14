@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import ApplicationActions from "@/components/portal/ApplicationActions";
 import DeleteApplicationButton from "@/components/portal/DeleteApplicationButton";
+import TodayButton from "@/components/portal/TodayButton";
 import { currentStaff } from "@/lib/auth";
 import {
   APPLICATION_STATUSES,
@@ -715,12 +716,15 @@ export default async function ApplicationsPage({
                   <input type="hidden" name="applicationId" value={selected.id} />
                   <input type="hidden" name="statusFilter" value={status ?? ""} />
                   <div>
-                    <label
-                      htmlFor={`interview-date-${selected.id}`}
-                      className="block text-xs text-[var(--muted)]"
-                    >
-                      Date
-                    </label>
+                    <div className="flex items-center justify-between gap-2">
+                      <label
+                        htmlFor={`interview-date-${selected.id}`}
+                        className="block text-xs text-[var(--muted)]"
+                      >
+                        Date (dd/mm/yyyy)
+                      </label>
+                      <TodayButton inputId={`interview-date-${selected.id}`} />
+                    </div>
                     <input
                       id={`interview-date-${selected.id}`}
                       type="date"
