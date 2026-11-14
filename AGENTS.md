@@ -25,6 +25,8 @@ user's standing decisions, not suggestions.
 - People (official ID spelling — never rewrite):
   - **Alhasan Alnagem** — Founder · +964 786 641 7123 · +90 501 542 4248
   - **Ahmed Al Shadood** — Co-founder · +964 780 702 0498 (Arabic: الشدود)
+  The About page team card (`about.team` in all three translation files) must show these
+  two and nobody else; the placeholder names it once carried are gone.
 - Phone numbers on the site must be **click-to-WhatsApp**, not plain text. No email
   shown in the contact page (the office-locations block was removed too); footer uses
   `alhasan.alnagem@tigip.com`.
@@ -213,7 +215,12 @@ in `types.ts` — all three must stay structurally identical.
   generous (40 / 10 min / IP) because Iraqi mobile networks share addresses via CGNAT.
   The result shows a **"Last update" timestamp** plus date + time on every history row
   (`TrackForm.tsx`: locale month names, `-u-nu-latn` so digits stay Latin, 24-hour clock,
-  rendered client-side after the lookup).
+  rendered client-side after the lookup). **Both fields print a visible example under
+  them** (`TIG-2026-0001`, `0780 123 4567` / `+964 780 123 4567`) because a placeholder
+  disappears as soon as the customer starts typing. A successful lookup adds an **Ask
+  about this order on WhatsApp** button that opens `wa.me/9647866417123` with the order
+  number already written into the message (`SUPPORT_WHATSAPP` in the track page, the
+  founder number used on `/contact`) — the customer never has to retype the ref.
 - **Uploads go to Vercel Blob** (needs `BLOB_READ_WRITE_TOKEN`), not the repo: the repo is
   public, and the function body limit would cap uploads at ~4.5 MB. The browser asks
   `/api/admin/blob-upload` for a token and uploads directly. `/api/admin/*` is admin-only.

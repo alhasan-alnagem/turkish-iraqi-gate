@@ -110,8 +110,8 @@ const en: Translations = {
     },
     team: {
       title: "Our Team",
-      founder: { name: "Mehmet Yılmaz", role: "Founder & CEO", exp: "15+ years in Turkey-Iraq trade" },
-      director: { name: "Ali Al-Jubouri", role: "Operations Director, Iraq", exp: "10+ years in logistics & distribution" },
+      founder: { name: "Alhasan Alnagem", role: "Founder", exp: "Founded Turkish Iraqi Gate in 2020" },
+      director: { name: "Ahmed Al Shadood", role: "Co-founder", exp: "Turkey–Iraq sourcing and procurement" },
     },
     cta: {
       title: "Let's Work Together",

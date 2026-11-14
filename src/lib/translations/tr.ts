@@ -110,8 +110,8 @@ const tr: Translations = {
     },
     team: {
       title: "Ekibimiz",
-      founder: { name: "Mehmet Yılmaz", role: "Kurucu ve CEO", exp: "Türkiye-Irak ticaretinde 15 yılı aşkın deneyim" },
-      director: { name: "Ali Al-Jubouri", role: "Irak Operasyon Müdürü", exp: "Lojistik ve dağıtımda 10 yılı aşkın deneyim" },
+      founder: { name: "Alhasan Alnagem", role: "Kurucu", exp: "Turkish Iraqi Gate'i 2020'de kurdu" },
+      director: { name: "Ahmed Al Shadood", role: "Kurucu Ortak", exp: "Türkiye–Irak ithalat ve tedarik" },
     },
     cta: {
       title: "Birlikte Çalışalım",
