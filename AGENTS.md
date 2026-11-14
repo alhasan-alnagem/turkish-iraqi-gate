@@ -120,7 +120,8 @@ user's standing decisions, not suggestions.
   Domain at Namecheap: `CNAME www → vercel-dns`, `A @ → 76.76.21.21`; Vercel auto-SSL.
 - **Branch policy from the user:** push to the preview branch by default; only push to
   `main` when explicitly told. (`feature/multilingual-urls` is the long-lived extra branch.)
-- SEO is first-class: `src/app/sitemap.ts` (6 pages × 3 langs ≈ 18 URLs), `src/app/robots.ts`,
+- SEO is first-class: `src/app/sitemap.ts` (9 localised routes × 3 languages = 27 URLs,
+  each with hreflang `alternates` incl. `x-default` → English), `src/app/robots.ts`,
   `src/lib/seo.ts` (localized metadata, canonicals, hreflang, Organization JSON-LD),
   `public/og.png`, `favicon.ico` / `icon.png` / `apple-icon.png`. Google Search Console +
   Bing Webmaster are verified. Watch "title too long (>70 chars)" warnings — Bing flagged one.
