@@ -110,8 +110,12 @@ const en: Translations = {
     },
     team: {
       title: "Our Team",
-      founder: { name: "Alhasan Alnagem", role: "Founder", exp: "Founded Turkish Iraqi Gate in 2020" },
-      director: { name: "Ahmed Al Shadood", role: "Co-founder", exp: "Turkey–Iraq sourcing and procurement" },
+      founder: { name: "Alhasan Alnagem", role: "Founder", exp: "Import & Export Management" },
+      director: {
+        name: "Ahmed Al Shadood",
+        role: "Co-founder",
+        exp: "Civil Engineer — Client Acquisition & Building Material Consultant",
+      },
     },
     cta: {
       title: "Let's Work Together",

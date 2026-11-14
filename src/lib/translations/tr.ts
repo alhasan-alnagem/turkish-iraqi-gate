@@ -110,8 +110,12 @@ const tr: Translations = {
     },
     team: {
       title: "Ekibimiz",
-      founder: { name: "Alhasan Alnagem", role: "Kurucu", exp: "Turkish Iraqi Gate'i 2020'de kurdu" },
-      director: { name: "Ahmed Al Shadood", role: "Kurucu Ortak", exp: "Türkiye–Irak ithalat ve tedarik" },
+      founder: { name: "Alhasan Alnagem", role: "Kurucu", exp: "İthalat ve İhracat Yönetimi" },
+      director: {
+        name: "Ahmed Al Shadood",
+        role: "Kurucu Ortak",
+        exp: "İnşaat Mühendisi — Müşteri Kazanımı ve Yapı Malzemeleri Danışmanı",
+      },
     },
     cta: {
       title: "Birlikte Çalışalım",
