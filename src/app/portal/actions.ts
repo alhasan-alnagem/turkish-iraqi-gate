@@ -36,6 +36,7 @@ import {
 } from "@/lib/job-applications";
 import {
   interviewStamp,
+  parseOfficeDate,
   parseReplyLanguages,
   sendApplicationReply,
   sendManualReply,
@@ -680,7 +681,7 @@ export async function scheduleInterviewAction(formData: FormData) {
   const actor = await requireAdminActor();
 
   const applicationId = String(formData.get("applicationId") ?? "");
-  const date = String(formData.get("interviewDate") ?? "").trim();
+  const typedDate = String(formData.get("interviewDate") ?? "").trim();
   const time = String(formData.get("interviewTime") ?? "").trim();
   const mode = String(formData.get("interviewMode") ?? "").trim();
   const note = String(formData.get("interviewNote") ?? "").trim();
@@ -689,6 +690,15 @@ export async function scheduleInterviewAction(formData: FormData) {
   const back = String(formData.get("statusFilter") ?? "");
 
   if (!applicationId) redirect("/portal/applications");
+
+  // The date box is dd/mm/yyyy free text, so unreadable dates are refused here
+  // rather than silently becoming "no interview".
+  const date = typedDate ? parseOfficeDate(typedDate) : "";
+  if (typedDate && !date) {
+    const params = new URLSearchParams({ error: "interview-date", app: applicationId });
+    if (isApplicationStatus(back)) params.set("status", back);
+    redirect(`/portal/applications?${params.toString()}`);
+  }
 
   const at = date && time ? interviewStamp(`${date}T${time}`) : "";
   if ((date && !time) || (time && !date)) {

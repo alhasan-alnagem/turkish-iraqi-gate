@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import ApplicationActions from "@/components/portal/ApplicationActions";
 import DeleteApplicationButton from "@/components/portal/DeleteApplicationButton";
-import TodayButton from "@/components/portal/TodayButton";
+import InterviewDateField from "@/components/portal/InterviewDateField";
 import { currentStaff } from "@/lib/auth";
 import {
   APPLICATION_STATUSES,
@@ -75,6 +75,12 @@ function officeInputs(value: string | Date | null): { date: string; time: string
     date: `${get("year")}-${get("month")}-${get("day")}`,
     time: `${get("hour")}:${get("minute")}`,
   };
+}
+
+/** `2026-11-14` → `14/11/2026`, the format the interview date box shows. */
+function displayDate(iso: string): string {
+  const [year, month, day] = iso.split("-");
+  return year && month && day ? `${day}/${month}/${year}` : "";
 }
 
 function languagesFor(application: {
@@ -199,7 +205,7 @@ export default async function ApplicationsPage({
     if (params.error === "interview-date") {
       return {
         tone: "error" as const,
-        text: "Give both a date and a time for the interview (and a date/time when sending an invitation).",
+        text: "Give a real date as dd/mm/yyyy and a time for the interview (both, or neither).",
       };
     }
     if (params.error === "manual-empty") {
@@ -715,24 +721,13 @@ export default async function ApplicationsPage({
                 >
                   <input type="hidden" name="applicationId" value={selected.id} />
                   <input type="hidden" name="statusFilter" value={status ?? ""} />
-                  <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <label
-                        htmlFor={`interview-date-${selected.id}`}
-                        className="block text-xs text-[var(--muted)]"
-                      >
-                        Date (dd/mm/yyyy)
-                      </label>
-                      <TodayButton inputId={`interview-date-${selected.id}`} />
-                    </div>
-                    <input
-                      id={`interview-date-${selected.id}`}
-                      type="date"
-                      name="interviewDate"
-                      defaultValue={officeInputs(selected.interview_at).date}
-                      className={`mt-1 ${inputClass}`}
-                    />
-                  </div>
+                  <InterviewDateField
+                    id={`interview-date-${selected.id}`}
+                    name="interviewDate"
+                    defaultValue={displayDate(officeInputs(selected.interview_at).date)}
+                    label="Date (dd/mm/yyyy)"
+                    className={inputClass}
+                  />
                   <div>
                     <label
                       htmlFor={`interview-time-${selected.id}`}

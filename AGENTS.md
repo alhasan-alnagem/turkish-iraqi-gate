@@ -103,9 +103,14 @@ user's standing decisions, not suggestions.
   happened (sent in …, not configured, or failed). Zero ticked languages is refused.
   Interview times are typed and shown in **Baghdad time** (`Asia/Baghdad`, fixed `+03`,
   `interviewStamp` / `formatInterview`) and every reply states that. Dates are always
-  written **day/month/year** (`14/11/2026`) in the portal, the emails and the HR card, and
-  the schedule form has a **Today** button (`src/components/portal/TodayButton.tsx`) that
-  fills the date with the current Baghdad day.
+  written **day/month/year** (`14/11/2026`) in the portal, the emails and the HR card.
+  The interview date box is deliberately **not** `<input type="date">` — a native date
+  input follows the browser locale (often `mm/dd/yyyy`) and cannot be overridden — so
+  `src/components/portal/InterviewDateField.tsx` is a text field that formats as you type
+  and carries a **Today** button (current Baghdad day). `parseOfficeDate` in
+  `src/lib/application-mail.ts` accepts `dd/mm/yyyy`, `d/m/yyyy`, `dd-mm-yyyy` and
+  `yyyy-mm-dd`, rejects impossible dates such as `31/02/2026`, and the action reports
+  `error=interview-date` instead of silently clearing the interview.
 - The temporary "work in progress / coming soon" overlay on the contact form is gone.
 
 ## 7. Deploy & SEO

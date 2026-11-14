@@ -59,6 +59,40 @@ export function formatInterview(stamp: string | Date | null): string {
   }).format(new Date(stamp));
 }
 
+/** Real calendar days only — `31/02/2026` is refused, not rolled over. */
+function isoDate(year: number, month: number, day: number): string {
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return "";
+  }
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/**
+ * Reads what staff type into the interview date box: `dd/mm/yyyy` (the normal
+ * case), with `d/m/yyyy`, `dd-mm-yyyy` and `yyyy-mm-dd` accepted so a pasted
+ * value still works. Returns `yyyy-mm-dd` for `interviewStamp`, or `""` when
+ * the text is not a real date.
+ */
+export function parseOfficeDate(value: string): string {
+  const clean = value.trim().replace(/\s+/g, "");
+  const dayFirst = clean.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/);
+  if (dayFirst) {
+    const [, day, month, year] = dayFirst;
+    return isoDate(Number(year), Number(month), Number(day));
+  }
+  const yearFirst = clean.match(/^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})$/);
+  if (yearFirst) {
+    const [, year, month, day] = yearFirst;
+    return isoDate(Number(year), Number(month), Number(day));
+  }
+  return "";
+}
+
 export type InterviewDetails = {
   at: string;
   mode: string;
