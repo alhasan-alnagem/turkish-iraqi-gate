@@ -40,6 +40,7 @@ import {
   parseReplyLanguages,
   sendApplicationReply,
   sendManualReply,
+  sendOfficeInterviewInvite,
   type ReplyAttempt,
   type ReplyLanguage,
 } from "@/lib/application-mail";
@@ -717,6 +718,7 @@ export async function scheduleInterviewAction(formData: FormData) {
   const application = await getJobApplication(applicationId);
   if (!application) redirect("/portal/applications?error=not-found");
 
+  const previousInterview = application.interview_at;
   const updated = await setApplicationInterview({
     id: applicationId,
     at,
@@ -736,6 +738,7 @@ export async function scheduleInterviewAction(formData: FormData) {
       langs,
       note: "",
       interview: { at, mode, note },
+      applicationId,
     });
     mailed = reply.sent.join(",") || (reply.skipped ? "off" : "failed");
 
@@ -770,6 +773,36 @@ export async function scheduleInterviewAction(formData: FormData) {
     });
   }
 
+  // The office copy is what puts the booking on the PrivateEmail calendar, so
+  // it is sent whenever a time exists — not only when the applicant invite box
+  // was ticked — and a cleared interview withdraws the event.
+  const office = at
+    ? await sendOfficeInterviewInvite({
+        applicationId,
+        name: application.name,
+        email: application.email,
+        position: application.position,
+        at,
+        mode,
+        note,
+      })
+    : previousInterview
+      ? await sendOfficeInterviewInvite({
+          applicationId,
+          name: application.name,
+          email: application.email,
+          position: application.position,
+          at: previousInterview,
+          mode: application.interview_mode,
+          note: application.interview_note,
+          cancelled: true,
+        })
+      : { sent: false, skipped: true, error: "" };
+
+  if (office.error) {
+    console.error("schedule interview: office calendar copy failed", office.error);
+  }
+
   revalidatePath("/portal/applications");
   revalidatePath("/portal/hr");
 
@@ -778,6 +811,7 @@ export async function scheduleInterviewAction(formData: FormData) {
     interview: at ? "saved" : "cleared",
   });
   if (mailed) params.set("mailed", mailed);
+  params.set("calendar", office.sent ? "sent" : office.skipped ? "off" : "failed");
   if (isApplicationStatus(back)) params.set("status", back);
   redirect(`/portal/applications?${params.toString()}`);
 }

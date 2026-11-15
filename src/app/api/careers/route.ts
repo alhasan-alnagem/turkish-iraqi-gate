@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createJobApplication } from "@/lib/job-applications";
 import { notify } from "@/lib/notifications";
+import { portalSubject } from "@/lib/portal-mail";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL = process.env.CAREER_TO_EMAIL || "alhasony1@gmail.com";
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
             from: FROM_EMAIL,
             to: TO_EMAILS,
             reply_to: email,
-            subject: `New job application: ${position} — ${name}`,
+            subject: portalSubject(`New job application: ${position} — ${name}`),
             html,
             attachments: [
               {

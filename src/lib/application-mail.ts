@@ -14,6 +14,8 @@ import "server-only";
  */
 
 import type { ReplyLanguage } from "@/lib/reply-languages";
+import { calendarAttachment, buildCalendarInvite, interviewUid } from "@/lib/calendar-invite";
+import { portalSubject } from "@/lib/portal-mail";
 
 export {
   REPLY_LANGUAGES,
@@ -108,6 +110,8 @@ export type ReplyInput = {
   /** Internal note from the reviewer, included as a personal line. */
   note?: string;
   interview?: InterviewDetails | null;
+  /** Job application id — gives the calendar invitation a stable UID. */
+  applicationId?: string;
 };
 
 export type ReplyAttempt = {
@@ -144,6 +148,13 @@ const REPLY_TO = process.env.CAREER_REPLY_TO || "careers@tigip.com";
  * reply-to address; never point this at the send-only careers subdomain.
  */
 const BCC_EMAIL = process.env.CAREER_BCC_EMAIL || REPLY_TO;
+/**
+ * Where the office copy of an interview invitation goes. This is the address
+ * whose PrivateEmail calendar should show the booking, so it is deliberately
+ * the tigip.com mailbox and not the Gmail fallback.
+ */
+const OFFICE_EMAIL =
+  process.env.CAREER_CALENDAR_EMAIL || BCC_EMAIL || "alhasan.alnagem@tigip.com";
 
 function recipients(to: string): { to: string[]; bcc?: string[] } {
   return BCC_EMAIL && BCC_EMAIL !== to
@@ -298,7 +309,35 @@ function htmlFor(lang: ReplyLanguage, input: ReplyInput): string {
 function subjectFor(lang: ReplyLanguage, input: ReplyInput): string {
   const base = COPY[lang].subject;
   const suffix = DECISION_LABELS[input.kind].toLowerCase();
-  return `${base} — ${suffix}`;
+  return portalSubject(`${base} — ${suffix}`);
+}
+
+/** Event title/location per language — the body is localized, so is the invite. */
+const INTERVIEW_EVENT: Record<ReplyLanguage, { title: (position: string) => string }> = {
+  en: { title: (position) => `Interview — ${position} — Turkish Iraqi Gate` },
+  ar: { title: (position) => `مقابلة — ${position} — بوابة تركيا العراقية` },
+  tr: { title: (position) => `Mülakat — ${position} — Turkish Iraqi Gate` },
+};
+
+function interviewInviteFor(
+  lang: ReplyLanguage,
+  input: ReplyInput,
+  applicationId?: string,
+  cancelled = false,
+): string {
+  const interview = input.interview;
+  if (!interview) return "";
+  return buildCalendarInvite({
+    uid: interviewUid(applicationId || input.to),
+    start: interview.at,
+    minutes: 45,
+    summary: INTERVIEW_EVENT[lang].title(input.position),
+    description: textFor(lang, input),
+    location: interview.mode,
+    organizer: REPLY_TO,
+    attendees: [input.to],
+    cancelled,
+  });
 }
 
 /** The same copy as the HTML mail, without markup — this is what the portal shows. */
@@ -362,9 +401,10 @@ export async function sendManualReply(input: {
     return { sent: false, skipped: true, providerId: "", error: "Mail is not configured.", text };
   }
 
-  const subject =
+  const subject = portalSubject(
     input.subject.trim().replace(/\s+/g, " ").slice(0, 200) ||
-    "Your application — Turkish Iraqi Gate";
+      "Your application — Turkish Iraqi Gate",
+  );
 
   const html = `<!doctype html>
   <html lang="en">
@@ -442,6 +482,13 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
   for (const lang of langs) {
     const subject = subjectFor(lang, input);
     const text = textFor(lang, input);
+    // An interview invitation is also a real calendar invitation: the .ics part
+    // is what makes it appear in the recipient's calendar (PrivateEmail reads
+    // standard iCal), and it carries the same details as the message.
+    const ics =
+      input.kind === "interview" && input.interview
+        ? interviewInviteFor(lang, input, input.applicationId)
+        : "";
     try {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -456,6 +503,7 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
           subject,
           html: htmlFor(lang, input),
           text,
+          ...(ics ? { attachments: [calendarAttachment(ics)] } : {}),
         }),
       });
 
@@ -488,4 +536,136 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
   }
 
   return result;
+}
+
+/**
+ * The office copy of an interview booking.
+ *
+ * The applicant already gets their own invitation; this one goes to the
+ * tigip.com mailbox so the interview shows up in the PrivateEmail calendar
+ * (a standard iCal invitation is added as a pending event) and so the booking
+ * is visible in the inbox the portal filters sort. It is sent whether or not
+ * the applicant invite box was ticked — booking a time IS the calendar action.
+ */
+export async function sendOfficeInterviewInvite(input: {
+  applicationId: string;
+  name: string;
+  email: string;
+  position: string;
+  at: string;
+  mode: string;
+  note: string;
+  /** Clearing the interview sends an iCal cancellation instead. */
+  cancelled?: boolean;
+}): Promise<{ sent: boolean; skipped: boolean; error: string }> {
+  if (!RESEND_API_KEY) {
+    return { sent: false, skipped: true, error: "Mail is not configured." };
+  }
+  if (!input.at) {
+    return { sent: false, skipped: true, error: "No interview time." };
+  }
+
+  const cancelled = Boolean(input.cancelled);
+  const when = formatInterview(input.at);
+  const subject = portalSubject(
+    cancelled
+      ? `Interview cancelled — ${input.name} — ${input.position}`
+      : `Interview booked — ${input.name} — ${input.position}`,
+  );
+
+  const details = [
+    ["Candidate", input.name],
+    ["Email", input.email],
+    ["Position", input.position],
+    ["Date and time", `${when} (Baghdad time, GMT+3)`],
+    ["Format", input.mode || "—"],
+    ["Notes", input.note || "—"],
+  ];
+
+  const rows = details
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:8px 12px;background:#f3f4f6;font-weight:600;width:150px">${esc(label)}</td><td style="padding:8px 12px">${esc(value)}</td></tr>`,
+    )
+    .join("");
+
+  const text = [
+    cancelled ? "INTERVIEW CANCELLED" : "INTERVIEW BOOKED",
+    ...details.map(([label, value]) => `${label}: ${value}`),
+    "",
+    cancelled
+      ? "The calendar invitation has been withdrawn."
+      : "The invitation is attached — accept it to put the interview on the calendar.",
+    "",
+    `https://www.tigip.com/portal/applications?app=${input.applicationId}`,
+  ].join("\n");
+
+  const html = `<!doctype html>
+  <html lang="en">
+  <body style="margin:0;padding:24px 12px;background:#f9fafb;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:28px;line-height:1.65">
+      <p style="margin:0 0 6px;color:#16a34a;font-size:12px;letter-spacing:2px;text-transform:uppercase">Turkish Iraqi Gate</p>
+      <h2 style="margin:0 0 16px;color:#0f5624;font-size:20px">${cancelled ? "Interview cancelled" : "Interview booked"}</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px">${rows}</table>
+      <p style="margin:16px 0 0;color:#6b7280;font-size:13px">
+        ${
+          cancelled
+            ? "The calendar invitation has been withdrawn."
+            : "The calendar invitation is attached — accept it to put the interview on the calendar."
+        }
+      </p>
+      <p style="margin:16px 0 0;border-top:1px solid #e5e7eb;padding-top:12px;font-size:13px">
+        <a href="https://www.tigip.com/portal/applications?app=${encodeURIComponent(input.applicationId)}" style="color:#0f5624">Open in the portal</a>
+      </p>
+    </div>
+  </body>
+  </html>`;
+
+  const ics = buildCalendarInvite({
+    uid: interviewUid(input.applicationId),
+    start: input.at,
+    minutes: 45,
+    summary: cancelled
+      ? `Cancelled: Interview — ${input.position} — Turkish Iraqi Gate`
+      : `Interview — ${input.position} — Turkish Iraqi Gate`,
+    description: text,
+    location: input.mode,
+    organizer: REPLY_TO,
+    attendees: [input.email],
+    cancelled,
+  });
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [OFFICE_EMAIL],
+        reply_to: REPLY_TO,
+        subject,
+        html,
+        text,
+        attachments: [calendarAttachment(ics)],
+      }),
+    });
+
+    if (!res.ok) {
+      const raw = await res.text().catch(() => "");
+      console.error("office interview invite: Resend", res.status, raw);
+      return { sent: false, skipped: false, error: `${res.status} ${raw}`.slice(0, 500) };
+    }
+
+    return { sent: true, skipped: false, error: "" };
+  } catch (error) {
+    console.error("office interview invite: could not send", error);
+    return {
+      sent: false,
+      skipped: false,
+      error: error instanceof Error ? error.message : "Could not reach the mail service.",
+    };
+  }
 }

@@ -144,6 +144,7 @@ export default async function ApplicationsPage({
     decided?: string;
     interview?: string;
     mailed?: string;
+    calendar?: string;
     replied?: string;
   }>;
 }) {
@@ -185,6 +186,17 @@ export default async function ApplicationsPage({
   };
 
   const mailed = params.mailed ?? "";
+  const calendar = params.calendar ?? "";
+  const calendarText = (cancelled: boolean) =>
+    calendar === "sent"
+      ? cancelled
+        ? " The office calendar invitation was withdrawn."
+        : " Calendar invitation sent to the office inbox."
+      : calendar === "failed"
+        ? " The office calendar invitation could not be sent — check the mail setup."
+        : calendar === "off"
+          ? " No calendar invitation was sent because mail is not configured."
+          : "";
   const mailedText =
     mailed === "off"
       ? " Saved, but no email was sent because mail is not configured."
@@ -228,10 +240,16 @@ export default async function ApplicationsPage({
       return { tone: "ok" as const, text: `Application declined.${mailedText}` };
     }
     if (params.interview === "saved") {
-      return { tone: "ok" as const, text: `Interview saved.${mailedText}` };
+      return {
+        tone: "ok" as const,
+        text: `Interview saved.${mailedText}${calendarText(false)}`,
+      };
     }
     if (params.interview === "cleared") {
-      return { tone: "ok" as const, text: "Interview removed from the tracker." };
+      return {
+        tone: "ok" as const,
+        text: `Interview removed from the tracker.${calendarText(true)}`,
+      };
     }
     if (params.updated) return { tone: "ok" as const, text: "Application updated." };
     if (params.deleted) return { tone: "ok" as const, text: "Application and CV deleted." };

@@ -348,3 +348,51 @@ in `types.ts` — all three must stay structurally identical.
   go", and it is shared with the public form's acknowledgement in `/api/careers`.
   The `/portal/notifications` feed still gets one summary entry per action.
 
+## 11. Where the mail lands: `[TIGIP]` tag, PrivateEmail filter, calendar invites (Nov 2026)
+The user's ask: **everything the website sends should file itself into a labelled spot in
+the `tigip.com` inbox, and interviews should appear on the PrivateEmail calendar without
+anyone clicking "create event".**
+
+- **PrivateEmail has no labels and no API.** A label there is an IMAP folder filled by a
+  server-side filter rule, and those rules can only match From / To / CC / Subject / Body.
+  That kills the obvious approaches: every portal message leaves from the same Resend
+  sender (so `From` cannot separate a website notification from mail to an applicant), and
+  the company copy is often a **BCC** (`careers@tigip.com`), which appears in neither `To`
+  nor `CC`. The **subject line is the only marker that survives both.**
+- **The tag lives in `src/lib/portal-mail.ts`** — `PORTAL_TAG = "[TIGIP]"` and
+  `portalSubject()` (prepends once, never twice). Use `portalSubject(...)` for every
+  subject that goes to the **company** side: applicant invitations/decision letters,
+  manual replies, `/api/careers`, `/api/catalog-submissions`, and the Apps Script order
+  alert (`buildOrderSubject` in `D:\website\assets\main-sheet-receiver.txt`). Applicant
+  *acknowledgements* stay untagged — they go to applicants, not the office.
+- **The filter is a one-time click-through the user must do** (Namecheap KB 10785):
+  webmail → gear → **Filters** → **Manage filters** → create a new filter → condition
+  **Subject `contains` `[TIGIP]`** → action **move to folder** `Website Portal`. Nothing in
+  this repo can create it; PrivateEmail offers webmail + IMAP only. Do not "integrate" the
+  mailbox (no stored IMAP/CalDAV password) — that rule stands.
+- **Interviews are real iCalendar invitations**, not reminders. `src/lib/calendar-invite.ts`
+  builds RFC 5545 `METHOD:REQUEST` (and `METHOD:CANCEL` when a booking is cleared) with
+  RFC-correct escaping, 75-octet folding, `UID = <applicationId>@tigip.com` (stable, so a
+  reschedule updates the same event instead of duplicating it), `SEQUENCE` from epoch
+  seconds, and a 30-minute `VALARM`. Times are emitted in **UTC** (`…Z`): `TZID` would
+  need a full `VTIMEZONE`, and Baghdad is a fixed +03 with no DST, so the conversion is
+  exact. The `.ics` rides along as a `text/calendar` attachment on the applicant's
+  invitation (`sendApplicationReply`, `kind: "interview"`).
+- **The office copy is unconditional.** `sendOfficeInterviewInvite()` in
+  `src/lib/application-mail.ts` mails the same `.ics` to `CAREER_CALENDAR_EMAIL`
+  (defaults to `CAREER_BCC_EMAIL` → `careers@tigip.com`) **whether or not** the applicant
+  invite box was ticked — booking a time *is* the calendar action. Clearing the interview
+  sends a `CANCEL` for the same UID. `scheduleInterviewAction` reports the outcome as
+  `?calendar=sent|off|failed` and the page banner says which.
+- `CAREER_CALENDAR_EMAIL` is the switch for "whose calendar shows interviews". Set it on
+  Vercel to `alhasan.alnagem@tigip.com` to put bookings on the founder's PrivateEmail
+  calendar; unset, it follows the BCC address.
+- **Resend caveat:** while `CAREER_FROM_EMAIL` is still `onboarding@resend.dev`, Resend
+  only delivers to the account owner's own address. Verifying `tigip.com` on
+  resend.com/domains is what makes the office copy (and applicant mail) reach any address.
+- **Orders reach the `tigip.com` inbox** through the MAIN spreadsheet: `NOTIFY_EMAIL` in
+  `main-sheet-receiver.txt` is now a **comma-separated list** (`alhasan.alnagem@gmail.com,
+  alhasan.alnagem@tigip.com`), `notifyRecipients()` cleans it, and one message goes to
+  each address so recipients never see each other. That file needs **Deploy → Manage
+  deployments → New version** after any edit, or the live web app keeps the old code.
+

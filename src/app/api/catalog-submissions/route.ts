@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { portalSubject } from "@/lib/portal-mail";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL =
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest) {
         from: FROM_EMAIL,
         to: TO_EMAILS,
         reply_to: email,
-        subject: `New catalog submission: ${category} — ${company}`,
+        subject: portalSubject(`New catalog submission: ${category} — ${company}`),
         html,
         attachments: [
           {
