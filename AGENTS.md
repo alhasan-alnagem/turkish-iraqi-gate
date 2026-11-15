@@ -378,15 +378,20 @@ anyone clicking "create event".**
   need a full `VTIMEZONE`, and Baghdad is a fixed +03 with no DST, so the conversion is
   exact. The `.ics` rides along as a `text/calendar` attachment on the applicant's
   invitation (`sendApplicationReply`, `kind: "interview"`).
-- **The office copy is unconditional.** `sendOfficeInterviewInvite()` in
-  `src/lib/application-mail.ts` mails the same `.ics` to `CAREER_CALENDAR_EMAIL`
-  (defaults to `CAREER_BCC_EMAIL` → `careers@tigip.com`) **whether or not** the applicant
-  invite box was ticked — booking a time *is* the calendar action. Clearing the interview
-  sends a `CANCEL` for the same UID. `scheduleInterviewAction` reports the outcome as
-  `?calendar=sent|off|failed` and the page banner says which.
-- `CAREER_CALENDAR_EMAIL` is the switch for "whose calendar shows interviews". Set it on
-  Vercel to `alhasan.alnagem@tigip.com` to put bookings on the founder's PrivateEmail
-  calendar; unset, it follows the BCC address.
+- **The office copy goes to the founder's own mailbox, not `careers@`.** `CAREER_CALENDAR_EMAIL`
+  overrides it; the default is `alhasan.alnagem@tigip.com`. `sendOfficeInterviewInvite()`
+  sends it **whether or not** the applicant invite box was ticked — booking a time *is*
+  the calendar action. `careers@tigip.com` is the
+  calendar **ORGANIZER** (`REPLY_TO`), and a message whose organizer is also its recipient
+  is treated as "your own copy" — PrivateEmail stores no event for it and the mail shows
+  *"This event no longer exists"*. So the office address must always appear as an
+  `ATTENDEE` (it does, next to the applicant) and must never be the organizer.
+  Clearing the interview sends a `CANCEL` for the same UID; `scheduleInterviewAction`
+  reports the outcome as `?calendar=sent|off|failed` and the page banner says which.
+- `CAREER_CALENDAR_EMAIL` is the switch for "whose calendar shows interviews". Keep
+  `CAREER_REPLY_TO` (where applicant answers go) separate from it: `CAREER_BCC_EMAIL`
+  follows `CAREER_REPLY_TO` when unset, so pointing the reply-to at your own address also
+  starts BCC'ing every applicant copy into your mailbox.
 - **Resend caveat:** while `CAREER_FROM_EMAIL` is still `onboarding@resend.dev`, Resend
   only delivers to the account owner's own address. Verifying `tigip.com` on
   resend.com/domains is what makes the office copy (and applicant mail) reach any address.

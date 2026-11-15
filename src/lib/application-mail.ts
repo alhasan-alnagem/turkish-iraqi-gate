@@ -149,12 +149,14 @@ const REPLY_TO = process.env.CAREER_REPLY_TO || "careers@tigip.com";
  */
 const BCC_EMAIL = process.env.CAREER_BCC_EMAIL || REPLY_TO;
 /**
- * Where the office copy of an interview invitation goes. This is the address
- * whose PrivateEmail calendar should show the booking, so it is deliberately
- * the tigip.com mailbox and not the Gmail fallback.
+ * Where the office copy of an interview invitation goes — the address whose
+ * PrivateEmail calendar should show the booking. It is the founder's own
+ * mailbox, NOT `careers@`: that address is the calendar ORGANIZER, and a
+ * message whose organizer is also its recipient is treated as "your own
+ * copy" instead of an invitation, so no event is ever created from it.
  */
 const OFFICE_EMAIL =
-  process.env.CAREER_CALENDAR_EMAIL || BCC_EMAIL || "alhasan.alnagem@tigip.com";
+  process.env.CAREER_CALENDAR_EMAIL || "alhasan.alnagem@tigip.com";
 
 function recipients(to: string): { to: string[]; bcc?: string[] } {
   return BCC_EMAIL && BCC_EMAIL !== to
@@ -630,8 +632,11 @@ export async function sendOfficeInterviewInvite(input: {
       : `Interview — ${input.position} — Turkish Iraqi Gate`,
     description: text,
     location: input.mode,
+    // The organizer is the careers mailbox; the office address is an ATTENDEE,
+    // because a calendar only accepts an invitation for an address it can see
+    // in ATTENDEE (self-organised invites are ignored as "my own copy").
     organizer: REPLY_TO,
-    attendees: [input.email],
+    attendees: [OFFICE_EMAIL, input.email],
     cancelled,
   });
 
