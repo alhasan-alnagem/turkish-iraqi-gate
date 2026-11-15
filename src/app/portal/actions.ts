@@ -109,7 +109,7 @@ async function logReplyAttempts(input: {
       to: input.to,
       subject: attempt.subject,
       body: attempt.body,
-      langs: attempt.lang,
+      langs: attempt.langs.join(","),
       status: attempt.status,
       error: attempt.error,
       actorId: input.actorId,

@@ -116,6 +116,8 @@ export type ReplyInput = {
 
 export type ReplyAttempt = {
   lang: ReplyLanguage;
+  /** Every language whose copy is in the message (the record in the portal). */
+  langs: ReplyLanguage[];
   subject: string;
   /** The message as plain text, stored and shown in the portal. */
   body: string;
@@ -253,7 +255,11 @@ const INTERVIEW_LABELS: Record<
   tr: { when: "Tarih ve saat", how: "Görüşme şekli", note: "Notlar", closing: "Belirtilen saat Bağdat saatidir (GMT+3)." },
 };
 
-function htmlFor(lang: ReplyLanguage, input: ReplyInput): string {
+/**
+ * One language's letter. Used for a single-language reply exactly as before,
+ * and stacked inside one message when several languages are ticked.
+ */
+function bodyHtmlFor(lang: ReplyLanguage, input: ReplyInput): string {
   const copy = COPY[lang];
   const intro = MESSAGE[lang][input.kind](input.position);
   const labels = INTERVIEW_LABELS[lang];
@@ -285,21 +291,43 @@ function htmlFor(lang: ReplyLanguage, input: ReplyInput): string {
       }:3px solid #16a34a;white-space:pre-wrap">${esc(input.note)}</p>`
     : "";
 
-  return `<!doctype html>
-  <html lang="${lang}" dir="${copy.dir}">
-  <body style="margin:0;padding:24px 12px;background:#f9fafb;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
-    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:28px;line-height:1.65;text-align:${
-      copy.dir === "rtl" ? "right" : "left"
-    }">
-      <p style="margin:0 0 6px;color:#16a34a;font-size:12px;letter-spacing:2px;text-transform:uppercase">Turkish Iraqi Gate</p>
-      <h2 style="margin:0 0 16px;color:#0f5624;font-size:20px">${copy.heading}</h2>
+  return `<h2 style="margin:0 0 16px;color:#0f5624;font-size:20px">${copy.heading}</h2>
       <p style="margin:0 0 12px">${copy.greeting(esc(input.name))}</p>
       <p style="margin:0 0 12px">${copy.lead(input.position)}</p>
       <p style="margin:0 0 12px">${intro}</p>
       ${interviewBlock}
       ${personal}
       <p style="margin:20px 0 0">${copy.signature}</p>
-      <p style="margin:4px 0 0;color:#0f5624;font-weight:600">${copy.company}</p>
+      <p style="margin:4px 0 0;color:#0f5624;font-weight:600">${copy.company}</p>`;
+}
+
+/**
+ * ONE message for the whole reply — whatever the language tick list says.
+ *
+ * It used to send a separate mail per ticked language, which meant an applicant
+ * could receive the same decision three times. The primary language (the first
+ * box ticked) comes first and gives the subject; every other ticked language
+ * follows below a rule, each in its own direction, so no block is ever mixed.
+ */
+function htmlFor(langs: ReplyLanguage[], input: ReplyInput): string {
+  const primary = COPY[langs[0]];
+  const body = langs
+    .map((lang) => {
+      const copy = COPY[lang];
+      return `<div dir="${copy.dir}" style="text-align:${
+        copy.dir === "rtl" ? "right" : "left"
+      }">${bodyHtmlFor(lang, input)}</div>`;
+    })
+    .join('<hr style="border:0;border-top:1px solid #e5e7eb;margin:26px 0">');
+
+  return `<!doctype html>
+  <html lang="${langs[0]}" dir="${primary.dir}">
+  <body style="margin:0;padding:24px 12px;background:#f9fafb;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:28px;line-height:1.65;text-align:${
+      primary.dir === "rtl" ? "right" : "left"
+    }">
+      <p style="margin:0 0 6px;color:#16a34a;font-size:12px;letter-spacing:2px;text-transform:uppercase">Turkish Iraqi Gate</p>
+      ${body}
       <p style="margin:16px 0 0;border-top:1px solid #e5e7eb;padding-top:12px;color:#6b7280;font-size:12px">
         tigip.com
       </p>
@@ -326,6 +354,7 @@ function interviewInviteFor(
   input: ReplyInput,
   applicationId?: string,
   cancelled = false,
+  description?: string,
 ): string {
   const interview = input.interview;
   if (!interview) return "";
@@ -334,7 +363,7 @@ function interviewInviteFor(
     start: interview.at,
     minutes: 45,
     summary: INTERVIEW_EVENT[lang].title(input.position),
-    description: textFor(lang, input),
+    description: description || textFor(lang, input),
     location: interview.mode,
     organizer: REPLY_TO,
     attendees: [input.to],
@@ -377,6 +406,12 @@ function textFor(lang: ReplyLanguage, input: ReplyInput): string {
 
   lines.push("", plain(copy.signature), plain(copy.company), "", "tigip.com");
   return lines.join("\n");
+}
+
+/** The plain-text body of the single message: every ticked language, in order. */
+function textForLangs(langs: ReplyLanguage[], input: ReplyInput): string {
+  const divider = "-".repeat(46);
+  return langs.map((lang) => textFor(lang, input)).join(`\n\n${divider}\n\n`);
 }
 
 /**
@@ -465,9 +500,11 @@ export async function sendManualReply(input: {
 }
 
 /**
- * One email per ticked language, so the applicant is never sent a mixed-language
- * message. Returns which languages went out, which failed, and a per-language
- * record the caller can store in `application_emails`.
+ * The decision / invitation letter: always ONE message per action, no matter
+ * how many language boxes were ticked. The first ticked language is the primary
+ * one and gives the subject; the rest follow in the same mail, each in its own
+ * direction. Returns the languages that went out and a single record for
+ * `application_emails`.
  */
 export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResult> {
   const langs = Array.from(new Set(input.langs));
@@ -481,60 +518,68 @@ export async function sendApplicationReply(input: ReplyInput): Promise<ReplyResu
     return result;
   }
 
-  for (const lang of langs) {
-    const subject = subjectFor(lang, input);
-    const text = textFor(lang, input);
-    // An interview invitation is also a real calendar invitation: the .ics part
-    // is what makes it appear in the recipient's calendar (PrivateEmail reads
-    // standard iCal), and it carries the same details as the message.
-    const ics =
-      input.kind === "interview" && input.interview
-        ? interviewInviteFor(lang, input, input.applicationId)
-        : "";
-    try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          ...recipients(input.to),
-          reply_to: REPLY_TO,
-          subject,
-          html: htmlFor(lang, input),
-          text,
-          ...(ics ? { attachments: [calendarAttachment(ics)] } : {}),
-        }),
-      });
+  const subject = subjectFor(langs[0], input);
+  const text = textForLangs(langs, input);
+  // An interview invitation is also a real calendar invitation: the .ics part
+  // is what makes it appear in the recipient's calendar (PrivateEmail reads
+  // standard iCal), and it carries the same details as the message.
+  const ics =
+    input.kind === "interview" && input.interview
+      ? interviewInviteFor(langs[0], input, input.applicationId, false, text)
+      : "";
 
-      if (res.ok) {
-        result.sent.push(lang);
-        result.attempts.push({ lang, subject, body: text, status: "sent", error: "" });
-      } else {
-        result.failed.push(lang);
-        const raw = await res.text().catch(() => "");
-        console.error("application reply: Resend", lang, res.status, raw);
-        result.attempts.push({
-          lang,
-          subject,
-          body: text,
-          status: "failed",
-          error: `${res.status} ${raw}`.slice(0, 500),
-        });
-      }
-    } catch (error) {
-      result.failed.push(lang);
-      console.error("application reply: could not send", lang, error);
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        ...recipients(input.to),
+        reply_to: REPLY_TO,
+        subject,
+        html: htmlFor(langs, input),
+        text,
+        ...(ics ? { attachments: [calendarAttachment(ics)] } : {}),
+      }),
+    });
+
+    if (res.ok) {
+      result.sent = langs;
       result.attempts.push({
-        lang,
+        lang: langs[0],
+        langs,
+        subject,
+        body: text,
+        status: "sent",
+        error: "",
+      });
+    } else {
+      result.failed = langs;
+      const raw = await res.text().catch(() => "");
+      console.error("application reply: Resend", langs.join(","), res.status, raw);
+      result.attempts.push({
+        lang: langs[0],
+        langs,
         subject,
         body: text,
         status: "failed",
-        error: error instanceof Error ? error.message : "Could not reach the mail service.",
+        error: `${res.status} ${raw}`.slice(0, 500),
       });
     }
+  } catch (error) {
+    result.failed = langs;
+    console.error("application reply: could not send", langs.join(","), error);
+    result.attempts.push({
+      lang: langs[0],
+      langs,
+      subject,
+      body: text,
+      status: "failed",
+      error: error instanceof Error ? error.message : "Could not reach the mail service.",
+    });
   }
 
   return result;

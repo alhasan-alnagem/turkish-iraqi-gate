@@ -134,7 +134,7 @@ export default function ApplicationActions({
 
               <fieldset className="min-w-0">
                 <legend className="text-xs text-[var(--muted)]">
-                  Email language(s) — one email per ticked language
+                  Email language(s) — one email, first ticked language first
                 </legend>
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
                   {REPLY_LANGUAGES.map((lang) => (

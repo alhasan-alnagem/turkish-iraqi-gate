@@ -203,7 +203,7 @@ export default async function ApplicationsPage({
       : mailed === "failed"
         ? " Saved, but the email could not be sent — check the mail setup."
         : mailed
-          ? ` Email sent in ${mailed
+          ? ` One email sent in ${mailed
               .split(",")
               .filter(Boolean)
               .map((lang) => REPLY_LANGUAGE_LABELS[lang as ReplyLanguage] ?? lang)

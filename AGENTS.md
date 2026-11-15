@@ -96,13 +96,18 @@ user's standing decisions, not suggestions.
   Every career application is now also stored in Postgres with its CV, so the portal
   (`/portal/applications`) is the record and the email is only a notification.
 - **Applicant replies are written and sent by the system** (`src/lib/application-mail.ts`):
-  the admin ticks the language(s) — English / العربية / Türkçe — and one email goes out
-  **per ticked language**, so a message is never mixed. Hiring, declining and interview
+  the admin ticks the language(s) — English / العربية / Türkçe — and **exactly one email
+  goes out per action**, never one per language. The first ticked box is the *primary*
+  language: it gives the subject line and appears first in the body; the other ticked
+  languages follow below a rule, each in its own `dir`/`text-align` block, so no block is
+  ever mixed. (An earlier version sent one mail per ticked language and an applicant could
+  receive the same decision two or three times — the user explicitly asked for one.)
+  Hiring, declining and interview
   invitations each have their own copy, in the same green/white look as the site, RTL for
   Arabic (`dir` + `text-align`). The sender/reply-to come from `CAREER_FROM_EMAIL` /
   `CAREER_REPLY_TO`, the same as the career form. The decision is stored **before** the
   mail is sent, so a mail outage never loses it; the page then says what actually
-  happened (sent in …, not configured, or failed). Zero ticked languages is refused.
+  happened (one email sent in …, not configured, or failed). Zero ticked languages is refused.
   Interview times are typed and shown in **Baghdad time** (`Asia/Baghdad`, fixed `+03`,
   `interviewStamp` / `formatInterview`) and every reply states that. Dates are always
   written **day/month/year** (`14/11/2026`) in the portal, the emails and the HR card.
@@ -311,7 +316,8 @@ in `types.ts` — all three must stay structurally identical.
     `error=manual-empty`.
   - **Approve** / **Reject** — the dialog first asks "do you want to send the applicant
     an email as well?" and offers two submits in one form: `Send email reply`
-    (`decideApplicationAction`, language checkboxes, one email per ticked language) or
+    (`decideApplicationAction`, language checkboxes, one email covering every ticked
+    language) or
     `Save without email` (`updateApplicationStatusAction`). Both save the same personal
     line as the internal note, so cancelling after typing changes nothing.
   - **Schedule an interview** (collapsed `<details>` below the buttons) —
@@ -322,7 +328,8 @@ in `types.ts` — all three must stay structurally identical.
     clear).
   - **Status & internal note** (collapsed) — `updateApplicationStatusAction`, no email.
   - `decideApplicationAction` stores the decision and `decision_langs` first, then sends
-    one email per language; a mail failure never undoes the decision.
+    **one** email that carries every ticked language; a mail failure never undoes the
+    decision.
   Every action re-checks `admin` server-side in `src/app/portal/actions.ts`.
   The tracked languages default to what the applicant was answered in, otherwise their
   site language, otherwise English; the detail shows `Decided … · replied in …` for
