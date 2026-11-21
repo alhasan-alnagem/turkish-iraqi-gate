@@ -240,6 +240,10 @@ const tr: Translations = {
       title: "Ürün Kataloglarımıza Göz Atın",
       subtitle: "Türkiye'den ithal ettiğimiz ürün yelpazesini kategoriye göre görüntülemek için PDF kataloglarımızı indirin.",
     },
+    notice: {
+      title: "Güncelleniyor",
+      message: "Pazartesi günü 23:59 GMT+3 saatinde tekrar aktif olacaktır.",
+    },
     grid: {
       title: "Ürün Katalogları",
       subtitle: "Görüntülemek veya indirmek için herhangi bir kataloğa tıklayın. Burada listelenmeyen bir ürüne ihtiyacınız varsa, talep üzerine ithal edebiliriz.",

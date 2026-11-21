@@ -147,6 +147,10 @@ export type Translations = {
       title: string;
       subtitle: string;
     };
+    notice: {
+      title: string;
+      message: string;
+    };
     grid: {
       title: string;
       subtitle: string;

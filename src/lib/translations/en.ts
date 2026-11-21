@@ -240,6 +240,10 @@ const en: Translations = {
       title: "Browse Our Product Catalogs",
       subtitle: "Download our PDF catalogs to see the full range of products we source from Turkey, organized by category.",
     },
+    notice: {
+      title: "Under change",
+      message: "Will be back up on Monday at 23:59 GMT+3.",
+    },
     grid: {
       title: "Product Catalogs",
       subtitle: "Click a catalog to view or download it. If you need something not listed here, we can source it on request.",
