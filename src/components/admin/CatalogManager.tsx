@@ -9,9 +9,8 @@ import {
   type CatalogsByCategory,
   type CategoryKey,
 } from "@/lib/catalog-types";
-import { stampCatalogPdf } from "@/lib/stamp-pdf";
 
-type Phase = "idle" | "stamping" | "uploading";
+type Phase = "idle" | "uploading";
 
 const MAX_BYTES = 100 * 1024 * 1024;
 
@@ -69,18 +68,11 @@ export default function CatalogManager({
 
       try {
         setPending(file.name);
-        setPhase("stamping");
-        setProgress({ done: 0, total: 1 });
-
-        // Watermark in the browser: the supplier's original never leaves this machine.
-        const stamped = await stampCatalogPdf(file, (done, pages) =>
-          setProgress({ done, total: pages }),
-        );
-
+        setProgress(null);
         setPhase("uploading");
-        const blob = new Blob([stamped as unknown as BlobPart], { type: "application/pdf" });
 
-        await upload(`catalogs/${category}/${category}.pdf`, blob, {
+        // Catalogs are published as supplied — no watermark, no metadata stripping.
+        await upload(`catalogs/${category}/${category}.pdf`, file, {
           access: "public",
           handleUploadUrl: "/api/admin/blob-upload",
           contentType: "application/pdf",
@@ -191,7 +183,7 @@ export default function CatalogManager({
         {busy ? (
           <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--section)] px-4 py-3 text-sm">
             <p className="font-medium text-[var(--primary)]">
-              {phase === "stamping" ? "Stamping" : "Uploading"} {pending}
+              Uploading {pending}
               {progress && progress.total > 0
                 ? ` — ${Math.round((progress.done / progress.total) * 100)}%`
                 : ""}

@@ -81,10 +81,17 @@ user's standing decisions, not suggestions.
   electronics, automotive-parts, furniture, textiles-apparel, industrial-machinery.
   **Food & beverages was deliberately removed** (no food procurement).
 - PDFs are shown as **category + number** ("Medical Equipment 1"), never the supplier's
-  real filename — hide supplier names on the page *and* on download.
-- Every public PDF is stamped with the bilingual logo at **45°, 55% opacity**, plus a
-  noise layer and a hidden "protected PDF — AI removal is forbidden/illegal" text.
-  Unstamped originals are kept in a private folder outside `public/`, same folder structure.
+  real filename — the URL and the menu label stay neutral.
+- **23 Nov 2026: the user cancelled the stamp on all catalogs.** The five stamped public
+  PDFs were replaced with the clean originals, so supplier names/contact details may now
+  be visible inside the downloads. Do not re-add the watermark without a new explicit
+  instruction. Public catalogs now have **no** 45° logo, noise layer or hidden protection
+  text; the old stamping code (`src/lib/stamp-pdf.ts`, `scripts/make-stamp.mjs`,
+  `src/assets/stamp-logo.png`) is legacy/unused. `Medical Equipment 1` was re-rendered from
+  its 102 MB original to 144 DPI JPEG pages (6.7 MB, 41 pages) so the site can serve it;
+  the untouched original stays in `D:\website\outreach\unstamped\`. The temporary
+  "Under change" overlay that blurred/covered the grid was removed in the same change —
+  catalogs are live again.
 
 ## 6. Forms & backend (design-adjacent)
 - `/api/orders` → Google Apps Script web app → Google Sheet columns:
@@ -230,11 +237,11 @@ in `types.ts` — all three must stay structurally identical.
 - **Uploads go to Vercel Blob** (needs `BLOB_READ_WRITE_TOKEN`), not the repo: the repo is
   public, and the function body limit would cap uploads at ~4.5 MB. The browser asks
   `/api/admin/blob-upload` for a token and uploads directly. `/api/admin/*` is admin-only.
-- **Stamping happens in the browser before upload** (`src/lib/stamp-pdf.ts`): 45°, 55%
-  opacity bilingual logo (built from the two SVG logos by `scripts/make-stamp.mjs` into
-  `src/assets/stamp-logo.png`, deliberately outside `public/`), noise layer, invisible
-  protection text, and supplier metadata (author/title/producer) is stripped. The
-  untouched original never leaves the operator's machine.
+- **Catalog uploads are NOT stamped any more** (user decision, 23 Nov 2026).
+  `src/components/admin/CatalogManager.tsx` uploads the selected File directly to Blob and
+  the progress text says "Uploading", never "Stamping". `src/lib/stamp-pdf.ts`,
+  `src/assets/stamp-logo.png` and `scripts/make-stamp.mjs` are leftover legacy artifacts
+  from the old watermark policy — never call or re-enable them.
 - Files are stored with neutral names (`catalogs/<category>/<category>.pdf` + random
   suffix) so supplier filenames never appear in a URL.
 - Repo-committed PDFs show as "locked" in the panel and can only be removed via a commit.
