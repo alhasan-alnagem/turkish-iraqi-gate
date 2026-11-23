@@ -88,9 +88,17 @@ function languagesFor(application: {
   lang: string;
 }): ReplyLanguage[] {
   const decided = parseReplyLanguages(application.decision_langs.split(","));
-  if (decided.length) return decided;
   const own = application.lang.toLowerCase();
-  return (REPLY_LANGUAGES as readonly string[]).includes(own) ? [own as ReplyLanguage] : ["en"];
+  const ownLang = (REPLY_LANGUAGES as readonly string[]).includes(own)
+    ? (own as ReplyLanguage)
+    : null;
+  if (decided.length) {
+    // Keep the applicant's own language primary when known, then any other
+    // languages they were already answered in.
+    if (ownLang) return [ownLang, ...decided.filter((lang) => lang !== ownLang)];
+    return decided;
+  }
+  return ownLang ? [ownLang] : ["en"];
 }
 
 function LangChecks({

@@ -24,3 +24,17 @@ export function parseReplyLanguages(values: string[]): ReplyLanguage[] {
     .filter((value): value is ReplyLanguage => isReplyLanguage(value));
   return Array.from(new Set(picked));
 }
+
+/**
+ * Put the applicant's own language first when it is among the selected reply
+ * languages. The first language is the primary one in the outgoing email, so
+ * English must not take over just because checkboxes are submitted in DOM order.
+ */
+export function prioritizeReplyLanguages(
+  langs: ReplyLanguage[],
+  applicantLang: string,
+): ReplyLanguage[] {
+  const own = applicantLang.trim().toLowerCase();
+  if (!isReplyLanguage(own) || !langs.includes(own)) return langs;
+  return [own, ...langs.filter((lang) => lang !== own)];
+}

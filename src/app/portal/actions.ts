@@ -38,6 +38,7 @@ import {
   interviewStamp,
   parseOfficeDate,
   parseReplyLanguages,
+  prioritizeReplyLanguages,
   sendApplicationReply,
   sendManualReply,
   sendOfficeInterviewInvite,
@@ -614,7 +615,7 @@ export async function decideApplicationAction(formData: FormData) {
   const decision = String(formData.get("decision") ?? "");
   const note = String(formData.get("reviewNote") ?? "").trim();
   const back = String(formData.get("statusFilter") ?? "");
-  const langs = parseReplyLanguages(formData.getAll("langs").map(String));
+  let langs = parseReplyLanguages(formData.getAll("langs").map(String));
 
   if (!applicationId || (decision !== "hired" && decision !== "rejected")) {
     redirect("/portal/applications");
@@ -628,6 +629,7 @@ export async function decideApplicationAction(formData: FormData) {
 
   const application = await getJobApplication(applicationId);
   if (!application) redirect("/portal/applications?error=not-found");
+  langs = prioritizeReplyLanguages(langs, application.lang);
 
   const updated = await updateApplicationStatus({
     id: applicationId,
@@ -687,7 +689,7 @@ export async function scheduleInterviewAction(formData: FormData) {
   const mode = String(formData.get("interviewMode") ?? "").trim();
   const note = String(formData.get("interviewNote") ?? "").trim();
   const invite = formData.get("sendInvite") === "on";
-  const langs = parseReplyLanguages(formData.getAll("langs").map(String));
+  let langs = parseReplyLanguages(formData.getAll("langs").map(String));
   const back = String(formData.get("statusFilter") ?? "");
 
   if (!applicationId) redirect("/portal/applications");
@@ -717,6 +719,7 @@ export async function scheduleInterviewAction(formData: FormData) {
 
   const application = await getJobApplication(applicationId);
   if (!application) redirect("/portal/applications?error=not-found");
+  langs = prioritizeReplyLanguages(langs, application.lang);
 
   const previousInterview = application.interview_at;
   const updated = await setApplicationInterview({

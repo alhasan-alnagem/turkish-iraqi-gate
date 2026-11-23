@@ -22,6 +22,7 @@ export {
   REPLY_LANGUAGE_LABELS,
   isReplyLanguage,
   parseReplyLanguages,
+  prioritizeReplyLanguages,
   type ReplyLanguage,
 } from "@/lib/reply-languages";
 
