@@ -79,6 +79,10 @@ user's standing decisions, not suggestions.
   (`CATEGORY_ORDER` is only the fallback seed). Empty categories render "coming soon"
   borders. Repo PDFs hidden in the admin stay in the list but are filtered out of the
   public page.
+- **25 Nov 2026: all catalog PDFs were removed from `public/catalogs/` in git.** Publish
+  catalogs only through the admin panel → Vercel Blob; never commit a PDF again (public
+  repo, large files, deploy size). The repo reader and Hide/Restore remain as a
+  compatibility path for any PDF accidentally added later.
 - Categories: medical-equipment, construction-materials, specialized-equipment,
   electronics, automotive-parts, furniture, textiles-apparel, industrial-machinery.
   **Food & beverages was deliberately removed** (no food procurement).
@@ -246,7 +250,7 @@ in `types.ts` — all three must stay structurally identical.
   from the old watermark policy — never call or re-enable them.
 - Files are stored with neutral names (`catalogs/<category>/<category>.pdf` + random
   suffix) so supplier filenames never appear in a URL.
-- Repo-committed PDFs show **Hide / Restore** in the admin panel. Hiding stores
+- Repo-committed PDFs (if any are added later) show **Hide / Restore** in the admin panel. Hiding stores
   `repo:<category>/<file>` in `catalog_hidden_files` (Postgres/PGlite) and removes the PDF
   from the public catalogs without a deploy; Restore puts it back. Original numbering never
   shifts. Blob uploads still have a permanent **Remove** button.

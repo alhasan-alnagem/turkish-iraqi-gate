@@ -47,8 +47,8 @@ export function repoCatalogId(category: string, file: string): string {
 /**
  * Repo catalog ids arrive from admin forms, so treat them as untrusted. Only a
  * managed category slug plus a plain PDF filename is accepted — no paths, no
- * traversal and no control characters. Spaces are allowed because the existing
- * committed catalogs use names like "Medical Equipment 1.pdf".
+ * traversal and no control characters. Spaces are allowed because older repo
+ * catalogs used names like "Medical Equipment 1.pdf".
  */
 export function parseRepoCatalogId(
   id: string,
