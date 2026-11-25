@@ -75,8 +75,10 @@ user's standing decisions, not suggestions.
   existing catalog numbers never shift) followed by PDFs uploaded through the admin
   panel and stored in Vercel Blob (`catalogs/<category>/…`). Because of the Blob source
   the page is `dynamic = "force-dynamic"` — do not convert it back to a static build.
-  Category order is fixed in `CATEGORY_ORDER`; categories render "coming soon" borders
-  when they have no files.
+  Categories and their EN/AR/TR labels/order are admin-managed in `catalog_categories`
+  (`CATEGORY_ORDER` is only the fallback seed). Empty categories render "coming soon"
+  borders. Repo PDFs hidden in the admin stay in the list but are filtered out of the
+  public page.
 - Categories: medical-equipment, construction-materials, specialized-equipment,
   electronics, automotive-parts, furniture, textiles-apparel, industrial-machinery.
   **Food & beverages was deliberately removed** (no food procurement).
@@ -244,7 +246,10 @@ in `types.ts` — all three must stay structurally identical.
   from the old watermark policy — never call or re-enable them.
 - Files are stored with neutral names (`catalogs/<category>/<category>.pdf` + random
   suffix) so supplier filenames never appear in a URL.
-- Repo-committed PDFs show as "locked" in the panel and can only be removed via a commit.
+- Repo-committed PDFs show **Hide / Restore** in the admin panel. Hiding stores
+  `repo:<category>/<file>` in `catalog_hidden_files` (Postgres/PGlite) and removes the PDF
+  from the public catalogs without a deploy; Restore puts it back. Original numbering never
+  shifts. Blob uploads still have a permanent **Remove** button.
 - `/admin`, `/portal` and `/login` are outside the `[lang]` tree, English-only, `noindex`,
   each with its own root layout; `/admin` and `/portal` are disallowed in `robots.ts`.
 - No supplier name is ever shown to a customer: order details, notes and the timeline are

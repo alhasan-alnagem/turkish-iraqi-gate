@@ -3,6 +3,10 @@
 import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState } from "react";
+import {
+  hideRepoCatalogAction,
+  restoreRepoCatalogAction,
+} from "@/app/admin/actions";
 import type { CatalogsByCategory } from "@/lib/catalog-types";
 import type { ManagedCategory } from "@/lib/catalog-settings-shared";
 
@@ -42,10 +46,17 @@ export default function CatalogManager({
     : (categories[0]?.key ?? "");
   const activeLabel = categories.find((item) => item.key === activeKey)?.labels.en || activeKey;
 
-  const total = useMemo(
-    () => Object.values(catalogs).reduce((sum, entries) => sum + entries.length, 0),
-    [catalogs],
-  );
+  const { total, hiddenTotal } = useMemo(() => {
+    let visible = 0;
+    let hidden = 0;
+    for (const entries of Object.values(catalogs)) {
+      for (const entry of entries) {
+        if (entry.hidden) hidden += 1;
+        else visible += 1;
+      }
+    }
+    return { total: visible, hiddenTotal: hidden };
+  }, [catalogs]);
 
   const busy = phase !== "idle";
 
@@ -224,16 +235,25 @@ export default function CatalogManager({
 
       {/* Current catalogs */}
       <section className="space-y-6">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-bold text-[var(--primary)]">Published catalogs</h2>
-          <span className="text-sm text-[var(--muted)]">
-            {total} file{total === 1 ? "" : "s"}
+        <div className="flex items-baseline justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-[var(--primary)]">Published catalogs</h2>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Hide a repo PDF to take it off the site; Restore puts it back. Uploads can be
+              removed permanently.
+            </p>
+          </div>
+          <span className="shrink-0 text-sm text-[var(--muted)]">
+            {total} visible file{total === 1 ? "" : "s"}
+            {hiddenTotal ? ` · ${hiddenTotal} hidden` : ""}
           </span>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {categories.map((item) => {
             const entries = catalogs[item.key] ?? [];
+            const hiddenCount = entries.filter((entry) => entry.hidden).length;
+            const visibleCount = entries.length - hiddenCount;
             return (
               <div
                 key={item.key}
@@ -241,7 +261,10 @@ export default function CatalogManager({
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-[var(--primary)]">{item.labels.en}</h3>
-                  <span className="text-xs text-[var(--muted)]">{entries.length}</span>
+                  <span className="text-xs text-[var(--muted)]">
+                    {visibleCount}
+                    {hiddenCount ? ` · ${hiddenCount} hidden` : ""}
+                  </span>
                 </div>
 
                 {entries.length === 0 ? (
@@ -253,14 +276,22 @@ export default function CatalogManager({
                     {entries.map((entry) => (
                       <li
                         key={entry.id}
-                        className="flex items-center justify-between gap-3 py-2.5"
+                        className={`flex items-center justify-between gap-3 py-2.5 ${
+                          entry.hidden ? "opacity-60" : ""
+                        }`}
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
                             {item.labels.en} {entry.index}
+                            {entry.hidden ? (
+                              <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                                Hidden
+                              </span>
+                            ) : null}
                           </p>
                           <p className="text-xs text-[var(--muted)]">
                             {entry.source === "repo" ? "in repo" : "uploaded"}
+                            {entry.hidden ? " · hidden from catalogs" : ""}
                             {entry.size ? ` · ${humanSize(entry.size)}` : ""}
                           </p>
                         </div>
@@ -289,9 +320,24 @@ export default function CatalogManager({
                               {deleting === entry.href ? "Removing…" : "Remove"}
                             </button>
                           ) : (
-                            <span className="text-xs text-[var(--muted)]" title="Committed to the repo — remove it there">
-                              locked
-                            </span>
+                            <form
+                              action={
+                                entry.hidden ? restoreRepoCatalogAction : hideRepoCatalogAction
+                              }
+                            >
+                              <input type="hidden" name="id" value={entry.id} />
+                              <input type="hidden" name="tab" value="catalogs" />
+                              <button
+                                type="submit"
+                                className={`rounded-md px-2 py-1 text-xs font-medium hover:bg-[var(--section)] ${
+                                  entry.hidden
+                                    ? "text-[var(--accent)]"
+                                    : "text-[var(--primary)]"
+                                }`}
+                              >
+                                {entry.hidden ? "Restore" : "Hide"}
+                              </button>
+                            </form>
                           )}
                         </div>
                       </li>

@@ -25,9 +25,14 @@ export default async function AdminDashboard({
   if (!(await isAdmin())) redirect("/login");
   const params = await searchParams;
 
-  const catalogs = await listCatalogsByCategory();
+  // The manager needs hidden repo PDFs too, so they can be restored. Category
+  // counts stay public-facing: hidden files do not block category deletion.
+  const catalogs = await listCatalogsByCategory({ includeHidden: true });
   const fileCounts: Record<string, number> = Object.fromEntries(
-    Object.entries(catalogs).map(([key, entries]) => [key, entries.length]),
+    Object.entries(catalogs).map(([key, entries]) => [
+      key,
+      entries.filter((entry) => !entry.hidden).length,
+    ]),
   );
   const [categories, banners] = await Promise.all([
     getManagedCategories(fileCounts),

@@ -271,6 +271,14 @@ alter table catalog_banners add column if not exists title_tr text not null defa
 alter table catalog_banners add column if not exists message_en text not null default '';
 alter table catalog_banners add column if not exists message_ar text not null default '';
 alter table catalog_banners add column if not exists message_tr text not null default '';
+
+-- Repo-committed PDFs cannot be deleted by a serverless deployment, so the
+-- admin panel hides them here instead. The id is the stable repo entry id
+-- ("repo:<category>/<file>"), which keeps public numbering untouched.
+create table if not exists catalog_hidden_files (
+  id text primary key,
+  hidden_at timestamptz not null default now()
+);
 `;
 
 /**

@@ -7,6 +7,7 @@ import {
   MAX_BANNERS,
   MAX_CATEGORIES,
   isManagedCategoryKey,
+  parseRepoCatalogId,
   type CatalogBanner,
   type CategoryLabels,
   type ManagedCategory,
@@ -26,6 +27,8 @@ export {
   MAX_CATEGORIES,
   isManagedCategoryKey,
   labelFor,
+  parseRepoCatalogId,
+  repoCatalogId,
   slugifyCategory,
   suggestedCategoryKey,
   textFor,
@@ -147,6 +150,33 @@ export async function getCategoryLabels(): Promise<Record<string, CategoryLabels
   );
   if (!rows.length) return { ...BUILTIN_LABELS };
   return Object.fromEntries(rows.map((row) => [row.key, labelsFrom(row)]));
+}
+
+/** Ids of repo PDFs the admin has hidden from the public catalogs. */
+export async function getHiddenCatalogIds(): Promise<Set<string>> {
+  const rows = await query<{ id: string }>(`select id from catalog_hidden_files`);
+  return new Set(rows.map((row) => row.id));
+}
+
+/** Hide a committed repo PDF without trying to edit the deployed filesystem. */
+export async function hideCatalogFile(id: string): Promise<boolean> {
+  if (!parseRepoCatalogId(id)) return false;
+  await query(
+    `insert into catalog_hidden_files (id) values ($1)
+     on conflict (id) do nothing`,
+    [id],
+  );
+  return true;
+}
+
+/** Put a hidden repo PDF back on the public catalogs page. */
+export async function restoreCatalogFile(id: string): Promise<boolean> {
+  if (!parseRepoCatalogId(id)) return false;
+  const result = await query<{ id: string }>(
+    `delete from catalog_hidden_files where id = $1 returning id`,
+    [id],
+  );
+  return result.length > 0;
 }
 
 export async function renameCategory(

@@ -38,6 +38,36 @@ export function isManagedCategoryKey(value: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) && value.length <= 48;
 }
 
+const REPO_CATALOG_PREFIX = "repo:";
+
+export function repoCatalogId(category: string, file: string): string {
+  return `${REPO_CATALOG_PREFIX}${category}/${file}`;
+}
+
+/**
+ * Repo catalog ids arrive from admin forms, so treat them as untrusted. Only a
+ * managed category slug plus a plain PDF filename is accepted — no paths, no
+ * traversal and no control characters. Spaces are allowed because the existing
+ * committed catalogs use names like "Medical Equipment 1.pdf".
+ */
+export function parseRepoCatalogId(
+  id: string,
+): { category: string; file: string } | null {
+  if (!id.startsWith(REPO_CATALOG_PREFIX)) return null;
+  const value = id.slice(REPO_CATALOG_PREFIX.length);
+  const slash = value.indexOf("/");
+  if (slash <= 0 || slash !== value.lastIndexOf("/")) return null;
+
+  const category = value.slice(0, slash);
+  const file = value.slice(slash + 1);
+  if (!isManagedCategoryKey(category)) return null;
+  if (!file || file.length > 240 || !/\.pdf$/i.test(file)) return null;
+  if (file.includes("/") || file.includes("\\") || file.includes("..")) return null;
+  if (/[\u0000-\u001f\u007f]/.test(file)) return null;
+
+  return { category, file };
+}
+
 export function slugifyCategory(value: string): string {
   return value
     .toLowerCase()

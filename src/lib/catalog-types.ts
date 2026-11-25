@@ -41,6 +41,8 @@ export type CatalogEntry = {
   index: number;
   href: string;
   source: "repo" | "blob";
+  /** Repo PDFs kept in the admin list but removed from the public catalogs. */
+  hidden?: boolean;
   uploadedAt?: string;
   size?: number;
 };

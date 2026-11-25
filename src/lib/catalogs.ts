@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { list } from "@vercel/blob";
-import { getCategoryKeys } from "@/lib/catalog-settings";
+import {
+  getCategoryKeys,
+  getHiddenCatalogIds,
+  repoCatalogId,
+} from "@/lib/catalog-settings";
 import {
   CATEGORY_ORDER,
   type CatalogEntry,
@@ -52,14 +56,30 @@ async function listBlobPdfs(): Promise<BlobRecord[]> {
   }
 }
 
+async function loadHiddenCatalogIds(): Promise<Set<string>> {
+  try {
+    return await getHiddenCatalogIds();
+  } catch (error) {
+    // A database outage must not hide the public PDFs; treat nothing as hidden.
+    console.error("hidden catalog files unavailable", error);
+    return new Set();
+  }
+}
+
 /**
  * Every catalog PDF, grouped by category and numbered.
  * Repo files come first (they keep their existing numbering), uploaded files
- * follow in upload order, so adding a PDF never renumbers what is already
- * published.
+ * follow in upload order, so adding — or hiding — a PDF never renumbers what
+ * is already published. The admin panel passes `includeHidden` so it can offer
+ * a Restore action; the public page uses the default filtered list.
  */
-export async function listCatalogsByCategory(): Promise<CatalogsByCategory> {
+export async function listCatalogsByCategory(
+  options: { includeHidden?: boolean } = {},
+): Promise<CatalogsByCategory> {
   const blobs = await listBlobPdfs();
+  // Even the admin view needs this set: it keeps hidden entries so they can be
+  // restored, but labels them as hidden. The public view skips them below.
+  const hiddenIds = await loadHiddenCatalogIds();
   const byCategory = {} as CatalogsByCategory;
   let keys: string[];
   try {
@@ -74,14 +94,23 @@ export async function listCatalogsByCategory(): Promise<CatalogsByCategory> {
 
   for (const category of keys) {
     const entries: CatalogEntry[] = [];
+    const repoFiles = listRepoPdfs(category);
 
-    for (const file of listRepoPdfs(category)) {
+    // Numbering follows the full repo list even when entries are hidden, so
+    // "Medical Equipment 3" never becomes "Medical Equipment 2".
+    let nextIndex = 0;
+    for (const file of repoFiles) {
+      nextIndex += 1;
+      const id = repoCatalogId(category, file);
+      const hidden = hiddenIds.has(id);
+      if (hidden && !options.includeHidden) continue;
       entries.push({
-        id: `repo:${category}/${file}`,
+        id,
         category,
-        index: entries.length + 1,
+        index: nextIndex,
         href: `/${BLOB_PREFIX}${category}/${encodeURIComponent(file)}`,
         source: "repo",
+        ...(hidden ? { hidden: true } : {}),
       });
     }
 
@@ -90,10 +119,11 @@ export async function listCatalogsByCategory(): Promise<CatalogsByCategory> {
       .sort((a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime());
 
     for (const blob of uploaded) {
+      nextIndex += 1;
       entries.push({
         id: `blob:${blob.url}`,
         category,
-        index: entries.length + 1,
+        index: nextIndex,
         href: blob.url,
         source: "blob",
         uploadedAt: new Date(blob.uploadedAt).toISOString(),

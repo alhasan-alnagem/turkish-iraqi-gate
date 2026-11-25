@@ -10,9 +10,12 @@ import {
   deleteBanner,
   deleteCategory,
   getCategoryKeys,
+  hideCatalogFile,
   isManagedCategoryKey,
   moveCategory,
+  parseRepoCatalogId,
   renameCategory,
+  restoreCatalogFile,
   suggestedCategoryKey,
   updateBanner,
   type CategoryLabels,
@@ -107,6 +110,24 @@ export async function deleteCategoryAction(formData: FormData) {
   if (!result.ok) fail(formData, result.error ?? "Category could not be deleted.");
   revalidateCatalogs();
   goBack(formData, { ok: "category-deleted" });
+}
+
+export async function hideRepoCatalogAction(formData: FormData) {
+  await requireAdmin();
+  const id = formString(formData, "id");
+  if (!parseRepoCatalogId(id)) fail(formData, "Invalid catalog file.");
+  if (!(await hideCatalogFile(id))) fail(formData, "Catalog could not be hidden.");
+  revalidateCatalogs();
+  goBack(formData, { ok: "catalog-hidden" });
+}
+
+export async function restoreRepoCatalogAction(formData: FormData) {
+  await requireAdmin();
+  const id = formString(formData, "id");
+  if (!parseRepoCatalogId(id)) fail(formData, "Invalid catalog file.");
+  if (!(await restoreCatalogFile(id))) fail(formData, "Catalog could not be restored.");
+  revalidateCatalogs();
+  goBack(formData, { ok: "catalog-restored" });
 }
 
 export async function addBannerAction(formData: FormData) {
