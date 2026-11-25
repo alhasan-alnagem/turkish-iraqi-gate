@@ -1,6 +1,7 @@
 ﻿import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { isAdmin } from "@/lib/auth";
-import { BLOB_PREFIX, isCategoryKey } from "@/lib/catalogs";
+import { BLOB_PREFIX } from "@/lib/catalogs";
+import { getCategoryKeys, isManagedCategoryKey } from "@/lib/catalog-settings";
 
 export const runtime = "nodejs";
 
@@ -26,7 +27,13 @@ export async function POST(request: Request): Promise<Response> {
 
         const parts = pathname.split("/");
         const [prefix, category] = parts;
-        if (prefix !== BLOB_PREFIX.replace(/\/$/, "") || !category || !isCategoryKey(category)) {
+        const categories = await getCategoryKeys();
+        if (
+          prefix !== BLOB_PREFIX.replace(/\/$/, "") ||
+          !category ||
+          !isManagedCategoryKey(category) ||
+          !categories.includes(category)
+        ) {
           throw new Error("Unknown catalog category.");
         }
         if (parts.length !== 3 || !pathname.toLowerCase().endsWith(".pdf")) {

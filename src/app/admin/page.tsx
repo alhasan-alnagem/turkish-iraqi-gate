@@ -2,9 +2,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import CatalogManager from "@/components/admin/CatalogManager";
+import CategoryManager from "@/components/admin/CategoryManager";
+import BannerManager from "@/components/admin/BannerManager";
 import { isAdmin } from "@/lib/auth";
 import { blobConfigured, listCatalogsByCategory } from "@/lib/catalogs";
+import { getBanners, getManagedCategories } from "@/lib/catalog-settings";
+import type { CatalogNoticeDefaults } from "@/lib/catalog-settings-shared";
 import { WEBMAIL_URL } from "@/lib/mailbox";
+import { getTranslations } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +17,36 @@ export const metadata = {
   title: "TIGIP — Catalog Manager",
 };
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; ok?: string; tab?: string }>;
+}) {
   if (!(await isAdmin())) redirect("/login");
+  const params = await searchParams;
 
-  const [catalogs, blobReady] = await Promise.all([
-    listCatalogsByCategory(),
-    Promise.resolve(blobConfigured()),
+  const catalogs = await listCatalogsByCategory();
+  const fileCounts: Record<string, number> = Object.fromEntries(
+    Object.entries(catalogs).map(([key, entries]) => [key, entries.length]),
+  );
+  const [categories, banners] = await Promise.all([
+    getManagedCategories(fileCounts),
+    getBanners(),
   ]);
+  const blobReady = blobConfigured();
+
+  const noticeDefaults: CatalogNoticeDefaults = {
+    title: {
+      en: getTranslations("en").catalogs.notice.title,
+      ar: getTranslations("ar").catalogs.notice.title,
+      tr: getTranslations("tr").catalogs.notice.title,
+    },
+    message: {
+      en: getTranslations("en").catalogs.notice.message,
+      ar: getTranslations("ar").catalogs.notice.message,
+      tr: getTranslations("tr").catalogs.notice.message,
+    },
+  };
 
   return (
     <div className="min-h-screen">
@@ -81,7 +109,50 @@ export default async function AdminDashboard() {
           </p>
         </section>
 
-        <CatalogManager catalogs={catalogs} blobReady={blobReady} />
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm sm:p-6">
+          <p className="text-sm font-medium text-[var(--foreground)]">Admin tools</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href="#categories"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--section)]"
+            >
+              Categories
+            </a>
+            <a
+              href="#banners"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--section)]"
+            >
+              Banners
+            </a>
+            <a
+              href="#catalogs"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--section)]"
+            >
+              Catalog PDFs
+            </a>
+          </div>
+        </div>
+
+        {params.error ? (
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {params.error.replace(/-/g, " ")}
+          </p>
+        ) : null}
+        {params.ok ? (
+          <p role="status" className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            {params.ok.replace(/-/g, " ")}
+          </p>
+        ) : null}
+
+        <div id="banners">
+          <BannerManager banners={banners} defaults={noticeDefaults} />
+        </div>
+        <div id="categories">
+          <CategoryManager categories={categories} />
+        </div>
+        <div id="catalogs">
+          <CatalogManager catalogs={catalogs} categories={categories} blobReady={blobReady} />
+        </div>
 
         <p className="pb-6 text-center text-xs text-[var(--muted)]">
           Signed in as administrator · changes go live immediately · sessions last 8 hours, or 30

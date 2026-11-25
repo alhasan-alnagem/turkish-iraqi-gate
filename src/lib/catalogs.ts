@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { list } from "@vercel/blob";
+import { getCategoryKeys } from "@/lib/catalog-settings";
 import {
   CATEGORY_ORDER,
   type CatalogEntry,
@@ -60,8 +61,18 @@ async function listBlobPdfs(): Promise<BlobRecord[]> {
 export async function listCatalogsByCategory(): Promise<CatalogsByCategory> {
   const blobs = await listBlobPdfs();
   const byCategory = {} as CatalogsByCategory;
+  let keys: string[];
+  try {
+    keys = await getCategoryKeys();
+  } catch (error) {
+    // The public catalogs page must survive a database outage: fall back to
+    // the built-in slugs so the repo PDFs keep working.
+    console.error("catalog categories unavailable", error);
+    keys = [...CATEGORY_ORDER];
+  }
+  if (!keys.length) keys = [...CATEGORY_ORDER];
 
-  for (const category of CATEGORY_ORDER) {
+  for (const category of keys) {
     const entries: CatalogEntry[] = [];
 
     for (const file of listRepoPdfs(category)) {
@@ -90,7 +101,7 @@ export async function listCatalogsByCategory(): Promise<CatalogsByCategory> {
       });
     }
 
-    byCategory[category] = entries;
+    byCategory[category as CategoryKey] = entries;
   }
 
   return byCategory;
@@ -98,5 +109,5 @@ export async function listCatalogsByCategory(): Promise<CatalogsByCategory> {
 
 export async function listAllCatalogs(): Promise<CatalogEntry[]> {
   const grouped = await listCatalogsByCategory();
-  return CATEGORY_ORDER.flatMap((category) => grouped[category]);
+  return Object.keys(grouped).flatMap((category) => grouped[category as CategoryKey]);
 }

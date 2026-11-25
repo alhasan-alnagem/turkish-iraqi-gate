@@ -1,6 +1,10 @@
 /** Catalog constants and types shared by server and client code. */
 
-/** Fixed display order for catalog categories (see AGENTS.md §5). */
+/**
+ * Built-in slugs, kept as the fallback order and as stable seeds for the
+ * database-backed category list. Admin-added categories use the same slug
+ * shape but are not in this tuple.
+ */
 export const CATEGORY_ORDER = [
   "medical-equipment",
   "construction-materials",
@@ -12,10 +16,13 @@ export const CATEGORY_ORDER = [
   "industrial-machinery",
 ] as const;
 
-export type CategoryKey = (typeof CATEGORY_ORDER)[number];
+export type BuiltinCategoryKey = (typeof CATEGORY_ORDER)[number];
 
-/** English labels for the admin panel (the public site uses the translation files). */
-export const ADMIN_CATEGORY_LABELS: Record<CategoryKey, string> = {
+/** Category keys are dynamic now, but remain stable slugs on disk/in Blob. */
+export type CategoryKey = string;
+
+/** English labels for the built-in admin fallbacks (public site uses DB labels). */
+export const ADMIN_CATEGORY_LABELS: Record<BuiltinCategoryKey, string> = {
   "medical-equipment": "Medical Equipment",
   "construction-materials": "Construction Materials",
   "specialized-equipment": "Specialized Equipment",
@@ -40,6 +47,6 @@ export type CatalogEntry = {
 
 export type CatalogsByCategory = Record<CategoryKey, CatalogEntry[]>;
 
-export function isCategoryKey(value: string): value is CategoryKey {
+export function isCategoryKey(value: string): value is BuiltinCategoryKey {
   return (CATEGORY_ORDER as readonly string[]).includes(value);
 }

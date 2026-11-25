@@ -1,7 +1,14 @@
 import Link from "next/link";
-import { getTranslations } from "@/lib/translations";
 import { CATEGORY_ORDER, listCatalogsByCategory } from "@/lib/catalogs";
+import {
+  getBanners,
+  getCategoryLabels,
+  labelFor,
+  textFor,
+} from "@/lib/catalog-settings";
+import type { CatalogBanner, CategoryLabels } from "@/lib/catalog-settings-shared";
 import { toLang } from "@/lib/seo";
+import { getTranslations } from "@/lib/translations";
 
 // Catalog PDFs can now be added or removed from the admin panel, so the list
 // must be read on each request rather than baked in at build time.
@@ -11,9 +18,30 @@ type Params = { lang: string };
 
 export default async function Catalogs({ params }: { params: Promise<Params> }) {
   const { lang: langParam } = await params;
-  const t = getTranslations(toLang(langParam));
+  const lang = toLang(langParam);
+  const t = getTranslations(lang);
   const c = t.catalogs;
+
   const catalogs = await listCatalogsByCategory();
+
+  let labels: Record<string, CategoryLabels> = {};
+  let banners: CatalogBanner[] = [];
+  try {
+    [labels, banners] = await Promise.all([getCategoryLabels(), getBanners()]);
+  } catch (error) {
+    // A database outage must not take the public catalogs down: the built-in
+    // slugs and translated labels are enough to keep the PDFs reachable.
+    console.error("catalog settings unavailable", error);
+  }
+
+  const keys = Object.keys(labels).length ? Object.keys(labels) : [...CATEGORY_ORDER];
+  const activeBanner = banners.find((banner) => banner.active);
+  const bannerTitle = activeBanner
+    ? textFor(activeBanner.titles, lang, c.notice.title)
+    : "";
+  const bannerMessage = activeBanner
+    ? textFor(activeBanner.messages, lang, c.notice.message)
+    : "";
 
   return (
     <>
@@ -44,45 +72,86 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {CATEGORY_ORDER.map((key) => {
-              const pdfs = catalogs[key];
-              return (
+          <div className="relative">
+            <div
+              className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 ${
+                activeBanner ? "pointer-events-none select-none opacity-40" : ""
+              }`}
+              aria-hidden={activeBanner ? "true" : undefined}
+            >
+              {keys.map((key) => {
+                const pdfs = catalogs[key] ?? [];
+                const label = labels[key]
+                  ? labelFor(labels, key, lang)
+                  : (c.categories[key] ?? key.replace(/-/g, " "));
+                return (
+                  <div
+                    key={key}
+                    className="border border-[var(--border)] rounded-2xl bg-white shadow-sm p-6"
+                  >
+                    <h3 className="text-lg font-bold text-[var(--primary)] mb-4">
+                      {label}
+                    </h3>
+                    {pdfs.length > 0 ? (
+                      <ul className="space-y-3">
+                        {pdfs.map((pdf) => (
+                          <li key={pdf.id}>
+                            <a
+                              href={pdf.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block py-3 px-4 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--section)] transition-colors"
+                            >
+                              <span className="block font-medium text-[var(--primary)]">
+                                {label} {pdf.index}
+                              </span>
+                              <span className="text-sm text-[var(--muted)]">{c.view}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="border-2 border-dashed border-[var(--border)] rounded-xl py-10 text-center">
+                        <span className="inline-block px-4 py-1 rounded-full bg-[var(--section)] text-[var(--muted)] text-sm font-medium">
+                          {c.comingSoonLabel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {activeBanner ? (
+              <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
                 <div
-                  key={key}
-                  className="border border-[var(--border)] rounded-2xl bg-white shadow-sm p-6"
+                  className="bg-white rounded-2xl shadow-2xl border border-amber-200 p-8 max-w-lg w-full text-center"
+                  role="status"
+                  aria-live="polite"
                 >
-                  <h3 className="text-lg font-bold text-[var(--primary)] mb-4">
-                    {c.categories[key] ?? key}
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--primary)] mb-2">
+                    {bannerTitle}
                   </h3>
-                  {pdfs.length > 0 ? (
-                    <ul className="space-y-3">
-                      {pdfs.map((pdf) => (
-                        <li key={pdf.id}>
-                          <a
-                            href={pdf.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block py-3 px-4 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--section)] transition-colors"
-                          >
-                            <span className="block font-medium text-[var(--primary)]">
-                              {c.categories[key] ?? key} {pdf.index}
-                            </span>
-                            <span className="text-sm text-[var(--muted)]">{c.view}</span>
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="border-2 border-dashed border-[var(--border)] rounded-xl py-10 text-center">
-                      <span className="inline-block px-4 py-1 rounded-full bg-[var(--section)] text-[var(--muted)] text-sm font-medium">
-                        {c.comingSoonLabel}
-                      </span>
-                    </div>
-                  )}
+                  <p className="text-[var(--muted)]">{bannerMessage}</p>
                 </div>
-              );
-            })}
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

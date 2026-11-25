@@ -3,12 +3,8 @@
 import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useRef, useState } from "react";
-import {
-  ADMIN_CATEGORY_LABELS,
-  CATEGORY_ORDER,
-  type CatalogsByCategory,
-  type CategoryKey,
-} from "@/lib/catalog-types";
+import type { CatalogsByCategory } from "@/lib/catalog-types";
+import type { ManagedCategory } from "@/lib/catalog-settings-shared";
 
 type Phase = "idle" | "uploading";
 
@@ -22,9 +18,11 @@ function humanSize(bytes?: number): string {
 
 export default function CatalogManager({
   catalogs,
+  categories,
   blobReady,
 }: {
   catalogs: CatalogsByCategory;
+  categories: ManagedCategory[];
   blobReady: boolean;
 }) {
   const router = useRouter();
@@ -32,15 +30,20 @@ export default function CatalogManager({
   const fileId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [category, setCategory] = useState<CategoryKey>("medical-equipment");
+  const [category, setCategory] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const activeKey = categories.some((item) => item.key === category)
+    ? category
+    : (categories[0]?.key ?? "");
+  const activeLabel = categories.find((item) => item.key === activeKey)?.labels.en || activeKey;
+
   const total = useMemo(
-    () => CATEGORY_ORDER.reduce((sum, key) => sum + catalogs[key].length, 0),
+    () => Object.values(catalogs).reduce((sum, entries) => sum + entries.length, 0),
     [catalogs],
   );
 
@@ -50,6 +53,10 @@ export default function CatalogManager({
     if (!files || files.length === 0 || busy) return;
     if (!blobReady) {
       setMessage({ kind: "error", text: "Blob storage is not configured for this deployment." });
+      return;
+    }
+    if (!activeKey) {
+      setMessage({ kind: "error", text: "Add a category before uploading a catalog." });
       return;
     }
 
@@ -72,7 +79,7 @@ export default function CatalogManager({
         setPhase("uploading");
 
         // Catalogs are published as supplied — no watermark, no metadata stripping.
-        await upload(`catalogs/${category}/${category}.pdf`, file, {
+        await upload(`catalogs/${activeKey}/${activeKey}.pdf`, file, {
           access: "public",
           handleUploadUrl: "/api/admin/blob-upload",
           contentType: "application/pdf",
@@ -82,7 +89,7 @@ export default function CatalogManager({
 
         setMessage({
           kind: "ok",
-          text: `${file.name} published as ${ADMIN_CATEGORY_LABELS[category]}.`,
+          text: `${file.name} published as ${activeLabel}.`,
         });
       } catch (error) {
         const text = error instanceof Error ? error.message : "Upload failed.";
@@ -132,8 +139,8 @@ export default function CatalogManager({
       <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-xl font-bold text-[var(--primary)]">Add a catalog</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          The PDF is stamped with the bilingual logo, given a neutral file name, and published
-          immediately. Supplier names are never exposed.
+          The PDF is published immediately with a neutral file name. Supplier names are never
+          exposed in the URL.
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
@@ -143,14 +150,14 @@ export default function CatalogManager({
             </label>
             <select
               id={selectId}
-              value={category}
-              disabled={busy}
-              onChange={(event) => setCategory(event.target.value as CategoryKey)}
+              value={activeKey}
+              disabled={busy || !categories.length}
+              onChange={(event) => setCategory(event.target.value)}
               className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/25"
             >
-              {CATEGORY_ORDER.map((key) => (
-                <option key={key} value={key}>
-                  {ADMIN_CATEGORY_LABELS[key]}
+              {categories.map((item) => (
+                <option key={item.key} value={item.key}>
+                  {item.labels.en}
                 </option>
               ))}
             </select>
@@ -166,7 +173,7 @@ export default function CatalogManager({
               type="file"
               accept="application/pdf,.pdf"
               multiple
-              disabled={busy || !blobReady}
+              disabled={busy || !blobReady || !categories.length}
               onChange={(event) => void handleUpload(event.target.files)}
               className="w-full cursor-pointer rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[var(--section)] file:px-3 file:py-1.5 file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-60"
             />
@@ -225,17 +232,15 @@ export default function CatalogManager({
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {CATEGORY_ORDER.map((key) => {
-            const entries = catalogs[key];
+          {categories.map((item) => {
+            const entries = catalogs[item.key] ?? [];
             return (
               <div
-                key={key}
+                key={item.key}
                 className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-[var(--primary)]">
-                    {ADMIN_CATEGORY_LABELS[key]}
-                  </h3>
+                  <h3 className="font-semibold text-[var(--primary)]">{item.labels.en}</h3>
                   <span className="text-xs text-[var(--muted)]">{entries.length}</span>
                 </div>
 
@@ -252,7 +257,7 @@ export default function CatalogManager({
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {ADMIN_CATEGORY_LABELS[key]} {entry.index}
+                            {item.labels.en} {entry.index}
                           </p>
                           <p className="text-xs text-[var(--muted)]">
                             {entry.source === "repo" ? "in repo" : "uploaded"}
@@ -275,7 +280,7 @@ export default function CatalogManager({
                               onClick={() =>
                                 void handleDelete(
                                   entry.href,
-                                  `${ADMIN_CATEGORY_LABELS[key]} ${entry.index}`,
+                                  `${item.labels.en} ${entry.index}`,
                                 )
                               }
                               disabled={deleting === entry.href}
