@@ -1,9 +1,9 @@
 /** Catalog constants and types shared by server and client code. */
 
 /**
- * Built-in slugs, kept as the fallback order and as stable seeds for the
- * database-backed category list. Admin-added categories use the same slug
- * shape but are not in this tuple.
+ * Original slugs kept as legacy label/type helpers only. They are not seeded
+ * or rendered automatically — the admin can delete them for good, and new
+ * categories use the same slug shape.
  */
 export const CATEGORY_ORDER = [
   "medical-equipment",

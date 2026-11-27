@@ -222,8 +222,9 @@ create index if not exists application_emails_application_idx
   on application_emails (application_id, created_at desc);
 
 -- Admin-managed catalog categories. Keys are stable slugs so existing PDF paths
--- never change; only labels/order are editable. Built-ins can be renamed but
--- not deleted; a cap is enforced in app code to keep the public grid readable.
+-- never change; labels, order and deletion are all editable in /admin. The old
+-- default slugs are no longer seeded or rendered here — a deleted category
+-- must stay gone across deploys and outages.
 create table if not exists catalog_categories (
   key text primary key,
   sort_order integer not null default 0,
@@ -234,18 +235,6 @@ create table if not exists catalog_categories (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
-insert into catalog_categories (key, sort_order, label_en, label_ar, label_tr, built_in)
-values
-  ('medical-equipment', 1, 'Medical Equipment', 'معدات طبية', 'Tıbbi Ekipman', true),
-  ('construction-materials', 2, 'Construction Materials', 'مواد بناء', 'İnşaat Malzemeleri', true),
-  ('specialized-equipment', 3, 'Specialized Equipment', 'معدات متخصصة', 'Özel Ekipman', true),
-  ('electronics', 4, 'Electronics', 'إلكترونيات', 'Elektronik', true),
-  ('automotive-parts', 5, 'Automotive Parts', 'قطع غيار سيارات', 'Otomotiv Yedek Parçaları', true),
-  ('furniture', 6, 'Furniture', 'أثاث', 'Mobilya', true),
-  ('textiles-apparel', 7, 'Textiles & Apparel', 'منسوجات وملابس', 'Tekstil ve Giyim', true),
-  ('industrial-machinery', 8, 'Industrial Machinery', 'آلات صناعية', 'Endüstriyel Makineler', true)
-on conflict (key) do nothing;
 
 -- Catalog-page banners/popups. At most one is active in normal use; the admin
 -- panel can add/edit/remove them without a deploy. Title and message are kept

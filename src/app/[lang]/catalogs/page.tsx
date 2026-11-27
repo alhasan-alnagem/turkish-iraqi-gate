@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORY_ORDER, listCatalogsByCategory } from "@/lib/catalogs";
+import { listCatalogsByCategory } from "@/lib/catalogs";
 import {
   getBanners,
   getCategoryLabels,
@@ -29,12 +29,14 @@ export default async function Catalogs({ params }: { params: Promise<Params> }) 
   try {
     [labels, banners] = await Promise.all([getCategoryLabels(), getBanners()]);
   } catch (error) {
-    // A database outage must not take the public catalogs down: the built-in
-    // slugs and translated labels are enough to keep the PDFs reachable.
+    // A database outage must not take the public catalogs down: the catalog
+    // list from listCatalogsByCategory() still decides which cards to render.
     console.error("catalog settings unavailable", error);
   }
 
-  const keys = Object.keys(labels).length ? Object.keys(labels) : [...CATEGORY_ORDER];
+  // The catalog list is the source of truth: if the admin deleted every
+  // category, show none instead of resurrecting the old defaults.
+  const keys = Object.keys(catalogs);
   const activeBanner = banners.find((banner) => banner.active);
   const bannerTitle = activeBanner
     ? textFor(activeBanner.titles, lang, c.notice.title)

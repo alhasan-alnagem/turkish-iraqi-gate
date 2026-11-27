@@ -7,7 +7,6 @@ import {
   repoCatalogId,
 } from "@/lib/catalog-settings";
 import {
-  CATEGORY_ORDER,
   type CatalogEntry,
   type CatalogsByCategory,
   type CategoryKey,
@@ -85,12 +84,11 @@ export async function listCatalogsByCategory(
   try {
     keys = await getCategoryKeys();
   } catch (error) {
-    // The public catalogs page must survive a database outage: fall back to
-    // the built-in slugs so the repo PDFs keep working.
+    // A database outage must not resurrect categories the admin deleted; show
+    // an empty grid until settings are readable again.
     console.error("catalog categories unavailable", error);
-    keys = [...CATEGORY_ORDER];
+    keys = [];
   }
-  if (!keys.length) keys = [...CATEGORY_ORDER];
 
   for (const category of keys) {
     const entries: CatalogEntry[] = [];

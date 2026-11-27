@@ -17,7 +17,6 @@ export type ManagedCategory = {
   key: string;
   sortOrder: number;
   labels: CategoryLabels;
-  removable: boolean;
   fileCount: number;
 };
 

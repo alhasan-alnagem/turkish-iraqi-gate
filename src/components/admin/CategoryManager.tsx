@@ -21,9 +21,9 @@ export default function CategoryManager({ categories }: { categories: ManagedCat
       <div>
         <h2 className="text-xl font-bold text-[var(--primary)]">Catalog categories</h2>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Rename, reorder, add or remove the category cards on the catalogs page. Keys stay
-          stable so existing PDF paths never break. Maximum {MAX_CATEGORIES} categories keeps
-          the page tidy.
+          Rename, reorder, add or remove any category card — including the original defaults.
+          Keys stay stable so existing PDF paths never break. Maximum {MAX_CATEGORIES}
+          categories keeps the page tidy.
         </p>
         <p className="mt-1 text-xs text-[var(--muted)]">
           Currently {categories.length}/{MAX_CATEGORIES} categories.
@@ -39,7 +39,6 @@ export default function CategoryManager({ categories }: { categories: ManagedCat
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs font-medium text-[var(--muted)]">
                 {category.key} · {category.fileCount} file{category.fileCount === 1 ? "" : "s"}
-                {category.removable ? "" : " · built-in"}
               </p>
               <div className="flex items-center gap-1.5">
                 <form action={moveCategoryAction}>
@@ -63,27 +62,25 @@ export default function CategoryManager({ categories }: { categories: ManagedCat
                     ↓
                   </button>
                 </form>
-                {category.removable ? (
-                  <form action={deleteCategoryAction}>
-                    <input type="hidden" name="key" value={category.key} />
-                    <input type="hidden" name="tab" value="categories" />
-                    <button
-                      type="submit"
-                      className="rounded-md px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                      onClick={(event) => {
-                        if (
-                          !window.confirm(
-                            `Delete the "${category.labels.en}" category? Categories with PDFs must be emptied first.`,
-                          )
-                        ) {
-                          event.preventDefault();
-                        }
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </form>
-                ) : null}
+                <form action={deleteCategoryAction}>
+                  <input type="hidden" name="key" value={category.key} />
+                  <input type="hidden" name="tab" value="categories" />
+                  <button
+                    type="submit"
+                    className="rounded-md px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                    onClick={(event) => {
+                      if (
+                        !window.confirm(
+                          `Delete the "${category.labels.en}" category? Categories with PDFs must be emptied first.`,
+                        )
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </form>
               </div>
             </div>
 

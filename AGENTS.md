@@ -83,6 +83,10 @@ user's standing decisions, not suggestions.
   catalogs only through the admin panel → Vercel Blob; never commit a PDF again (public
   repo, large files, deploy size). The repo reader and Hide/Restore remain as a
   compatibility path for any PDF accidentally added later.
+- The original eight category slugs are no longer seeded or rendered automatically. They
+  can be deleted from `/admin → Categories`, and a deleted category stays gone across
+  deploys and DB outages. An empty `catalog_categories` table means an empty catalogs page,
+  not eight "coming soon" cards.
 - Categories: medical-equipment, construction-materials, specialized-equipment,
   electronics, automotive-parts, furniture, textiles-apparel, industrial-machinery.
   **Food & beverages was deliberately removed** (no food procurement).

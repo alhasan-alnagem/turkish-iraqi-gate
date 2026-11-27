@@ -46,7 +46,6 @@ type CategoryRow = {
   label_en: string;
   label_ar: string;
   label_tr: string;
-  built_in: boolean;
 };
 
 type BannerRow = {
@@ -122,7 +121,7 @@ export async function getManagedCategories(
   fileCounts: Record<string, number> = {},
 ): Promise<ManagedCategory[]> {
   const rows = await query<CategoryRow>(
-    `select key, sort_order, label_en, label_ar, label_tr, built_in
+    `select key, sort_order, label_en, label_ar, label_tr
      from catalog_categories order by sort_order, key`,
   );
 
@@ -130,25 +129,27 @@ export async function getManagedCategories(
     key: row.key,
     sortOrder: row.sort_order,
     labels: labelsFrom(row),
-    removable: !row.built_in,
     fileCount: fileCounts[row.key] ?? 0,
   }));
 }
 
-/** Category keys used by the public page and by Blob upload validation. */
+/**
+ * Category keys used by the public page and by Blob upload validation.
+ * An empty result is intentional: the admin deleted every category, so no
+ * cards are rendered even if the settings DB is temporarily unavailable.
+ */
 export async function getCategoryKeys(): Promise<string[]> {
   const rows = await query<{ key: string }>(
     `select key from catalog_categories order by sort_order, key`,
   );
-  return rows.length ? rows.map((row) => row.key) : [...CATEGORY_ORDER];
+  return rows.map((row) => row.key);
 }
 
 export async function getCategoryLabels(): Promise<Record<string, CategoryLabels>> {
   const rows = await query<CategoryRow>(
-    `select key, sort_order, label_en, label_ar, label_tr, built_in
+    `select key, sort_order, label_en, label_ar, label_tr
      from catalog_categories order by sort_order, key`,
   );
-  if (!rows.length) return { ...BUILTIN_LABELS };
   return Object.fromEntries(rows.map((row) => [row.key, labelsFrom(row)]));
 }
 
@@ -260,18 +261,12 @@ export async function addCategory(
 }
 
 export async function deleteCategory(key: string): Promise<{ ok: boolean; error?: string }> {
-  const row = await query<{ built_in: boolean }>(
-    `select built_in from catalog_categories where key = $1`,
+  const row = await query<{ key: string }>(
+    `select key from catalog_categories where key = $1`,
     [key],
   );
   if (!row.length) return { ok: false, error: "Category not found." };
-  if (row[0].built_in) {
-    return {
-      ok: false,
-      error: "Built-in categories cannot be deleted; rename them instead.",
-    };
-  }
-  await query(`delete from catalog_categories where key = $1 and built_in = false`, [key]);
+  await query(`delete from catalog_categories where key = $1`, [key]);
   return { ok: true };
 }
 
